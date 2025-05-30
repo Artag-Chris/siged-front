@@ -17,7 +17,8 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated || !user) {
-        router.push("/login")
+        // Forzar redirección completa para evitar problemas de estado
+        window.location.href = "/login"
         return
       }
 

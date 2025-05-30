@@ -19,9 +19,11 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   setLoading: (loading: boolean) => void
+  forceLogout: () => void
+  clearAllStorage: () => void
 }
 
-// Datos dummy más completos
+// Datos dummy actualizados - todos los managers ahora son admin
 const DUMMY_USERS = [
   {
     id: "1",
@@ -32,7 +34,7 @@ const DUMMY_USERS = [
     avatar: "/placeholder.svg?height=40&width=40",
     department: "Administración",
     lastLogin: "2024-01-15 09:30:00",
-    permissions: ["read", "write", "delete", "manage_users", "view_analytics"],
+    permissions: ["read", "write", "delete", "manage_users", "view_analytics", "manage_professors", "upload_documents"],
   },
   {
     id: "2",
@@ -50,11 +52,11 @@ const DUMMY_USERS = [
     email: "manager@example.com",
     password: "manager123",
     name: "Luis Martínez",
-    role: "admin" as const,
+    role: "admin" as const, // Cambiado de manager a admin
     avatar: "/placeholder.svg?height=40&width=40",
     department: "Marketing",
     lastLogin: "2024-01-14 16:20:00",
-    permissions: ["read", "write", "view_analytics"],
+    permissions: ["read", "write", "delete", "manage_users", "view_analytics", "manage_professors", "upload_documents"],
   },
 ]
 
@@ -68,52 +70,98 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string): Promise<boolean> => {
         set({ isLoading: true })
 
-        // Simular delay de API
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        try {
+          // Limpiar cualquier estado anterior para evitar conflictos
+          get().clearAllStorage()
 
-        const foundUser = DUMMY_USERS.find((u) => u.email === email && u.password === password)
+          // Simular delay de API
+          await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        if (foundUser) {
-          const userData = {
-            id: foundUser.id,
-            email: foundUser.email,
-            name: foundUser.name,
-            role: foundUser.role,
-            avatar: foundUser.avatar,
-            department: foundUser.department,
-            lastLogin: new Date().toISOString(),
-            permissions: foundUser.permissions,
+          const foundUser = DUMMY_USERS.find((u) => u.email === email && u.password === password)
+
+          if (foundUser) {
+            const userData = {
+              id: foundUser.id,
+              email: foundUser.email,
+              name: foundUser.name,
+              role: foundUser.role,
+              avatar: foundUser.avatar,
+              department: foundUser.department,
+              lastLogin: new Date().toISOString(),
+              permissions: foundUser.permissions,
+            }
+
+            set({
+              user: userData,
+              isLoading: false,
+              isAuthenticated: true,
+            })
+
+            // Establecer cookie para el middleware
+            document.cookie = `auth-token=${userData.id}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 días
+
+            return true
           }
 
-          set({
-            user: userData,
-            isLoading: false,
-            isAuthenticated: true,
-          })
-
-          // Establecer cookie para el middleware
-          document.cookie = `auth-token=${userData.id}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 días
-
-          return true
+          set({ isLoading: false })
+          return false
+        } catch (error) {
+          console.error("Error en login:", error)
+          set({ isLoading: false })
+          return false
         }
-
-        set({ isLoading: false })
-        return false
       },
 
       logout: () => {
-        set({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-        })
+        try {
+          // Limpiar estado
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          })
 
-        // Limpiar cookie
-        document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
+          // Limpiar cookie
+          document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
+        } catch (error) {
+          console.error("Error en logout:", error)
+        }
       },
 
       setLoading: (loading: boolean) => {
         set({ isLoading: loading })
+      },
+
+      clearAllStorage: () => {
+        try {
+          // Limpiar localStorage específicamente
+          localStorage.removeItem("auth-storage")
+          localStorage.removeItem("professor-storage")
+          localStorage.removeItem("document-storage")
+
+          // Limpiar cookies
+          document.cookie.split(";").forEach((c) => {
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`)
+          })
+        } catch (error) {
+          console.error("Error al limpiar storage:", error)
+        }
+      },
+
+      forceLogout: () => {
+        try {
+          // Limpiar estado
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          })
+
+          // Limpiar storage
+          get().clearAllStorage()
+        } catch (error) {
+          console.error("Error en forceLogout:", error)
+        }
       },
     }),
     {

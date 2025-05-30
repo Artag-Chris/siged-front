@@ -1,29 +1,23 @@
-"use client"
-
 import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
 
-import { ProtectedRoute } from "@/components/protected-route"
-import { Navbar } from "@/components/navbar"
-import { AdminSidebar } from "@/components/admin-sidebar"
+const inter = Inter({ subsets: ["latin"] })
 
-export default function DashboardLayout({
+export const metadata: Metadata = {
+  title: "Sistema de Gestión Educativa",
+  description: "Dashboard admin con autenticación y gestión de profesores",
+}
+
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
-        <ProtectedRoute>
-          <div className="min-h-screen bg-gray-50">
-            <Navbar />
-            <div className="flex">
-              <AdminSidebar />
-              <main className="flex-1 overflow-auto">{children}</main>
-            </div>
-          </div>
-        </ProtectedRoute>
-      </body>
+    <html lang="es">
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }

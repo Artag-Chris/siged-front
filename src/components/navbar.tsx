@@ -16,15 +16,15 @@ import { Bell, Search, Settings, LogOut, User, Shield } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function Navbar() {
-  const { user, logout } = useAuthStore()
+  const { user, logout, forceLogout } = useAuthStore()
   const router = useRouter()
 
   const handleLogout = () => {
-    logout()
-    // Force a complete logout and redirect
-    setTimeout(() => {
-      window.location.href = "/login"
-    }, 100)
+    // Usar forceLogout en lugar de logout para asegurar limpieza completa
+    forceLogout()
+
+    // Forzar redirección y recarga completa
+    window.location.href = "/login"
   }
 
   if (!user) return null
@@ -59,6 +59,12 @@ export function Navbar() {
             {/* Configuración */}
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4" />
+            </Button>
+
+            {/* Botón de logout directo para asegurar que siempre esté disponible */}
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-600 hover:bg-red-50">
+              <LogOut className="h-4 w-4 mr-2" />
+              <span className="hidden md:inline">Cerrar Sesión</span>
             </Button>
 
             {/* Perfil del usuario */}

@@ -17,8 +17,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
-  const { login, user, isLoading, isAuthenticated } = useAuthStore()
+  const { login, user, isLoading, isAuthenticated, clearAllStorage } = useAuthStore()
   const router = useRouter()
+
+  // Limpiar cualquier estado anterior al cargar la página de login
+  useEffect(() => {
+    clearAllStorage()
+  }, [clearAllStorage])
 
   // Redirigir si ya está logueado
   useEffect(() => {
@@ -36,11 +41,16 @@ export default function LoginPage() {
       return
     }
 
-    const success = await login(email, password)
-    if (success) {
-      router.push("/dashboard")
-    } else {
-      setError("Credenciales incorrectas")
+    try {
+      const success = await login(email, password)
+      if (success) {
+        router.push("/dashboard")
+      } else {
+        setError("Credenciales incorrectas")
+      }
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error)
+      setError("Error al iniciar sesión. Intenta nuevamente.")
     }
   }
 
@@ -124,7 +134,7 @@ export default function LoginPage() {
                 <strong>Usuario:</strong> user@example.com / user123
               </p>
               <p>
-                <strong>Manager:</strong> manager@example.com / manager123
+                <strong>Admin (Ex-Manager):</strong> manager@example.com / manager123
               </p>
             </div>
           </div>
