@@ -24,7 +24,7 @@ import {
   Edit,
 } from "lucide-react"
 import Link from "next/link"
-import { Professor, useProfessorStore } from "@/lib/profesor-store"
+import { useProfessorStore, Professor } from "@/lib/profesor-store"
 
 export default function ProfessorDetailPage() {
   const params = useParams()
@@ -130,10 +130,12 @@ export default function ProfessorDetailPage() {
             </div>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline">
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
+            <Link href={`/dashboard/profesores/${professorId}/editar`}>
+              <Button variant="outline">
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            </Link>
             <Badge variant={professor.estado === "activa" ? "default" : "secondary"}>
               {professor.estado === "activa" ? "Activo" : "Inactivo"}
             </Badge>

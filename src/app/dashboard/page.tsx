@@ -1,164 +1,247 @@
 "use client"
 
+import { useAuthStore } from "@/lib/auth-store"
 
-import { Button } from "@/components/ui/button"
+import { useDocumentStore } from "@/lib/document-store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { UserPlus, Users, Search, Eye } from "lucide-react"
+import { Users, FileText, Activity, Clock, Shield, TrendingUp, UserPlus } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
 import { useProfessorStore } from "@/lib/profesor-store"
 
-export default function ProfesoresPage() {
+export default function DashboardPage() {
+  const { user } = useAuthStore()
   const { professors } = useProfessorStore()
-  const [searchTerm, setSearchTerm] = useState("")
+  const { documents } = useDocumentStore()
 
-  const filteredProfessors = professors.filter(
-    (professor) =>
-      professor.nombres.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      professor.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      professor.cedula.includes(searchTerm) ||
-      professor.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const stats = [
+    {
+      title: "Total Profesores",
+      value: professors.length.toString(),
+      change: "+12%",
+      icon: Users,
+      color: "text-blue-600",
+      href: "/dashboard/profesores",
+    },
+    {
+      title: "Documentos",
+      value: documents.length.toString(),
+      change: "+8%",
+      icon: FileText,
+      color: "text-green-600",
+      href: "/dashboard/profesores",
+    },
+    {
+      title: "Profesores Activos",
+      value: professors.filter((p) => p.estado === "activa").length.toString(),
+      change: "+23%",
+      icon: Activity,
+      color: "text-purple-600",
+      href: "/dashboard/profesores",
+    },
+    {
+      title: "Promedio Experiencia",
+      value:
+        professors.length > 0
+          ? `${Math.round(professors.reduce((sum, p) => sum + p.experienciaAnios, 0) / professors.length)} años`
+          : "0 años",
+      change: "+5%",
+      icon: TrendingUp,
+      color: "text-orange-600",
+      href: "/dashboard/profesores",
+    },
+  ]
+
+  const recentActivity = [
+    { action: "Nuevo profesor registrado", time: "Hace 2 minutos", user: "Juan Pérez" },
+    { action: "Documento subido", time: "Hace 15 minutos", user: "María García" },
+    { action: "Profesor actualizado", time: "Hace 1 hora", user: user?.name || "Admin" },
+    { action: "Nueva evaluación completada", time: "Hace 2 horas", user: "Carlos López" },
+  ]
+
+  const quickActions = [
+    {
+      title: "Agregar Profesor",
+      description: "Registrar un nuevo profesor en el sistema",
+      href: "/dashboard/profesores/agregar",
+      icon: UserPlus,
+      color: "bg-blue-500",
+    },
+    {
+      title: "Ver Profesores",
+      description: "Gestionar lista completa de profesores",
+      href: "/dashboard/profesores",
+      icon: Users,
+      color: "bg-green-500",
+    },
+    {
+      title: "Documentos",
+      description: "Revisar documentos subidos",
+      href: "/dashboard/profesores",
+      icon: FileText,
+      color: "bg-purple-500",
+    },
+  ]
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Profesores</h1>
-            <p className="text-gray-600">Administra la información de los profesores</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Welcome Section */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">¡Bienvenido, {user?.name}!</h2>
+            <p className="text-gray-600">
+              Departamento: {user?.department} • Último acceso: {new Date(user?.lastLogin || "").toLocaleDateString()}
+            </p>
           </div>
-          <Link href="/dashboard/profesores/agregar">
-            <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Agregar Profesor
-            </Button>
-          </Link>
-        </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Buscar por nombre, cédula o email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Profesores</p>
-                  <p className="text-2xl font-bold text-gray-900">{professors.length}</p>
-                </div>
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Profesores Activos</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {professors.filter((p) => p.estado === "activa").length}
-                  </p>
-                </div>
-                <Badge className="bg-green-100 text-green-800">Activos</Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Profesores Inactivos</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {professors.filter((p) => p.estado === "inactiva").length}
-                  </p>
-                </div>
-                <Badge variant="secondary">Inactivos</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Lista de profesores */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Lista de Profesores</CardTitle>
-            <CardDescription>
-              Información detallada de todos los profesores registrados ({filteredProfessors.length} resultados)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredProfessors.map((professor) => (
-                <div key={professor.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <h3 className="font-medium text-gray-900">
-                            {professor.nombres} {professor.apellidos}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {professor.cargo} • {professor.email} • Cédula: {professor.cedula}
-                          </p>
-                        </div>
-                        <Badge variant={professor.estado === "activa" ? "default" : "secondary"}>
-                          {professor.estado}
+          {/* User Info Card */}
+          <div className="mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Shield className="h-5 w-5" />
+                  <span>Información del Usuario</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Rol</p>
+                    <Badge variant={user?.role === "admin" ? "default" : "secondary"}>
+                      {user?.role === "admin" ? "Administrador" : "Usuario"}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Departamento</p>
+                    <p className="text-sm text-gray-900">{user?.department}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Permisos</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {user?.permissions.slice(0, 3).map((permission) => (
+                        <Badge key={permission} variant="outline" className="text-xs">
+                          {permission}
                         </Badge>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {professor.materiasAsignadas.slice(0, 3).map((materia) => (
-                          <Badge key={materia} variant="outline" className="text-xs">
-                            {materia}
-                          </Badge>
-                        ))}
-                        {professor.materiasAsignadas.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{professor.materiasAsignadas.length - 3} más
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Link href={`/dashboard/profesores/${professor.id}`}>
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-2" />
-                          Ver Perfil
-                        </Button>
-                      </Link>
-                      <Button variant="outline" size="sm">
-                        Editar
-                      </Button>
+                      ))}
+                      {user && user.permissions.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{user.permissions.length - 3} más
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))}
+              </CardContent>
+            </Card>
+          </div>
 
-              {filteredProfessors.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">No se encontraron profesores que coincidan con la búsqueda</p>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {stats.map((stat, index) => (
+              <Link key={index} href={stat.href}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                        <p className="text-sm text-green-600">{stat.change} vs mes anterior</p>
+                      </div>
+                      <div className={`p-3 rounded-full bg-gray-100 ${stat.color}`}>
+                        <stat.icon className="h-6 w-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          {/* Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Acciones Rápidas</CardTitle>
+                <CardDescription>Accesos directos a funciones principales</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {quickActions.map((action, index) => (
+                    <Link key={index} href={action.href}>
+                      <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <div className={`p-2 rounded-lg ${action.color}`}>
+                          <action.icon className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{action.title}</p>
+                          <p className="text-xs text-gray-500">{action.description}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5" />
+                  <span>Actividad Reciente</span>
+                </CardTitle>
+                <CardDescription>Últimas acciones en el sistema</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                        <p className="text-xs text-gray-500">
+                          {activity.user} • {activity.time}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* System Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Estado del Sistema</CardTitle>
+                <CardDescription>Información general del sistema</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-900">Estado del Servidor</span>
+                    <Badge className="bg-green-100 text-green-800">Activo</Badge>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-900">Base de Datos</span>
+                    <Badge className="bg-blue-100 text-blue-800">Conectada</Badge>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-900">Backup</span>
+                    <Badge className="bg-yellow-100 text-yellow-800">Programado</Badge>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-900">Última actualización</span>
+                    <span className="text-sm text-gray-600">Hace 1 día</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
     </div>
   )
 }
