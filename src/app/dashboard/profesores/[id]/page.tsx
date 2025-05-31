@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 
 import { useDocumentStore } from "@/lib/document-store"
 import { DocumentUpload } from "@/components/document-upload"

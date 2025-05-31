@@ -137,6 +137,7 @@ export const useProfessorStore = create<ProfessorState>()(
 
           return true
         } catch (error) {
+          console.error("Error adding professor:", error)
           set({ isLoading: false })
           return false
         }
@@ -155,6 +156,7 @@ export const useProfessorStore = create<ProfessorState>()(
 
           return true
         } catch (error) {
+          console.error("Error updatimg professor:", error)
           set({ isLoading: false })
           return false
         }
@@ -173,6 +175,7 @@ export const useProfessorStore = create<ProfessorState>()(
 
           return true
         } catch (error) {
+          console.error("Error deleting professor:", error)
           set({ isLoading: false })
           return false
         }

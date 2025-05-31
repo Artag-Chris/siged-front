@@ -103,6 +103,7 @@ export const useDocumentStore = create<DocumentState>()(
 
           return true
         } catch (error: any) {
+          console.error("Error uploading document:", error)
           set({ isLoading: false })
           return false
         }
@@ -121,6 +122,7 @@ export const useDocumentStore = create<DocumentState>()(
 
           return true
         } catch (error) {
+          console.error("Error deleting document:", error)
           set({ isLoading: false })
           return false
         }
