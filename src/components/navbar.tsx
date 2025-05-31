@@ -13,11 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Search, Settings, LogOut, User, Shield } from "lucide-react"
-import { useRouter } from "next/navigation"
+
 
 export function Navbar() {
-  const { user, logout, forceLogout } = useAuthStore()
-  const router = useRouter()
+  const { user, forceLogout } = useAuthStore()
+  
 
   const handleLogout = () => {
     // Usar forceLogout en lugar de logout para asegurar limpieza completa

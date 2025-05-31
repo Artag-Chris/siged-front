@@ -28,7 +28,6 @@ import { useProfessorStore, Professor } from "@/lib/profesor-store"
 
 export default function ProfessorDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const professorId = params.id as string
 
   const { getProfessor } = useProfessorStore()
@@ -300,7 +299,7 @@ export default function ProfessorDetailPage() {
                           </div>
                         </div>
                         <div className="flex space-x-2 flex-shrink-0">
-                          <DocumentViewer fileName={doc.fileName} fileUrl={doc.fileUrl} fileType={doc.fileType} />
+                          <DocumentViewer fileName={doc.fileName}  fileType={doc.fileType} />
                           <Button variant="outline" size="sm" onClick={() => handleDownloadDocument(doc)}>
                             <Download className="h-4 w-4" />
                           </Button>

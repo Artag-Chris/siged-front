@@ -102,7 +102,7 @@ export const useDocumentStore = create<DocumentState>()(
           }))
 
           return true
-        } catch (error) {
+        } catch (error: any) {
           set({ isLoading: false })
           return false
         }

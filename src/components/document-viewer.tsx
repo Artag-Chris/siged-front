@@ -14,11 +14,10 @@ import { Eye, ExternalLink } from "lucide-react"
 
 interface DocumentViewerProps {
   fileName: string
-  fileUrl: string
   fileType: string
 }
 
-export function DocumentViewer({ fileName, fileUrl, fileType }: DocumentViewerProps) {
+export function DocumentViewer({ fileName, fileType }: DocumentViewerProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const handleViewDocument = () => {
