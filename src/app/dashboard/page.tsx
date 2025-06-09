@@ -1,7 +1,6 @@
 "use client"
 
 import { useAuthStore } from "@/lib/auth-store"
-
 import { useDocumentStore } from "@/lib/document-store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +9,11 @@ import Link from "next/link"
 import { useProfessorStore } from "@/lib/profesor-store"
 
 export default function DashboardPage() {
+  /*
+  esta seccion se modificara segun demanda por ahora se dejara asi
+  no se si dejar que el store se encargue con alguna funcion para manejar stats o pedirlos directo del back
+  por ahora diria que lo manejemos nosotros pero igual es mas optimo que el back haga la consulta
+  */
   const { user } = useAuthStore()
   const { professors } = useProfessorStore()
   const { documents } = useDocumentStore()

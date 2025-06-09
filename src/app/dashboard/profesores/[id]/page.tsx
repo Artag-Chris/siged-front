@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-
 import { useDocumentStore } from "@/lib/document-store"
 import { DocumentUpload } from "@/components/document-upload"
 import { DocumentViewer } from "@/components/document-viewer"

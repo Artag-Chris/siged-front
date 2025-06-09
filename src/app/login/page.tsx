@@ -127,14 +127,12 @@ export default function LoginPage() {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium text-gray-700 mb-2">Credenciales de prueba:</p>
             <div className="space-y-1 text-xs text-gray-600">
+             
               <p>
-                <strong>Admin:</strong> admin@example.com / admin123
+                <strong>Usuario:</strong> user@example.com /pass: user123
               </p>
               <p>
-                <strong>Usuario:</strong> user@example.com / user123
-              </p>
-              <p>
-                <strong>Admin (Ex-Manager):</strong> manager@example.com / manager123
+                <strong>Admin :</strong> manager@example.com /pass: manager123
               </p>
             </div>
           </div>
