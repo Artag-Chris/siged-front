@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -281,6 +280,12 @@ export default function InstitutionDetailPage() {
                   <Button variant="outline" className="w-full justify-start">
                     <Edit className="h-4 w-4 mr-2" />
                     Editar Información
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/instituciones/${institutionId}/cupos`}>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Gestionar Cupos
                   </Button>
                 </Link>
                 <Button variant="outline" className="w-full justify-start" disabled>

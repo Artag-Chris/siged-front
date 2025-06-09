@@ -65,6 +65,27 @@ const menuItems = [
     ],
   },
   {
+    title: "Estudiantes",
+    icon: GraduationCap,
+    items: [
+      {
+        title: "Lista de Estudiantes",
+        href: "/dashboard/estudiantes",
+        icon: GraduationCap,
+      },
+      {
+        title: "Agregar Estudiante",
+        href: "/dashboard/estudiantes/agregar",
+        icon: UserPlus,
+      },
+    ],
+  },
+  {
+    title: "Asignación de Cupos",
+    href: "/dashboard/asignacion-cupos",
+    icon: Calendar,
+  },
+  {
     title: "Materias",
     href: "/dashboard/materias",
     icon: BookOpen,
