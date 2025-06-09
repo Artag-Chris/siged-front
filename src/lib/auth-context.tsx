@@ -1,19 +1,8 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode, useEffect } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 import { useAuthStore } from "@/lib/auth-store"
-
-interface AuthContextProps {
-  children: ReactNode
-}
-
-interface AuthContextValue {
-  isAuthenticated: boolean
-  user: any | null
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
-}
+import { AuthContextProps, AuthContextValue } from "@/interfaces/AuthContext"
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 

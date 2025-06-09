@@ -1,0 +1,35 @@
+export const DUMMY_USERS = [
+  {
+    id: "1",
+    email: "admin@example.com",
+    password: "admin123",
+    name: "Carlos Rodríguez",
+    role: "admin" as const,
+    avatar: "/placeholder.svg?height=40&width=40",
+    department: "Administración",
+    lastLogin: "2024-01-15 09:30:00",
+    permissions: ["read", "write", "delete", "manage_users", "view_analytics", "manage_professors", "upload_documents"],
+  },
+  {
+    id: "2",
+    email: "user@example.com",
+    password: "user123",
+    name: "Ana García",
+    role: "user" as const,
+    avatar: "/placeholder.svg?height=40&width=40",
+    department: "Ventas",
+    lastLogin: "2024-01-15 08:45:00",
+    permissions: ["read", "write"],
+  },
+  {
+    id: "3",
+    email: "manager@example.com",
+    password: "manager123",
+    name: "Luis Martínez",
+    role: "admin" as const, // Cambiado de manager a admin
+    avatar: "/placeholder.svg?height=40&width=40",
+    department: "Marketing",
+    lastLogin: "2024-01-14 16:20:00",
+    permissions: ["read", "write", "delete", "manage_users", "view_analytics", "manage_professors", "upload_documents"],
+  },
+]

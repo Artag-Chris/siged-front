@@ -16,7 +16,10 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Save, ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
-import { COMUNAS_DISPONIBLES, Institution, InstitutionFormData, JORNADAS_DISPONIBLES, useInstitutionStore, ZONAS_DISPONIBLES } from "@/lib/instituition-store"
+import { useInstitutionStore } from "@/lib/instituition-store"
+import { ZONAS_DISPONIBLES, COMUNAS_DISPONIBLES, JORNADAS_DISPONIBLES } from "@/dummyData"
+import { Institution, InstitutionFormData } from "@/interfaces/Institution"
+
 
 export default function EditarInstitucionPage() {
   const params = useParams()

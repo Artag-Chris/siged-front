@@ -16,7 +16,10 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Save, ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
-import { COMUNAS_DISPONIBLES, InstitutionFormData, JORNADAS_DISPONIBLES, useInstitutionStore, ZONAS_DISPONIBLES } from "@/lib/instituition-store"
+import { useInstitutionStore } from "@/lib/instituition-store"
+import { InstitutionFormData } from "@/interfaces/intex"
+import { COMUNAS_DISPONIBLES, JORNADAS_DISPONIBLES, ZONAS_DISPONIBLES } from "@/dummyData"
+
 
 export default function AgregarInstitucionPage() {
   const router = useRouter()

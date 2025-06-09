@@ -1,0 +1,6 @@
+export * from './dummyUsers'
+export * from './dummyGradeAndAssigment'
+export * from './dummyDocuments'
+export * from './dummyInstitutions'
+export * from './dummyProfessors'
+export * from './dummyStudents'

@@ -1,9 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { useStudentStore, ESTADOS_ESTUDIANTE, GRADOS_DISPONIBLES } from "@/lib/student-store"
 
-import { useGradeStore, MODALIDADES_ASIGNACION, GRUPOS_DISPONIBLES } from "@/lib/grade-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +16,10 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Search, CalendarIcon, School, User, CheckCircle, AlertCircle } from "lucide-react"
 import { useInstitutionStore } from "@/lib/instituition-store"
+import { GRUPOS_DISPONIBLES, MODALIDADES_ASIGNACION } from "@/dummyData"
+import { useGradeStore } from "@/lib/grade-store"
+import { useStudentStore } from "@/lib/student-store"
+import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData/dummyStudents/dummyStudents"
 
 export default function AsignacionCuposPage() {
   // Estados para la búsqueda de estudiantes
