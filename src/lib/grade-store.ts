@@ -285,6 +285,7 @@ export const useGradeStore = create<GradeState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -303,6 +304,7 @@ export const useGradeStore = create<GradeState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -350,6 +352,7 @@ export const useGradeStore = create<GradeState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -370,6 +373,7 @@ export const useGradeStore = create<GradeState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -406,6 +410,7 @@ export const useGradeStore = create<GradeState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -436,6 +441,7 @@ export const useGradeStore = create<GradeState>()(
           }))
           return true
         } catch (error) {
+          console.log(error)
           return false
         }
       },
@@ -451,6 +457,7 @@ export const useGradeStore = create<GradeState>()(
           }))
           return true
         } catch (error) {
+          console.log(error)
           return false
         }
       },

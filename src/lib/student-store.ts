@@ -209,6 +209,7 @@ export const useStudentStore = create<StudentState>()(
 
           return newStudent.id
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           throw error
         }
@@ -227,6 +228,7 @@ export const useStudentStore = create<StudentState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -245,6 +247,7 @@ export const useStudentStore = create<StudentState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -295,6 +298,7 @@ export const useStudentStore = create<StudentState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }

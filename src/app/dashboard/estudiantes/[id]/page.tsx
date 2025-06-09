@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import { useStudentStore, TIPOS_DOCUMENTO, GRADOS_DISPONIBLES } from "@/lib/student-store"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -27,7 +26,6 @@ import { useInstitutionStore } from "@/lib/instituition-store"
 
 export default function StudentDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const studentId = params.id as string
 
   const { getStudent } = useStudentStore()

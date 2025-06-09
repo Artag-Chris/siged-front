@@ -60,9 +60,9 @@ export default function InstitucionesPage() {
     { action: "Rector actualizado", time: "Hace 3 días", institution: "I.E. San Judas Tadeo" },
   ]
 
-  const getJornadaLabel = (jornadas: string[]) => {
-    return jornadas.map((j) => j.charAt(0).toUpperCase() + j.slice(1)).join(", ")
-  }
+  // const getJornadaLabel = (jornadas: string[]) => {
+  //   return jornadas.map((j) => j.charAt(0).toUpperCase() + j.slice(1)).join(", ")
+  // }
 
   return (
     <div className="container mx-auto py-6 px-4">

@@ -162,6 +162,7 @@ export const useInstitutionStore = create<InstitutionState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -188,6 +189,7 @@ export const useInstitutionStore = create<InstitutionState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
@@ -206,6 +208,7 @@ export const useInstitutionStore = create<InstitutionState>()(
 
           return true
         } catch (error) {
+          console.log(error)
           set({ isLoading: false })
           return false
         }
