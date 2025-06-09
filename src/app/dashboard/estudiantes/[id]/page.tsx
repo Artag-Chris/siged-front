@@ -20,7 +20,7 @@ import {
   UserPlus,
   AlertCircle,
 } from "lucide-react"
-import Link from "next/link"
+import Link from "next/link" 
 import { useGradeStore } from "@/lib/grade-store"
 import { useInstitutionStore } from "@/lib/instituition-store"
 
