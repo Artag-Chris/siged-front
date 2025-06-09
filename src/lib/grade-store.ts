@@ -53,6 +53,10 @@ interface GradeState {
   quotaAssignments: QuotaAssignment[]
   isLoading: boolean
 
+  getAllGradeQuotas: () => GradeQuota[]
+  getAllQuotaAssignments: () => QuotaAssignment[]
+  
+
   // Acciones para cupos por grado
   addGradeQuota: (quota: GradeQuotaFormData) => Promise<string>
   updateGradeQuota: (id: string, quota: Partial<GradeQuotaFormData>) => Promise<boolean>
@@ -462,6 +466,13 @@ export const useGradeStore = create<GradeState>()(
 
         if (!quota) return 0
         return Math.max(0, quota.cuposTotales - quota.cuposAsignados)
+      },
+      getAllGradeQuotas: () => {
+        return get().gradeQuotas
+      },
+
+      getAllQuotaAssignments: () => {
+        return get().quotaAssignments
       },
     }),
     {
