@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, Building2, MapPin, Phone, Mail, User, Calendar, Clock, Edit, FileText } from "lucide-react"
 import Link from "next/link"
-import { Institution, useInstitutionStore } from "@/lib/instituition-store"
+import { useInstitutionStore } from "@/lib/instituition-store"
+import { Institution } from "@/interfaces/intex"
+
 
 export default function InstitutionDetailPage() {
   const params = useParams()

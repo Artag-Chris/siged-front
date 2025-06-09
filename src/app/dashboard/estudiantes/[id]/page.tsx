@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { useStudentStore, TIPOS_DOCUMENTO, GRADOS_DISPONIBLES } from "@/lib/student-store"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +23,8 @@ import {
 import Link from "next/link" 
 import { useGradeStore } from "@/lib/grade-store"
 import { useInstitutionStore } from "@/lib/instituition-store"
+import { TIPOS_DOCUMENTO, GRADOS_DISPONIBLES } from "@/dummyData"
+import { useStudentStore } from "@/lib/student-store"
 
 export default function StudentDetailPage() {
   const params = useParams()

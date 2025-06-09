@@ -23,7 +23,9 @@ import {
   Edit,
 } from "lucide-react"
 import Link from "next/link"
-import { useProfessorStore, Professor } from "@/lib/profesor-store"
+import { Professor } from "@/interfaces/Professor"
+import { useProfessorStore } from "@/lib/profesor-store"
+
 
 export default function ProfessorDetailPage() {
   const params = useParams()
@@ -232,7 +234,7 @@ export default function ProfessorDetailPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">Materias que puede enseñar</p>
                   <div className="flex flex-wrap gap-1">
-                    {professor.materias.map((materia) => (
+                    {professor.materias.map((materia:any) => (
                       <Badge key={materia} variant="outline">
                         {materia}
                       </Badge>
@@ -243,7 +245,7 @@ export default function ProfessorDetailPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">Materias asignadas actualmente</p>
                   <div className="flex flex-wrap gap-1">
-                    {professor.materiasAsignadas.map((materia) => (
+                    {professor.materiasAsignadas.map((materia:any) => (
                       <Badge key={materia} variant="default">
                         {materia}
                       </Badge>

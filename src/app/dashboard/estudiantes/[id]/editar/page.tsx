@@ -1,17 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import {
-  useStudentStore,
-  type StudentFormData,
-  TIPOS_DOCUMENTO,
-  GRADOS_DISPONIBLES,
-  PARENTESCOS,
-  ESTADOS_ESTUDIANTE,
-} from "@/lib/student-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,6 +16,9 @@ import { format, parse } from "date-fns"
 import { es } from "date-fns/locale"
 import { Save, ArrowLeft, CalendarIcon } from "lucide-react"
 import Link from "next/link"
+import { TIPOS_DOCUMENTO, ESTADOS_ESTUDIANTE, GRADOS_DISPONIBLES, PARENTESCOS } from "@/dummyData"
+import { StudentFormData } from "@/interfaces/Student"
+import { useStudentStore } from "@/lib/student-store"
 
 export default function EditarEstudiantePage() {
   const params = useParams()

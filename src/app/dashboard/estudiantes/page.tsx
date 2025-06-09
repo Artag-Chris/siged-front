@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { useStudentStore, TIPOS_DOCUMENTO, ESTADOS_ESTUDIANTE } from "@/lib/student-store"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserPlus, Users, Search, Eye, Edit, School } from "lucide-react"
 import Link from "next/link"
 import { useInstitutionStore } from "@/lib/instituition-store"
+import { TIPOS_DOCUMENTO, ESTADOS_ESTUDIANTE } from "@/dummyData"
+import { useStudentStore } from "@/lib/student-store"
 
 export default function EstudiantesPage() {
   const { students } = useStudentStore()

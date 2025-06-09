@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,7 +14,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Save, ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
-import { useProfessorStore, Professor, ProfessorFormData } from "@/lib/profesor-store"
+import { Professor, ProfessorFormData } from "@/interfaces/Professor"
+import { useProfessorStore } from "@/lib/profesor-store"
+
 
 const MATERIAS_DISPONIBLES = [
   "Matemáticas",
@@ -100,14 +101,14 @@ export default function EditarProfesorPage() {
   }, [professorId, getProfessor])
 
   const handleInputChange = (field: keyof ProfessorFormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev:any) => ({ ...prev, [field]: value }))
     setError("")
   }
 
   const handleMateriaToggle = (materia: string, field: "materias" | "materiasAsignadas") => {
-    setFormData((prev) => ({
+    setFormData((prev:any) => ({
       ...prev,
-      [field]: prev[field].includes(materia) ? prev[field].filter((m) => m !== materia) : [...prev[field], materia],
+      [field]: prev[field].includes(materia) ? prev[field].filter((m:any) => m !== materia) : [...prev[field], materia],
     }))
   }
 
@@ -384,7 +385,7 @@ export default function EditarProfesorPage() {
               <div>
                 <Label>Materias Asignadas Actualmente</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {formData.materias.map((materia) => (
+                  {formData.materias.map((materia:any) => (
                     <Badge
                       key={materia}
                       variant={formData.materiasAsignadas.includes(materia) ? "default" : "outline"}

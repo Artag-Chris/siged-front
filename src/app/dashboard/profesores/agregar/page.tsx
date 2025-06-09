@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,7 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Save, ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
-import { useProfessorStore, ProfessorFormData } from "@/lib/profesor-store"
+import { ProfessorFormData } from "@/interfaces/Professor"
+import { useProfessorStore } from "@/lib/profesor-store"
 
 const MATERIAS_DISPONIBLES = [
   "Matemáticas",

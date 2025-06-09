@@ -1,16 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import {
-  useStudentStore,
-  type StudentFormData,
-  TIPOS_DOCUMENTO,
-  GRADOS_DISPONIBLES,
-  PARENTESCOS,
-} from "@/lib/student-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,6 +16,9 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Save, ArrowLeft, CalendarIcon } from "lucide-react"
 import Link from "next/link"
+import { TIPOS_DOCUMENTO, GRADOS_DISPONIBLES, PARENTESCOS } from "@/dummyData"
+import { StudentFormData } from "@/interfaces/Student"
+import { useStudentStore } from "@/lib/student-store"
 
 export default function AgregarEstudiantePage() {
   const router = useRouter()

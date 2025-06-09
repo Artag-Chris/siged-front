@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { useStudentStore, GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/lib/student-store"
+
 import { useGradeStore } from "@/lib/grade-store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +25,8 @@ import {
 } from "recharts"
 import { Users, School, TrendingUp, TrendingDown, Download, Filter } from "lucide-react"
 import { useInstitutionStore } from "@/lib/instituition-store"
+import { useStudentStore } from "@/lib/student-store"
+import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData"
 
 export default function ReportesPage() {
   const { students } = useStudentStore()
@@ -82,19 +84,19 @@ export default function ReportesPage() {
 
   // Datos para gráficos
   const studentsByGrade = useMemo(() => {
-    const gradeCount = GRADOS_DISPONIBLES.map((grado) => ({
+    const gradeCount = GRADOS_DISPONIBLES.map((grado:any) => ({
       grado: grado.label,
       estudiantes: filteredStudents.filter((s) => s.gradoSolicitado === grado.value).length,
     }))
-    return gradeCount.filter((item) => item.estudiantes > 0)
+    return gradeCount.filter((item:any) => item.estudiantes > 0)
   }, [filteredStudents])
 
   const studentsByStatus = useMemo(() => {
-    return ESTADOS_ESTUDIANTE.map((estado) => ({
+    return ESTADOS_ESTUDIANTE.map((estado:any) => ({
       estado: estado.label,
       cantidad: filteredStudents.filter((s) => s.estado === estado.value).length,
       color: getStatusColor(estado.value),
-    })).filter((item) => item.cantidad > 0)
+    })).filter((item:any) => item.cantidad > 0)
   }, [filteredStudents])
 
   const quotasByInstitution = useMemo(() => {
@@ -335,7 +337,7 @@ export default function ReportesPage() {
                         fill="#8884d8"
                         dataKey="cantidad"
                       >
-                        {studentsByStatus.map((entry, index) => (
+                        {studentsByStatus.map((entry:any, index:any) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
