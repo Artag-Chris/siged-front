@@ -18,6 +18,8 @@ import {
   GraduationCap,
   ChevronLeft,
   ChevronRight,
+  Building2,
+  Plus,
 } from "lucide-react"
 
 interface SidebarProps {
@@ -43,6 +45,22 @@ const menuItems = [
         title: "Agregar Profesor",
         href: "/dashboard/profesores/agregar",
         icon: UserPlus,
+      },
+    ],
+  },
+  {
+    title: "Instituciones",
+    icon: Building2,
+    items: [
+      {
+        title: "Lista de Instituciones",
+        href: "/dashboard/instituciones",
+        icon: Building2,
+      },
+      {
+        title: "Agregar Institución",
+        href: "/dashboard/instituciones/agregar",
+        icon: Plus,
       },
     ],
   },
