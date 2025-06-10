@@ -1,5 +1,5 @@
 import { format } from "date-fns/format"
-import type { AssignQuotaParams, Student } from "@/interfaces"
+import type { AssignQuotaParams } from "@/interfaces"
 
 export const getGradoLabel = (grado: string, GRADOS_DISPONIBLES: any) => {
     const gradoObj = GRADOS_DISPONIBLES.find((g: any) => g.value === grado)
