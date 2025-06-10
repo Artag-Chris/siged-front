@@ -18,6 +18,7 @@ import {
   GraduationCap,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Building2,
   Plus,
 } from "lucide-react"
@@ -35,6 +36,7 @@ const menuItems = [
   {
     title: "Profesores",
     icon: Users,
+    key: "profesores",
     items: [
       {
         title: "Lista de Profesores",
@@ -51,6 +53,7 @@ const menuItems = [
   {
     title: "Instituciones",
     icon: Building2,
+    key: "instituciones",
     items: [
       {
         title: "Lista de Instituciones",
@@ -67,6 +70,7 @@ const menuItems = [
   {
     title: "Estudiantes",
     icon: GraduationCap,
+    key: "estudiantes",
     items: [
       {
         title: "Lista de Estudiantes",
@@ -114,7 +118,33 @@ const menuItems = [
 
 export function AdminSidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [openSection, setOpenSection] = useState<string | null>(null)
   const pathname = usePathname()
+
+  // Determinar qué sección debería estar abierta basada en la ruta actual
+  const getActiveSectionFromPath = () => {
+    if (pathname.startsWith("/dashboard/profesores")) return "profesores"
+    if (pathname.startsWith("/dashboard/instituciones")) return "instituciones"
+    if (pathname.startsWith("/dashboard/estudiantes")) return "estudiantes"
+    return null
+  }
+
+  // Inicializar la sección abierta basada en la ruta actual
+  useState(() => {
+    const activeSection = getActiveSectionFromPath()
+    if (activeSection && !openSection) {
+      setOpenSection(activeSection)
+    }
+  })
+
+  const toggleSection = (sectionKey: string) => {
+    if (collapsed) return
+    setOpenSection(openSection === sectionKey ? null : sectionKey)
+  }
+
+  const isPathInSection = (sectionKey: string) => {
+    return pathname.startsWith(`/dashboard/${sectionKey}`)
+  }
 
   return (
     <div
@@ -125,46 +155,72 @@ export function AdminSidebar({ className }: SidebarProps) {
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
         {!collapsed && (
           <div className="flex items-center space-x-2">
-            <GraduationCap className="h-6 w-6 text-blue-600" />
-            <span className="font-semibold text-gray-900">EduAdmin</span>
+            <GraduationCap className="h-6 w-6 text-slate-600" />
+            <span className="font-semibold text-slate-800">EduAdmin</span>
           </div>
         )}
-        <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8 p-0">
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setCollapsed(!collapsed)}
+          className="h-8 w-8 p-0 hover:bg-gray-100"
+        >
+          {collapsed ? (
+            <ChevronRight className="h-4 w-4 text-gray-500" />
+          ) : (
+            <ChevronLeft className="h-4 w-4 text-gray-500" />
+          )}
         </Button>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-2">
+      <ScrollArea className="flex-1 px-2 py-4">
+        <nav className="space-y-1">
           {menuItems.map((item, index) => (
             <div key={index}>
               {item.items ? (
-                // Menu with submenu
+                // Menu with submenu (accordion style)
                 <div className="space-y-1">
-                  <div
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleSection(item.key!)}
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm font-medium text-gray-600",
-                      collapsed && "justify-center",
+                      "w-full justify-between text-sm font-medium transition-colors",
+                      collapsed && "justify-center px-2",
+                      isPathInSection(item.key!)
+                        ? "bg-slate-100 text-slate-900 hover:bg-slate-100"
+                        : "text-slate-600 hover:bg-gray-50 hover:text-slate-900",
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
-                    {!collapsed && <span className="ml-3">{item.title}</span>}
-                  </div>
-                  {!collapsed && (
-                    <div className="ml-6 space-y-1">
+                    <div className="flex items-center">
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span className="ml-3">{item.title}</span>}
+                    </div>
+                    {!collapsed && (
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 transition-transform duration-200",
+                          openSection === item.key ? "rotate-180" : "rotate-0",
+                        )}
+                      />
+                    )}
+                  </Button>
+
+                  {/* Submenu items */}
+                  {!collapsed && openSection === item.key && (
+                    <div className="ml-4 space-y-1 border-l border-gray-100 pl-4">
                       {item.items.map((subItem, subIndex) => (
                         <Link key={subIndex} href={subItem.href}>
                           <Button
                             variant="ghost"
                             className={cn(
-                              "w-full justify-start text-sm font-normal",
+                              "w-full justify-start text-sm font-normal transition-colors",
                               pathname === subItem.href
-                                ? "bg-blue-50 text-blue-700 hover:bg-blue-50"
-                                : "text-gray-600 hover:bg-gray-50",
+                                ? "bg-slate-50 text-slate-900 hover:bg-slate-50 border-l-2 border-slate-400"
+                                : "text-slate-600 hover:bg-gray-50 hover:text-slate-900",
                             )}
                           >
                             <subItem.icon className="h-4 w-4" />
@@ -181,11 +237,11 @@ export function AdminSidebar({ className }: SidebarProps) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-start",
+                      "w-full justify-start text-sm font-medium transition-colors",
                       collapsed && "justify-center px-2",
                       pathname === item.href
-                        ? "bg-blue-50 text-blue-700 hover:bg-blue-50"
-                        : "text-gray-600 hover:bg-gray-50",
+                        ? "bg-slate-100 text-slate-900 hover:bg-slate-100"
+                        : "text-slate-600 hover:bg-gray-50 hover:text-slate-900",
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -200,8 +256,8 @@ export function AdminSidebar({ className }: SidebarProps) {
 
       {/* Footer */}
       {!collapsed && (
-        <div className="p-4 border-t">
-          <div className="text-xs text-gray-500 text-center">Sistema de Gestión Educativa v1.0</div>
+        <div className="p-4 border-t border-gray-100">
+          <div className="text-xs text-slate-500 text-center">Sistema de Gestión Educativa v1.0</div>
         </div>
       )}
     </div>

@@ -6,6 +6,12 @@ import { persist, createJSONStorage } from "zustand/middleware"
 export const useInstitutionStore = create<InstitutionState>()(
   persist(
     (set, get) => ({
+      /* 
+      TODO para despues de la face de la maqueta se pedira la informacion a la api y se creara una carga
+      cada vez que se valla a la pagina inicial quedaria algo como asi
+       institutions: []
+       loadInstituciones =llamada a la api despues setIntstituciones y con esto trabajamos solamentente
+      */
       institutions: DUMMY_INSTITUTIONS,
       isLoading: false,
       currentInstitution: null,

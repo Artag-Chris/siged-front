@@ -50,4 +50,5 @@ export interface StudentState {
     estado?: "Activo" | "Retirado" | "Trasladado" | "Pendiente",
   ) => Promise<boolean>
   searchStudents: (query: string) => Student[]
+  
 }

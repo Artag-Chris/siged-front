@@ -49,6 +49,22 @@ import { Institution } from "@/interfaces/Institution"
     fechaActualizacion: "2023-12-15T11:20:00Z",
     observaciones: "Institución en proceso de reestructuración administrativa",
   },
+   {
+    id: "4",
+    nombre: "I.E. Bicentenario del Saber",
+    codigoDane: "105001000987",
+    direccion: "Avenida Libertad #12-34, Barrio San Fernando",
+    telefono: "6045556789",
+    email: "bicentenario@saber.edu.co",
+    rector: "Lic. Juan Pablo Restrepo",
+    zona: "urbana",
+    comuna: "Comuna 5 - Castilla",
+    jornadas: ["mañana", "tarde"],
+    activa: true,
+    fechaCreacion: "2021-06-25T07:30:00Z",
+    fechaActualizacion: "2024-04-15T10:20:00Z",
+    observaciones: "Institución con énfasis en educación tecnológica y digital",
+  },
 ]
 
 // Listas de opciones para los campos
