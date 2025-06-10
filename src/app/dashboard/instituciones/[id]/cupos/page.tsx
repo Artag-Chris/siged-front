@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useGradeStore } from "@/lib/grade-store"
@@ -12,7 +11,7 @@ export default function InstitucionCuposPage() {
   const institutionId = params.id as string
 
   const { getInstitution } = useInstitutionStore()
-  const { gradeQuotas, getGradeQuotasByInstitution } = useGradeStore()
+  const { getGradeQuotasByInstitution } = useGradeStore()
 
   const institution = getInstitution(institutionId)
   const institutionQuotas = getGradeQuotasByInstitution(institutionId, new Date().getFullYear())

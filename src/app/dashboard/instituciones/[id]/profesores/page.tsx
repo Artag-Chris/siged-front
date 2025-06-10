@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,7 +12,6 @@ import {
   User, 
   Mail, 
   Phone, 
-  GraduationCap,
   BookOpen
 } from "lucide-react"
 import Link from "next/link"
