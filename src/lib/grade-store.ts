@@ -220,7 +220,7 @@ export const useGradeStore = create<GradeState>()(
           }))
           return true
         } catch (error) {
-          console.log
+          console.log(error)
           return false
         }
       },
