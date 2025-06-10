@@ -21,7 +21,6 @@ export default function AgregarProfesorPage() {
   const { addProfessor, isLoading } = useProfessorStore()
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-
   const [formData, setFormData] = useState<ProfessorFormData>({
     nombres: "",
     apellidos: "",

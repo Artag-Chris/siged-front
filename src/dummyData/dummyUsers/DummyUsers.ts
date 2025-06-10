@@ -17,7 +17,7 @@ export const DUMMY_USERS = [
     name: "Ana García",
     role: "user" as const,
     avatar: "/placeholder.svg?height=40&width=40",
-    department: "Ventas",
+    department: "Secretaria",
     lastLogin: "2024-01-15 08:45:00",
     permissions: ["read", "write"],
   },
@@ -28,7 +28,7 @@ export const DUMMY_USERS = [
     name: "Luis Martínez",
     role: "admin" as const, // Cambiado de manager a admin
     avatar: "/placeholder.svg?height=40&width=40",
-    department: "Marketing",
+    department: "Administrador",
     lastLogin: "2024-01-14 16:20:00",
     permissions: ["read", "write", "delete", "manage_users", "view_analytics", "manage_professors", "upload_documents"],
   },

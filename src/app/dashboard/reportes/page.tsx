@@ -26,11 +26,14 @@ import { Users, School, TrendingUp, TrendingDown, Download, Filter } from "lucid
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { useStudentStore } from "@/lib/student-store"
 import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData"
+import { exportData, getStatusColor } from "@/funtions"
 
 export default function ReportesPage() {
+
   /* 
   hay que mirar si este componente funciona bien
   */
+ 
   const { students } = useStudentStore()
   const { institutions } = useInstitutionStore()
   const { getAllQuotaAssignments, getAllGradeQuotas } = useGradeStore()
@@ -130,21 +133,6 @@ export default function ReportesPage() {
 
     return monthlyData
   }, [filteredAssignments])
-
-  function getStatusColor(status: string) {
-    const colors: Record<string, string> = {
-      Activo: "#10b981",
-      Pendiente: "#f59e0b",
-      Trasladado: "#3b82f6",
-      Retirado: "#ef4444",
-    }
-    return colors[status] || "#6b7280"
-  }
-
-  const exportData = () => {
-    // Implementar exportación de datos
-    console.log("Exportando datos...")
-  }
 
   return (
     <div className="container mx-auto py-6 px-4">

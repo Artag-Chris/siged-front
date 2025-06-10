@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -18,7 +17,6 @@ import Link from "next/link"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { ZONAS_DISPONIBLES, COMUNAS_DISPONIBLES, JORNADAS_DISPONIBLES } from "@/dummyData"
 import { Institution, InstitutionFormData } from "@/interfaces/Institution"
-
 
 export default function EditarInstitucionPage() {
   const params = useParams()

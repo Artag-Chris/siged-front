@@ -19,12 +19,10 @@ import { GRUPOS_DISPONIBLES, MODALIDADES_ASIGNACION } from "@/dummyData"
 import { useGradeStore } from "@/lib/grade-store"
 import { useStudentStore } from "@/lib/student-store"
 import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData/dummyStudents/dummyStudents"
-import { getJornadaLabel } from "@/funtions/grade&Assigment"
+import { getEstadoColor, getGradoLabel, getJornadaLabel, handleAssignQuota } from "@/funtions/grade&Assigment"
 
 export default function AsignacionCuposPage() {
-  /*
-  debere arreglar para asignar un estudiante a una institucion con las store
-  */
+
   // Estados para la búsqueda de estudiantes
   const [searchTerm, setSearchTerm] = useState("")
   const [filterEstado, setFilterEstado] = useState<string>("Pendiente")
@@ -53,8 +51,6 @@ export default function AsignacionCuposPage() {
   // Estado para almacenar los cupos disponibles por institución
   const [availableQuotas, setAvailableQuotas] = useState<any[]>([])
 
-  
-
   // Filtrar estudiantes según los criterios de búsqueda
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
@@ -71,29 +67,29 @@ export default function AsignacionCuposPage() {
 
   // Filtrar instituciones activas
   const activeInstitutions = useMemo(() => {
-    return institutions.filter((institution:any) => institution.activa)
+    return institutions.filter((institution: any) => institution.activa)
   }, [institutions])
 
   // Cargar cupos disponibles cuando se selecciona una institución
   useEffect(() => {
-  if (selectedInstitution) {
-    const quotas = getGradeQuotasByInstitution(selectedInstitution, new Date().getFullYear())
-    setAvailableQuotas(quotas)
-  }
-}, [selectedInstitution, getGradeQuotasByInstitution])
+    if (selectedInstitution) {
+      const quotas = getGradeQuotasByInstitution(selectedInstitution, new Date().getFullYear())
+      setAvailableQuotas(quotas)
+    }
+  }, [selectedInstitution, getGradeQuotasByInstitution])
 
   // Obtener jornadas disponibles para el grado seleccionado
   const availableJornadas = useMemo(() => {
-  if (!selectedGrado || !selectedInstitution) return []
+    if (!selectedGrado || !selectedInstitution) return []
 
-  return availableQuotas
-    .filter((quota) => quota.grado === selectedGrado)
-    .map((quota) => ({
-      value: quota.jornada,
-      label: getJornadaLabel(quota.jornada),
-      available: quota.cuposTotales - quota.cuposAsignados,
-    }))
-}, [selectedGrado, selectedInstitution, availableQuotas])
+    return availableQuotas
+      .filter((quota) => quota.grado === selectedGrado)
+      .map((quota) => ({
+        value: quota.jornada,
+        label: getJornadaLabel(quota.jornada),
+        available: quota.cuposTotales - quota.cuposAsignados,
+      }))
+  }, [selectedGrado, selectedInstitution, availableQuotas])
 
   // Obtener cupos disponibles para la combinación seleccionada
   const currentAvailableQuotas = useMemo(() => {
@@ -110,120 +106,14 @@ export default function AsignacionCuposPage() {
     setSuccess("")
   }
 
-  // Función para asignar cupo
-  const handleAssignQuota = async () => {
-    setError("")
-    setSuccess("")
-    setIsSubmitting(true)
-
-    // Validaciones
-    if (!selectedStudent) {
-      setError("Debe seleccionar un estudiante")
-      setIsSubmitting(false)
-      return
-    }
-
-    if (!selectedInstitution) {
-      setError("Debe seleccionar una institución")
-      setIsSubmitting(false)
-      return
-    }
-
-    if (!selectedGrado) {
-      setError("Debe seleccionar un grado")
-      setIsSubmitting(false)
-      return
-    }
-
-    if (!selectedJornada) {
-      setError("Debe seleccionar una jornada")
-      setIsSubmitting(false)
-      return
-    }
-
-    if (!selectedModalidad) {
-      setError("Debe seleccionar una modalidad de asignación")
-      setIsSubmitting(false)
-      return
-    }
-
-    if (currentAvailableQuotas <= 0) {
-      setError("No hay cupos disponibles para la combinación seleccionada")
-      setIsSubmitting(false)
-      return
-    }
-
-    try {
-      // Crear objeto de asignación
-      const assignmentData = {
-        estudianteId: selectedStudent.id,
-        institucionId: selectedInstitution,
-        jornada: selectedJornada,
-        grado: selectedGrado,
-        grupo: selectedGrupo || undefined,
-        modalidadAsignacion: selectedModalidad as any,
-        fechaAsignacion: format(selectedDate, "yyyy-MM-dd"),
-        observaciones: observaciones || undefined,
-      }
-
-      // Asignar cupo en el sistema
-      const quotaSuccess = await assignQuota({
-        ...assignmentData,
-        jornada: selectedJornada as "mañana" | "tarde" | "unica" | "noche",
-      })
-
-      if (quotaSuccess) {
-        // Actualizar estado del estudiante
-        const studentSuccess = await assignInstitution(
-          selectedStudent.id,
-          selectedInstitution,
-          format(selectedDate, "yyyy-MM-dd"),
-          "Activo",
-        )
-
-        if (studentSuccess) {
-          setSuccess(`Cupo asignado exitosamente a ${selectedStudent.nombreCompleto}`)
-
-          // Resetear formulario
-          setSelectedStudent(null)
-          setSelectedInstitution("")
-          setSelectedGrado("")
-          setSelectedJornada("")
-          setSelectedGrupo("")
-          setSelectedModalidad("nueva_matricula")
-          setObservaciones("")
-        } else {
-          setError("Error al actualizar el estado del estudiante")
-        }
-      } else {
-        setError("Error al asignar el cupo")
-      }
-    } catch (error) {
-      setError("Error en el proceso de asignación")
-      console.error(error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  // Función para obtener etiqueta de jornada
-
-
-  // Función para obtener etiqueta de grado
-  const getGradoLabel = (grado: string) => {
-    const gradoObj = GRADOS_DISPONIBLES.find((g) => g.value === grado)
-    return gradoObj ? gradoObj.label : grado
-  }
-
-  // Función para obtener color de estado
-  const getEstadoColor = (estado: string) => {
-    const colors: Record<string, string> = {
-      Activo: "bg-green-100 text-green-800",
-      Pendiente: "bg-yellow-100 text-yellow-800",
-      Trasladado: "bg-blue-100 text-blue-800",
-      Retirado: "bg-red-100 text-red-800",
-    }
-    return colors[estado] || "bg-gray-100 text-gray-800"
+  const resetForm = () => {
+    setSelectedStudent(null)
+    setSelectedInstitution("")
+    setSelectedGrado("")
+    setSelectedJornada("")
+    setSelectedGrupo("")
+    setSelectedModalidad("nueva_matricula")
+    setObservaciones("")
   }
 
   return (
@@ -327,9 +217,8 @@ export default function AsignacionCuposPage() {
                     filteredStudents.map((student) => (
                       <div
                         key={student.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedStudent?.id === student.id ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50"
-                        }`}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStudent?.id === student.id ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50"
+                          }`}
                         onClick={() => handleSelectStudent(student)}
                       >
                         <div className="flex justify-between items-start">
@@ -339,7 +228,7 @@ export default function AsignacionCuposPage() {
                               {student.tipoDocumento}: {student.numeroDocumento}
                             </p>
                             <p className="text-xs text-gray-600">
-                              Grado solicitado: {getGradoLabel(student.gradoSolicitado)}
+                              Grado solicitado: {getGradoLabel(student.gradoSolicitado, GRADOS_DISPONIBLES)}
                             </p>
                           </div>
                           <Badge className={getEstadoColor(student.estado)}>{student.estado}</Badge>
@@ -380,7 +269,7 @@ export default function AsignacionCuposPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">Grado solicitado:</p>
-                        <p className="text-sm">{getGradoLabel(selectedStudent.gradoSolicitado)}</p>
+                        <p className="text-sm">{getGradoLabel(selectedStudent.gradoSolicitado, GRADOS_DISPONIBLES)}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Acudiente:</p>
@@ -408,7 +297,7 @@ export default function AsignacionCuposPage() {
                         <SelectValue placeholder="Seleccione una institución" />
                       </SelectTrigger>
                       <SelectContent>
-                        {activeInstitutions.map((institution:any) => (
+                        {activeInstitutions.map((institution: any) => (
                           <SelectItem key={institution.id} value={institution.id}>
                             {institution.nombre}
                           </SelectItem>
@@ -545,13 +434,12 @@ export default function AsignacionCuposPage() {
                 {/* Información de cupos disponibles */}
                 {selectedInstitution && selectedGrado && selectedJornada && (
                   <div
-                    className={`p-3 rounded-lg ${
-                      currentAvailableQuotas > 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-                    } border`}
+                    className={`p-3 rounded-lg ${currentAvailableQuotas > 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                      } border`}
                   >
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">
-                        Cupos disponibles para {getGradoLabel(selectedGrado)} - {getJornadaLabel(selectedJornada)}:
+                        Cupos disponibles para {getGradoLabel(selectedGrado, GRADOS_DISPONIBLES)} - {getJornadaLabel(selectedJornada)}:
                       </p>
                       <Badge variant={currentAvailableQuotas > 0 ? "default" : "destructive"}>
                         {currentAvailableQuotas}
@@ -562,7 +450,24 @@ export default function AsignacionCuposPage() {
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button
-                  onClick={handleAssignQuota}
+                  onClick={() => handleAssignQuota({
+                    selectedStudent,
+                    selectedInstitution,
+                    selectedGrado,
+                    selectedJornada,
+                    selectedGrupo,
+                    selectedModalidad,
+                    selectedDate,
+                    observaciones,
+                    currentAvailableQuotas,
+                    assignQuota,
+                    assignInstitution: (studentId, institutionId, date, status) =>
+                      assignInstitution(studentId, institutionId, date, status as "Activo" | "Retirado" | "Trasladado" | "Pendiente"),
+                    setError,
+                    setSuccess,
+                    setIsSubmitting,
+                    resetForm,
+                  })}
                   disabled={
                     !selectedStudent ||
                     !selectedInstitution ||

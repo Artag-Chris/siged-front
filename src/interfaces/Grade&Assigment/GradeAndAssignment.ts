@@ -1,3 +1,5 @@
+import { Student } from "../Student"
+
 export interface GradeQuota {
   id: string
   institucionId: string
@@ -74,4 +76,26 @@ export interface GradeState {
   incrementAssignedQuotas: (gradeQuotaId: string) => Promise<boolean>
   decrementAssignedQuotas: (gradeQuotaId: string) => Promise<boolean>
   getAvailableQuotas: (institucionId: string, grado: string, jornada: string, anioEscolar: number) => number
+}
+export interface AssignQuotaParams {
+  selectedStudent: Student | null
+  selectedInstitution: string
+  selectedGrado: string
+  selectedJornada: string
+  selectedGrupo: string
+  selectedModalidad: string
+  selectedDate: Date
+  observaciones: string
+  currentAvailableQuotas: number
+  assignQuota: (data: any) => Promise<boolean>
+  assignInstitution: (
+    studentId: string,
+    institutionId: string,
+    date: string,
+    status: string
+  ) => Promise<boolean>
+  setError: (error: string) => void
+  setSuccess: (success: string) => void
+  setIsSubmitting: (isSubmitting: boolean) => void
+  resetForm: () => void
 }

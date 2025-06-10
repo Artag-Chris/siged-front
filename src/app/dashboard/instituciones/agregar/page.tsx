@@ -18,7 +18,6 @@ import { useInstitutionStore } from "@/lib/instituition-store"
 import { InstitutionFormData } from "@/interfaces"
 import { COMUNAS_DISPONIBLES, JORNADAS_DISPONIBLES, ZONAS_DISPONIBLES } from "@/dummyData"
 
-
 export default function AgregarInstitucionPage() {
   const router = useRouter()
   const { addInstitution, isLoading } = useInstitutionStore()

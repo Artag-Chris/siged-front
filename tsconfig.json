@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/dummyData/dummyGradeAndAssigment"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/dummyData/dummyGradeAndAssigment", "src/interfaces/DashBoard"],
   "exclude": ["node_modules"]
 }

@@ -4,88 +4,22 @@ import { useAuthStore } from "@/lib/auth-store"
 import { useDocumentStore } from "@/lib/document-store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, FileText, Activity, Clock, Shield, TrendingUp, UserPlus } from "lucide-react"
+import { Clock, Shield } from "lucide-react"
 import Link from "next/link"
 import { useProfessorStore } from "@/lib/profesor-store"
+import { quickActions, recentActivityMainDashboard, statsMainDashboard } from "@/interfaces"
 
 export default function DashboardPage() {
+
   /*
   esta seccion se modificara segun demanda por ahora se dejara asi
   no se si dejar que el store se encargue con alguna funcion para manejar stats o pedirlos directo del back
   por ahora diria que lo manejemos nosotros pero igual es mas optimo que el back haga la consulta
   */
+
   const { user } = useAuthStore()
   const { professors } = useProfessorStore()
   const { documents } = useDocumentStore()
-
-  const stats = [
-    {
-      title: "Total Profesores",
-      value: professors.length.toString(),
-      change: "+12%",
-      icon: Users,
-      color: "text-blue-600",
-      href: "/dashboard/profesores",
-    },
-    {
-      title: "Documentos",
-      value: documents.length.toString(),
-      change: "+8%",
-      icon: FileText,
-      color: "text-green-600",
-      href: "/dashboard/profesores",
-    },
-    {
-      title: "Profesores Activos",
-      value: professors.filter((p) => p.estado === "activa").length.toString(),
-      change: "+23%",
-      icon: Activity,
-      color: "text-purple-600",
-      href: "/dashboard/profesores",
-    },
-    {
-      title: "Promedio Experiencia",
-      value:
-        professors.length > 0
-          ? `${Math.round(professors.reduce((sum, p) => sum + p.experienciaAnios, 0) / professors.length)} años`
-          : "0 años",
-      change: "+5%",
-      icon: TrendingUp,
-      color: "text-orange-600",
-      href: "/dashboard/profesores",
-    },
-  ]
-
-  const recentActivity = [
-    { action: "Nuevo profesor registrado", time: "Hace 2 minutos", user: "Juan Pérez" },
-    { action: "Documento subido", time: "Hace 15 minutos", user: "María García" },
-    { action: "Profesor actualizado", time: "Hace 1 hora", user: user?.name || "Admin" },
-    { action: "Nueva evaluación completada", time: "Hace 2 horas", user: "Carlos López" },
-  ]
-
-  const quickActions = [
-    {
-      title: "Agregar Profesor",
-      description: "Registrar un nuevo profesor en el sistema",
-      href: "/dashboard/profesores/agregar",
-      icon: UserPlus,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Ver Profesores",
-      description: "Gestionar lista completa de profesores",
-      href: "/dashboard/profesores",
-      icon: Users,
-      color: "bg-green-500",
-    },
-    {
-      title: "Documentos",
-      description: "Revisar documentos subidos",
-      href: "/dashboard/profesores",
-      icon: FileText,
-      color: "bg-purple-500",
-    },
-  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -143,7 +77,7 @@ export default function DashboardPage() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {stats.map((stat, index) => (
+            {statsMainDashboard(professors,documents).map((stat, index) => (
               <Link key={index} href={stat.href}>
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-6">
@@ -201,7 +135,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
+                  {recentActivityMainDashboard(user).map((activity, index) => (
                     <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       <div className="flex-1">
