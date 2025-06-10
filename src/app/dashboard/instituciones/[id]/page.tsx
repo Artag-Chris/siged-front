@@ -173,7 +173,7 @@ export default function InstitutionDetailPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">Jornadas</p>
                   <div className="flex flex-wrap gap-1">
-                    {institution.jornadas.map((jornada:any) => (
+                    {institution.jornadas.map((jornada: any) => (
                       <Badge key={jornada} variant="default">
                         {jornada.charAt(0).toUpperCase() + jornada.slice(1)}
                       </Badge>
@@ -288,10 +288,12 @@ export default function InstitutionDetailPage() {
                   <FileText className="h-4 w-4 mr-2" />
                   Ver Documentos
                 </Button>
-                <Button variant="outline" className="w-full justify-start" disabled>
-                  <User className="h-4 w-4 mr-2" />
-                  Ver Profesores
-                </Button>
+                <Link href={`/dashboard/instituciones/${institutionId}/profesores`}>
+                  <Button variant="outline" className="w-full justify-start">
+                    <User className="h-4 w-4 mr-2" />
+                    Ver Profesores
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
