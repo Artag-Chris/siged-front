@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -25,15 +24,15 @@ import { useGradeStore } from "@/lib/grade-store"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { TIPOS_DOCUMENTO, GRADOS_DISPONIBLES } from "@/dummyData"
 import { useStudentStore } from "@/lib/student-store"
+import { getEstadoColor, getGradoLabel } from "@/funtions"
+import { getJornadaLabel, getModalidadLabel } from "@/funtions/grade&Assigment"
 
 export default function StudentDetailPage() {
   const params = useParams()
   const studentId = params.id as string
-
   const { getStudent } = useStudentStore()
   const { getInstitution } = useInstitutionStore()
   const { getQuotaAssignmentsByStudent } = useGradeStore()
-
   const [student, setStudent] = useState<any>(null)
   const [institution, setInstitution] = useState<any>(null)
   const [assignments, setAssignments] = useState<any[]>([])
@@ -64,39 +63,7 @@ export default function StudentDetailPage() {
     return docType ? docType.label : type
   }
 
-  const getGradoLabel = (grado: string) => {
-    const gradoObj = GRADOS_DISPONIBLES.find((g) => g.value === grado)
-    return gradoObj ? gradoObj.label : grado
-  }
 
-  const getEstadoColor = (estado: string) => {
-    const colors: Record<string, string> = {
-      Activo: "bg-green-100 text-green-800",
-      Pendiente: "bg-yellow-100 text-yellow-800",
-      Trasladado: "bg-blue-100 text-blue-800",
-      Retirado: "bg-red-100 text-red-800",
-    }
-    return colors[estado] || "bg-gray-100 text-gray-800"
-  }
-
-  const getJornadaLabel = (jornada: string) => {
-    const labels: Record<string, string> = {
-      mañana: "Mañana",
-      tarde: "Tarde",
-      unica: "Única",
-      noche: "Noche",
-    }
-    return labels[jornada] || jornada
-  }
-
-  const getModalidadLabel = (modalidad: string) => {
-    const labels: Record<string, string> = {
-      nueva_matricula: "Nueva Matrícula",
-      traslado: "Traslado",
-      reintegro: "Reintegro",
-    }
-    return labels[modalidad] || modalidad
-  }
 
   if (!student) {
     return (
@@ -182,7 +149,7 @@ export default function StudentDetailPage() {
                     <School className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium text-gray-600">Grado Solicitado</p>
-                      <p className="text-sm text-gray-900">{getGradoLabel(student.gradoSolicitado)}</p>
+                      <p className="text-sm text-gray-900">{getGradoLabel(student.gradoSolicitado,GRADOS_DISPONIBLES)}</p>
                     </div>
                   </div>
 
@@ -291,7 +258,7 @@ export default function StudentDetailPage() {
                               <div className="flex justify-between items-start">
                                 <div>
                                   <p className="text-sm font-medium">
-                                    Grado {getGradoLabel(assignment.grado)}
+                                    Grado {getGradoLabel(assignment.grado,GRADOS_DISPONIBLES)}
                                     {assignment.grupo && ` - Grupo ${assignment.grupo}`}
                                   </p>
                                   <p className="text-xs text-gray-600">
@@ -359,7 +326,7 @@ export default function StudentDetailPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Grado:</span>
-                  <span className="text-sm text-gray-900">{getGradoLabel(student.gradoSolicitado)}</span>
+                  <span className="text-sm text-gray-900">{getGradoLabel(student.gradoSolicitado,GRADOS_DISPONIBLES)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Institución:</span>

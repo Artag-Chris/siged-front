@@ -65,3 +65,38 @@ export interface ProfessorState {
   }
   updateDisplayOptions: (options: Partial<ProfessorState["displayOptions"]>) => void
 }
+export const recentActivity = [
+    { action: "Nuevo profesor registrado", time: "Hace 2 horas", user: "María González" },
+    { action: "Documento subido", time: "Hace 4 horas", user: "Carlos Rodríguez" },
+    { action: "Profesor actualizado", time: "Hace 1 día", user: "Ana García" },
+    { action: "Evaluación completada", time: "Hace 2 días", user: "Luis Martínez" },
+  ]
+
+export const MATERIAS_DISPONIBLES = [
+  "Matemáticas",
+  "Español",
+  "Ciencias Naturales",
+  "Ciencias Sociales",
+  "Inglés",
+  "Educación Física",
+  "Artes",
+  "Música",
+  "Tecnología",
+  "Ética",
+  "Religión",
+  "Física",
+  "Química",
+  "Biología",
+  "Filosofía",
+]
+
+export const CARGOS_DISPONIBLES = [
+  "Docente",
+  "Docente Titular",
+  "Coordinador Académico",
+  "Coordinador de Convivencia",
+  "Rector",
+  "Vicerrector",
+  "Orientador",
+]
+

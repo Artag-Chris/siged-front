@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -14,48 +13,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Save, ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
-import { Professor, ProfessorFormData } from "@/interfaces/Professor"
+import { CARGOS_DISPONIBLES, MATERIAS_DISPONIBLES, Professor, ProfessorFormData } from "@/interfaces/Professor"
 import { useProfessorStore } from "@/lib/profesor-store"
-
-
-const MATERIAS_DISPONIBLES = [
-  "Matemáticas",
-  "Español",
-  "Ciencias Naturales",
-  "Ciencias Sociales",
-  "Inglés",
-  "Educación Física",
-  "Artes",
-  "Música",
-  "Tecnología",
-  "Ética",
-  "Religión",
-  "Física",
-  "Química",
-  "Biología",
-  "Filosofía",
-]
-
-const CARGOS_DISPONIBLES = [
-  "Docente",
-  "Docente Titular",
-  "Coordinador Académico",
-  "Coordinador de Convivencia",
-  "Rector",
-  "Vicerrector",
-  "Orientador",
-]
 
 export default function EditarProfesorPage() {
   const params = useParams()
   const router = useRouter()
   const professorId = params.id as string
-
   const { getProfessor, updateProfessor, isLoading } = useProfessorStore()
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [professor, setProfessor] = useState<Professor | null>(null)
-
   const [formData, setFormData] = useState<ProfessorFormData>({
     nombres: "",
     apellidos: "",

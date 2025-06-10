@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,12 +24,10 @@ export default function EditarInstitucionPage() {
   const params = useParams()
   const router = useRouter()
   const institutionId = params.id as string
-
   const { getInstitution, updateInstitution, isLoading } = useInstitutionStore()
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [institution, setInstitution] = useState<Institution | null>(null)
-
   const [formData, setFormData] = useState<InstitutionFormData>({
     nombre: "",
     codigoDane: "",

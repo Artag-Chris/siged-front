@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo } from "react"
-
 import { useGradeStore } from "@/lib/grade-store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -29,10 +28,12 @@ import { useStudentStore } from "@/lib/student-store"
 import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData"
 
 export default function ReportesPage() {
+  /* 
+  hay que mirar si este componente funciona bien
+  */
   const { students } = useStudentStore()
   const { institutions } = useInstitutionStore()
   const { getAllQuotaAssignments, getAllGradeQuotas } = useGradeStore()
-
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString())
   const [selectedInstitution, setSelectedInstitution] = useState<string>("todas")
 

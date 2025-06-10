@@ -25,7 +25,6 @@ export default function AgregarEstudiantePage() {
   const { addStudent, getStudentByDocument, isLoading } = useStudentStore()
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-
   const [formData, setFormData] = useState<StudentFormData>({
     nombreCompleto: "",
     tipoDocumento: "TI",
@@ -39,7 +38,6 @@ export default function AgregarEstudiantePage() {
     telefonoAcudiente: "",
     observaciones: "",
   })
-
   const [fechaNacimiento, setFechaNacimiento] = useState<Date | undefined>(undefined)
 
   const handleInputChange = (field: keyof StudentFormData, value: any) => {

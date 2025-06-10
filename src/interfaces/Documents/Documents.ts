@@ -25,3 +25,18 @@ export interface DocumentState {
   getDocumentsByProfessor: (professorId: string) => ProfessorDocument[]
   setLoading: (loading: boolean) => void
 }
+export interface DocumentUploadProps {
+  professorId: string
+  onUploadSuccess?: () => void
+}
+export interface DocumentViewerProps {
+  fileName: string
+  fileType: string
+}
+export const DOCUMENT_CATEGORIES = [
+  { value: "contrato", label: "Contrato" },
+  { value: "hoja_vida", label: "Hoja de Vida" },
+  { value: "certificados", label: "Certificados" },
+  { value: "evaluaciones", label: "Evaluaciones" },
+  { value: "otros", label: "Otros" },
+]

@@ -33,3 +33,8 @@ export interface AuthState {
   forceLogout: () => void
   clearAllStorage: () => void
 }
+
+export interface ProtectedRouteProps {
+  children: React.ReactNode
+  requiredRole?: "admin" | "user"
+}

@@ -10,6 +10,7 @@ import { ArrowLeft, Building2, MapPin, Phone, Mail, User, Calendar, Clock, Edit,
 import Link from "next/link"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { Institution } from "@/interfaces/intex"
+import { getZonaLabel } from "@/funtions"
 
 
 export default function InstitutionDetailPage() {
@@ -26,13 +27,6 @@ export default function InstitutionDetailPage() {
     }
   }, [institutionId, getInstitution])
 
-  // const getJornadaLabel = (jornadas: string[]) => {
-  //   return jornadas.map((j) => j.charAt(0).toUpperCase() + j.slice(1)).join(", ")
-  // }
-
-  const getZonaLabel = (zona: string) => {
-    return zona === "urbana" ? "Urbana" : "Rural"
-  }
 
   if (!institution) {
     return (

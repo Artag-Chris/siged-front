@@ -29,7 +29,6 @@ export default function EditarEstudiantePage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [student, setStudent] = useState<any>(null)
-
   const [formData, setFormData] = useState<StudentFormData>({
     nombreCompleto: "",
     tipoDocumento: "TI",
@@ -43,7 +42,6 @@ export default function EditarEstudiantePage() {
     telefonoAcudiente: "",
     observaciones: "",
   })
-
   const [fechaNacimiento, setFechaNacimiento] = useState<Date | undefined>(undefined)
   const [estado, setEstado] = useState<string>("Pendiente")
 

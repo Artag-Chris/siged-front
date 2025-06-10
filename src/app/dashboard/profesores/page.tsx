@@ -1,6 +1,5 @@
 "use client"
 
-
 import { useDocumentStore } from "@/lib/document-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +10,7 @@ import { UserPlus, Users, Search, Eye, FileText, Activity, Clock } from "lucide-
 import Link from "next/link"
 import { useState, useMemo } from "react"
 import { useProfessorStore } from "@/lib/profesor-store"
+import { recentActivity } from "@/interfaces/Professor"
 
 export default function ProfesoresPage() {
   const { professors } = useProfessorStore()
@@ -56,13 +56,6 @@ export default function ProfesoresPage() {
     })
   }, [professors, searchTerm, filterEstado, filterNivel])
 
-  // Actividad reciente simulada
-  const recentActivity = [
-    { action: "Nuevo profesor registrado", time: "Hace 2 horas", user: "María González" },
-    { action: "Documento subido", time: "Hace 4 horas", user: "Carlos Rodríguez" },
-    { action: "Profesor actualizado", time: "Hace 1 día", user: "Ana García" },
-    { action: "Evaluación completada", time: "Hace 2 días", user: "Luis Martínez" },
-  ]
 
   return (
     <div className="container mx-auto py-6 px-4">

@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -14,36 +13,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Save, ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
-import { ProfessorFormData } from "@/interfaces/Professor"
+import { CARGOS_DISPONIBLES, MATERIAS_DISPONIBLES, ProfessorFormData } from "@/interfaces/Professor"
 import { useProfessorStore } from "@/lib/profesor-store"
-
-const MATERIAS_DISPONIBLES = [
-  "Matemáticas",
-  "Español",
-  "Ciencias Naturales",
-  "Ciencias Sociales",
-  "Inglés",
-  "Educación Física",
-  "Artes",
-  "Música",
-  "Tecnología",
-  "Ética",
-  "Religión",
-  "Física",
-  "Química",
-  "Biología",
-  "Filosofía",
-]
-
-const CARGOS_DISPONIBLES = [
-  "Docente",
-  "Docente Titular",
-  "Coordinador Académico",
-  "Coordinador de Convivencia",
-  "Rector",
-  "Vicerrector",
-  "Orientador",
-]
 
 export default function AgregarProfesorPage() {
   const router = useRouter()

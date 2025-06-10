@@ -42,3 +42,10 @@ export interface InstitutionState {
   setCurrentInstitution: (institution: Institution | null) => void
   setLoading: (loading: boolean) => void
 }
+
+export const recentActivity = [
+    { action: "Nueva institución registrada", time: "Hace 3 horas", institution: "I.E. San Judas Tadeo" },
+    { action: "Información actualizada", time: "Hace 1 día", institution: "I.E. Rural La Esperanza" },
+    { action: "Estado cambiado a inactiva", time: "Hace 2 días", institution: "I.E. Técnico Industrial" },
+    { action: "Rector actualizado", time: "Hace 3 días", institution: "I.E. San Judas Tadeo" },
+  ]

@@ -19,8 +19,12 @@ import { GRUPOS_DISPONIBLES, MODALIDADES_ASIGNACION } from "@/dummyData"
 import { useGradeStore } from "@/lib/grade-store"
 import { useStudentStore } from "@/lib/student-store"
 import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData/dummyStudents/dummyStudents"
+import { getJornadaLabel } from "@/funtions/grade&Assigment"
 
 export default function AsignacionCuposPage() {
+  /*
+  debere arreglar para asignar un estudiante a una institucion con cupo
+  */
   // Estados para la búsqueda de estudiantes
   const [searchTerm, setSearchTerm] = useState("")
   const [filterEstado, setFilterEstado] = useState<string>("Pendiente")
@@ -205,15 +209,7 @@ export default function AsignacionCuposPage() {
   }
 
   // Función para obtener etiqueta de jornada
-  const getJornadaLabel = (jornada: string) => {
-    const labels: Record<string, string> = {
-      mañana: "Mañana",
-      tarde: "Tarde",
-      unica: "Única",
-      noche: "Noche",
-    }
-    return labels[jornada] || jornada
-  }
+
 
   // Función para obtener etiqueta de grado
   const getGradoLabel = (grado: string) => {

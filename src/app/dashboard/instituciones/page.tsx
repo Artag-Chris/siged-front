@@ -1,6 +1,5 @@
 "use client"
 
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +9,7 @@ import { Building2, Plus, Search, Eye, MapPin, Clock } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
 import { useInstitutionStore } from "@/lib/instituition-store"
+import { recentActivity } from "@/interfaces/Institution"
 
 export default function InstitucionesPage() {
   const { institutions } = useInstitutionStore()
@@ -51,18 +51,6 @@ export default function InstitucionesPage() {
       return matchesSearch && matchesZona && matchesEstado
     })
   }, [institutions, searchTerm, filterZona, filterEstado])
-
-  // Actividad reciente simulada
-  const recentActivity = [
-    { action: "Nueva institución registrada", time: "Hace 3 horas", institution: "I.E. San Judas Tadeo" },
-    { action: "Información actualizada", time: "Hace 1 día", institution: "I.E. Rural La Esperanza" },
-    { action: "Estado cambiado a inactiva", time: "Hace 2 días", institution: "I.E. Técnico Industrial" },
-    { action: "Rector actualizado", time: "Hace 3 días", institution: "I.E. San Judas Tadeo" },
-  ]
-
-  // const getJornadaLabel = (jornadas: string[]) => {
-  //   return jornadas.map((j) => j.charAt(0).toUpperCase() + j.slice(1)).join(", ")
-  // }
 
   return (
     <div className="container mx-auto py-6 px-4">

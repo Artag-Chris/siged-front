@@ -11,11 +11,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Eye, ExternalLink } from "lucide-react"
+import { DocumentViewerProps } from "@/interfaces/Documents"
 
-interface DocumentViewerProps {
-  fileName: string
-  fileType: string
-}
+
 
 export function DocumentViewer({ fileName, fileType }: DocumentViewerProps) {
   const [isOpen, setIsOpen] = useState(false)

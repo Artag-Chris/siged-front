@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { TIPOS_DOCUMENTO, ESTADOS_ESTUDIANTE } from "@/dummyData"
 import { useStudentStore } from "@/lib/student-store"
+import { getDocumentTypeLabel, getEstadoColor } from "@/funtions"
 
 export default function EstudiantesPage() {
   const { students } = useStudentStore()
@@ -55,21 +56,6 @@ export default function EstudiantesPage() {
     if (!id) return "No asignada"
     const institution = institutions.find((i) => i.id === id)
     return institution ? institution.nombre : "Desconocida"
-  }
-
-  const getDocumentTypeLabel = (type: string) => {
-    const docType = TIPOS_DOCUMENTO.find((t) => t.value === type)
-    return docType ? docType.label : type
-  }
-
-  const getEstadoColor = (estado: string) => {
-    const colors: Record<string, string> = {
-      Activo: "bg-green-100 text-green-800",
-      Pendiente: "bg-yellow-100 text-yellow-800",
-      Trasladado: "bg-blue-100 text-blue-800",
-      Retirado: "bg-red-100 text-red-800",
-    }
-    return colors[estado] || "bg-gray-100 text-gray-800"
   }
 
   return (
@@ -227,7 +213,7 @@ export default function EstudiantesPage() {
                           <h3 className="font-medium text-gray-900">{student.nombreCompleto}</h3>
                           <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
                             <span>
-                              {getDocumentTypeLabel(student.tipoDocumento)}: {student.numeroDocumento}
+                              {getDocumentTypeLabel(student.tipoDocumento,TIPOS_DOCUMENTO)}: {student.numeroDocumento}
                             </span>
                             <span>•</span>
                             <span>Grado: {student.gradoSolicitado}</span>

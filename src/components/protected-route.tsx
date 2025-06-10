@@ -4,11 +4,9 @@ import type React from "react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { ProtectedRouteProps } from "@/interfaces/AuthContext"
 
-interface ProtectedRouteProps {
-  children: React.ReactNode
-  requiredRole?: "admin" | "user"
-}
+
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, isLoading, isAuthenticated } = useAuthStore()
