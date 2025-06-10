@@ -1,5 +1,5 @@
 import { DUMMY_INSTITUTIONS } from "@/dummyData"
-import { Institution, InstitutionFormData, InstitutionState } from "@/interfaces/intex"
+import { Institution, InstitutionFormData, InstitutionState } from "@/interfaces"
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 

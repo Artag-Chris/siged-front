@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Save, ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
 import { useInstitutionStore } from "@/lib/instituition-store"
-import { InstitutionFormData } from "@/interfaces/intex"
+import { InstitutionFormData } from "@/interfaces"
 import { COMUNAS_DISPONIBLES, JORNADAS_DISPONIBLES, ZONAS_DISPONIBLES } from "@/dummyData"
 
 

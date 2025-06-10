@@ -1,5 +1,5 @@
 import { DUMMY_GRADE_QUOTAS, DUMMY_QUOTA_ASSIGNMENTS } from "@/dummyData"
-import { GradeQuota, GradeQuotaFormData, GradeState, QuotaAssignment, QuotaAssignmentFormData } from "@/interfaces/intex"
+import { GradeQuota, GradeQuotaFormData, GradeState, QuotaAssignment, QuotaAssignmentFormData } from "@/interfaces"
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 

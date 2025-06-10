@@ -65,7 +65,7 @@ export interface ProfessorState {
   }
   updateDisplayOptions: (options: Partial<ProfessorState["displayOptions"]>) => void
 }
-export const recentActivity = [
+export const recentActivityProfessors = [
     { action: "Nuevo profesor registrado", time: "Hace 2 horas", user: "María González" },
     { action: "Documento subido", time: "Hace 4 horas", user: "Carlos Rodríguez" },
     { action: "Profesor actualizado", time: "Hace 1 día", user: "Ana García" },

@@ -1,4 +1,4 @@
-import {type QuotaAssignment, type GradeQuota } from "@/interfaces/intex"
+import {type QuotaAssignment, type GradeQuota } from "@/interfaces"
 
 export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {

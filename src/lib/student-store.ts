@@ -1,5 +1,5 @@
 import { DUMMY_STUDENTS } from "@/dummyData/dummyStudents/dummyStudents"
-import { Student, StudentFormData, StudentState } from "@/interfaces/intex"
+import { Student, StudentFormData, StudentState } from "@/interfaces"
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 

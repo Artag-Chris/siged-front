@@ -10,7 +10,7 @@ import { UserPlus, Users, Search, Eye, FileText, Activity, Clock } from "lucide-
 import Link from "next/link"
 import { useState, useMemo } from "react"
 import { useProfessorStore } from "@/lib/profesor-store"
-import { recentActivity } from "@/interfaces/Professor"
+import { recentActivityProfessors } from "@/interfaces/Professor"
 
 export default function ProfesoresPage() {
   const { professors } = useProfessorStore()
@@ -270,7 +270,7 @@ export default function ProfesoresPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
+                  {recentActivityProfessors.map((activity, index) => (
                     <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                       <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                       <div className="flex-1 min-w-0">

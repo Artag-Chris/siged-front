@@ -1,4 +1,4 @@
-import { Student } from "@/interfaces/intex"
+import { Student } from "@/interfaces"
 
 export const DUMMY_STUDENTS: Student[] = [
   {

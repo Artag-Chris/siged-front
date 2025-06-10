@@ -1,4 +1,4 @@
-import { Professor } from "@/interfaces/intex";
+import { Professor } from "@/interfaces";
 
 export const DUMMY_PROFESSORS: Professor[] = [
   {
