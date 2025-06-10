@@ -24,8 +24,8 @@ import { useGradeStore } from "@/lib/grade-store"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { TIPOS_DOCUMENTO, GRADOS_DISPONIBLES } from "@/dummyData"
 import { useStudentStore } from "@/lib/student-store"
-import { getEstadoColor, getGradoLabel } from "@/funtions"
-import { getJornadaLabel, getModalidadLabel } from "@/funtions/grade&Assigment"
+import { getEstadoColor, } from "@/funtions"
+import { getGradoLabel, getJornadaLabel, getModalidadLabel } from "@/funtions/grade&Assigment"
 
 export default function StudentDetailPage() {
   const params = useParams()
