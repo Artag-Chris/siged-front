@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { useDocumentStore, type ProfessorDocument } from "@/lib/document-store"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Upload, FileText, X } from "lucide-react"
+import { ProfessorDocument } from "@/interfaces/Documents"
+import { useDocumentStore } from "@/lib/document-store"
 
 interface DocumentUploadProps {
   professorId: string
