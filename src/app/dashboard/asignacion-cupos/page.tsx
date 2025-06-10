@@ -23,7 +23,7 @@ import { getJornadaLabel } from "@/funtions/grade&Assigment"
 
 export default function AsignacionCuposPage() {
   /*
-  debere arreglar para asignar un estudiante a una institucion con cupo
+  debere arreglar para asignar un estudiante a una institucion con las store
   */
   // Estados para la búsqueda de estudiantes
   const [searchTerm, setSearchTerm] = useState("")
@@ -53,6 +53,8 @@ export default function AsignacionCuposPage() {
   // Estado para almacenar los cupos disponibles por institución
   const [availableQuotas, setAvailableQuotas] = useState<any[]>([])
 
+  
+
   // Filtrar estudiantes según los criterios de búsqueda
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
@@ -74,28 +76,24 @@ export default function AsignacionCuposPage() {
 
   // Cargar cupos disponibles cuando se selecciona una institución
   useEffect(() => {
-    if (selectedInstitution) {
-      const quotas = getGradeQuotasByInstitution(selectedInstitution, new Date().getFullYear())
-      setAvailableQuotas(quotas)
-
-      // Resetear selecciones dependientes
-      setSelectedGrado("")
-      setSelectedJornada("")
-    }
-  }, [selectedInstitution, getGradeQuotasByInstitution])
+  if (selectedInstitution) {
+    const quotas = getGradeQuotasByInstitution(selectedInstitution, new Date().getFullYear())
+    setAvailableQuotas(quotas)
+  }
+}, [selectedInstitution, getGradeQuotasByInstitution])
 
   // Obtener jornadas disponibles para el grado seleccionado
   const availableJornadas = useMemo(() => {
-    if (!selectedGrado || !selectedInstitution) return []
+  if (!selectedGrado || !selectedInstitution) return []
 
-    return availableQuotas
-      .filter((quota) => quota.grado === selectedGrado)
-      .map((quota) => ({
-        value: quota.jornada,
-        label: getJornadaLabel(quota.jornada),
-        available: quota.cuposTotales - quota.cuposAsignados,
-      }))
-  }, [selectedGrado, selectedInstitution, availableQuotas])
+  return availableQuotas
+    .filter((quota) => quota.grado === selectedGrado)
+    .map((quota) => ({
+      value: quota.jornada,
+      label: getJornadaLabel(quota.jornada),
+      available: quota.cuposTotales - quota.cuposAsignados,
+    }))
+}, [selectedGrado, selectedInstitution, availableQuotas])
 
   // Obtener cupos disponibles para la combinación seleccionada
   const currentAvailableQuotas = useMemo(() => {

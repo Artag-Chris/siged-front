@@ -4,7 +4,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "1",
     institucionId: "1", // I.E. San Judas Tadeo
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "Transición",
     cuposTotales: 30,
     cuposAsignados: 25,
@@ -14,7 +14,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "2",
     institucionId: "1", // I.E. San Judas Tadeo
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "1",
     cuposTotales: 35,
     cuposAsignados: 30,
@@ -24,7 +24,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "3",
     institucionId: "1", // I.E. San Judas Tadeo
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "2",
     cuposTotales: 35,
     cuposAsignados: 28,
@@ -34,7 +34,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "4",
     institucionId: "1", // I.E. San Judas Tadeo
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "3",
     cuposTotales: 35,
     cuposAsignados: 32,
@@ -44,7 +44,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "5",
     institucionId: "1", // I.E. San Judas Tadeo
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "4",
     cuposTotales: 35,
     cuposAsignados: 30,
@@ -54,7 +54,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "6",
     institucionId: "1", // I.E. San Judas Tadeo
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "5",
     cuposTotales: 35,
     cuposAsignados: 33,
@@ -64,7 +64,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "7",
     institucionId: "2", // I.E. Rural La Esperanza
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "Transición",
     cuposTotales: 20,
     cuposAsignados: 15,
@@ -74,7 +74,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "8",
     institucionId: "2", // I.E. Rural La Esperanza
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "1",
     cuposTotales: 25,
     cuposAsignados: 20,
@@ -84,7 +84,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "9",
     institucionId: "3", // I.E. Técnico Industrial
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "6",
     cuposTotales: 40,
     cuposAsignados: 38,
@@ -95,7 +95,7 @@ export const DUMMY_GRADE_QUOTAS: GradeQuota[] = [
   {
     id: "10",
     institucionId: "3", // I.E. Técnico Industrial
-    anioEscolar: 2024,
+     anioEscolar: new Date().getFullYear(),
     grado: "7",
     cuposTotales: 40,
     cuposAsignados: 35,
