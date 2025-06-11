@@ -294,6 +294,12 @@ export default function InstitutionDetailPage() {
                     Ver Profesores
                   </Button>
                 </Link>
+                <Link href={`/dashboard/instituciones/${institutionId}/gestiongradoscupos`}>
+                  <Button variant="outline" className="w-full justify-start">
+                    <User className="h-4 w-4 mr-2" />
+                    getionar grados y cupos
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>

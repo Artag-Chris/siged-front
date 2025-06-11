@@ -33,7 +33,7 @@ export default function ReportesPage() {
   /* 
   hay que mirar si este componente funciona bien
   */
- 
+
   const { students } = useStudentStore()
   const { institutions } = useInstitutionStore()
   const { getAllQuotaAssignments, getAllGradeQuotas } = useGradeStore()
@@ -55,7 +55,7 @@ export default function ReportesPage() {
   }, [students, selectedYear, selectedInstitution])
 
   const filteredAssignments = useMemo(() => {
-    return assignments.filter((assignment:any) => {
+    return assignments.filter((assignment: any) => {
       const yearMatch = new Date(assignment.fechaAsignacion).getFullYear().toString() === selectedYear
       const institutionMatch = selectedInstitution === "todas" || assignment.institucionId === selectedInstitution
       return yearMatch && institutionMatch
@@ -69,8 +69,8 @@ export default function ReportesPage() {
     const pendingStudents = filteredStudents.filter((s) => s.estado === "Pendiente").length
     const assignedStudents = filteredStudents.filter((s) => s.institucionAsignada).length
 
-    const totalQuotas = gradeQuotas.reduce((sum:any, quota:any) => sum + quota.cuposTotales, 0)
-    const assignedQuotas = gradeQuotas.reduce((sum:any, quota:any) => sum + quota.cuposAsignados, 0)
+    const totalQuotas = gradeQuotas.reduce((sum: any, quota: any) => sum + quota.cuposTotales, 0)
+    const assignedQuotas = gradeQuotas.reduce((sum: any, quota: any) => sum + quota.cuposAsignados, 0)
     const availableQuotas = totalQuotas - assignedQuotas
 
     return {
@@ -88,26 +88,26 @@ export default function ReportesPage() {
 
   // Datos para gráficos
   const studentsByGrade = useMemo(() => {
-    const gradeCount = GRADOS_DISPONIBLES.map((grado:any) => ({
+    const gradeCount = GRADOS_DISPONIBLES.map((grado: any) => ({
       grado: grado.label,
       estudiantes: filteredStudents.filter((s) => s.gradoSolicitado === grado.value).length,
     }))
-    return gradeCount.filter((item:any) => item.estudiantes > 0)
+    return gradeCount.filter((item: any) => item.estudiantes > 0)
   }, [filteredStudents])
 
   const studentsByStatus = useMemo(() => {
-    return ESTADOS_ESTUDIANTE.map((estado:any) => ({
+    return ESTADOS_ESTUDIANTE.map((estado: any) => ({
       estado: estado.label,
       cantidad: filteredStudents.filter((s) => s.estado === estado.value).length,
       color: getStatusColor(estado.value),
-    })).filter((item:any) => item.cantidad > 0)
+    })).filter((item: any) => item.cantidad > 0)
   }, [filteredStudents])
 
   const quotasByInstitution = useMemo(() => {
-    const institutionData = institutions.map((institution:any) => {
-      const institutionQuotas = gradeQuotas.filter((q:any) => q.institucionId === institution.id)
-      const total = institutionQuotas.reduce((sum:any, q:any) => sum + q.cuposTotales, 0)
-      const assigned = institutionQuotas.reduce((sum:any, q:any) => sum + q.cuposAsignados, 0)
+    const institutionData = institutions.map((institution: any) => {
+      const institutionQuotas = gradeQuotas.filter((q: any) => q.institucionId === institution.id)
+      const total = institutionQuotas.reduce((sum: any, q: any) => sum + q.cuposTotales, 0)
+      const assigned = institutionQuotas.reduce((sum: any, q: any) => sum + q.cuposAsignados, 0)
 
       return {
         nombre: institution.nombre,
@@ -117,7 +117,7 @@ export default function ReportesPage() {
         ocupacion: total > 0 ? (assigned / total) * 100 : 0,
       }
     })
-    return institutionData.filter((item:any) => item.total > 0)
+    return institutionData.filter((item: any) => item.total > 0)
   }, [institutions, gradeQuotas])
 
   const monthlyAssignments = useMemo(() => {
@@ -126,7 +126,7 @@ export default function ReportesPage() {
       asignaciones: 0,
     }))
 
-    filteredAssignments.forEach((assignment:any) => {
+    filteredAssignments.forEach((assignment: any) => {
       const month = new Date(assignment.fechaAsignacion).getMonth()
       monthlyData[month].asignaciones++
     })
@@ -140,13 +140,47 @@ export default function ReportesPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Reportes y Analytics</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Reportes y Analiticas</h1>
             <p className="text-gray-600">Análisis detallado del sistema educativo</p>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" onClick={exportData}>
+            <Button variant="outline" onClick={() => exportData({
+              type: 'excel',
+              data: 'students',
+              filename: 'estudiantes'
+            })}>
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              Exportar estudiantes excel
+            </Button>
+          </div>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => exportData({
+              type: 'pdf',
+              data: 'institutions',
+              filename: 'instituciones'
+            })}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar Instituciones pdf
+            </Button>
+          </div>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => exportData({
+              type: 'pdf',
+              data: 'all',
+              filename: 'reporte-completo'
+            })}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar todo pdf
+            </Button>
+          </div>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => exportData({
+              type: 'excel',
+              data: 'all',
+              filename: 'reporte-completo'
+            })}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar todo excel
             </Button>
           </div>
         </div>
@@ -182,7 +216,7 @@ export default function ReportesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todas">Todas las instituciones</SelectItem>
-                    {institutions.map((institution:any) => (
+                    {institutions.map((institution: any) => (
                       <SelectItem key={institution.id} value={institution.id}>
                         {institution.nombre}
                       </SelectItem>
@@ -321,12 +355,12 @@ export default function ReportesPage() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ estado, cantidad }:any) => `${estado}: ${cantidad}`}
+                        label={({ estado, cantidad }: any) => `${estado}: ${cantidad}`}
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="cantidad"
                       >
-                        {studentsByStatus.map((entry:any, index:any) => (
+                        {studentsByStatus.map((entry: any, index: any) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -347,7 +381,7 @@ export default function ReportesPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {quotasByInstitution.map((institution:any) => (
+                  {quotasByInstitution.map((institution: any) => (
                     <div key={institution.nombre} className="space-y-2">
                       <div className="flex justify-between items-center">
                         <h3 className="font-medium text-gray-900">{institution.nombre}</h3>
@@ -370,10 +404,10 @@ export default function ReportesPage() {
           {/* Tab Instituciones */}
           <TabsContent value="instituciones" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {institutions.map((institution:any) => {
-                const institutionQuotas = gradeQuotas.filter((q:any) => q.institucionId === institution.id)
-                const totalQuotas = institutionQuotas.reduce((sum:any, q:any) => sum + q.cuposTotales, 0)
-                const assignedQuotas = institutionQuotas.reduce((sum:any, q:any) => sum + q.cuposAsignados, 0)
+              {institutions.map((institution: any) => {
+                const institutionQuotas = gradeQuotas.filter((q: any) => q.institucionId === institution.id)
+                const totalQuotas = institutionQuotas.reduce((sum: any, q: any) => sum + q.cuposTotales, 0)
+                const assignedQuotas = institutionQuotas.reduce((sum: any, q: any) => sum + q.cuposAsignados, 0)
                 const institutionStudents = filteredStudents.filter((s) => s.institucionAsignada === institution.id)
 
                 return (
