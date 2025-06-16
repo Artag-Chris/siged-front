@@ -11,7 +11,7 @@ type PageProps = {
 
 export default function DetalleSolicitudPage({
   params,
-}: PageProps) {
+}: any) {
   return (
     <SolicitudDetalle 
       radicado={decodeURIComponent(params.radicado)} 
