@@ -2,11 +2,16 @@
 
 import SolicitudDetalle from "@/components/solicitud-detalle"
 
+type PageProps = {
+  params: {
+    radicado: string
+  }
+  searchParams?: Record<string, string | string[] | undefined>
+}
+
 export default function DetalleSolicitudPage({
   params,
-}: {
-  params: { radicado: string }
-}) {
+}: PageProps) {
   return (
     <SolicitudDetalle 
       radicado={decodeURIComponent(params.radicado)} 
