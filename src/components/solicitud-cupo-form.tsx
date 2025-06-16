@@ -59,7 +59,7 @@ export default function SolicitudCupoForm() {
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [step, setStep] = useState(1)
-  const [, setRadicadoGenerado] = useState<string>("")
+ 
 
   // Obtener grados y jornadas disponibles basados en la institución seleccionada
   const availableOptions = useMemo(() => {
