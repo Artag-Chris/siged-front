@@ -43,7 +43,7 @@ export interface SolicitudCupoFormData {
 
 export interface SolicitudCupoState {
   solicitudes: SolicitudCupo[]
-  isLoading: Boolean
+  isLoading: boolean
   currentSolicitud: SolicitudCupo | null
 
   addSolicitud: (solicitudData: SolicitudCupoFormData) => Promise<string>

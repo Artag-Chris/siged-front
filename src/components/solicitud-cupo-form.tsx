@@ -59,7 +59,7 @@ export default function SolicitudCupoForm() {
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [step, setStep] = useState(1)
-  const [radicadoGenerado, setRadicadoGenerado] = useState<string>("")
+  const [, setRadicadoGenerado] = useState<string>("")
 
   // Obtener grados y jornadas disponibles basados en la institución seleccionada
   const availableOptions = useMemo(() => {
@@ -216,29 +216,29 @@ export default function SolicitudCupoForm() {
     }
   }
 
-  const resetForm = () => {
-    setFormData({
-      nombreNino: "",
-      documentoNino: "",
-      tipoDocumentoNino: "",
-      nombreAcudiente: "",
-      telefonoContacto: "",
-      direccion: "",
-      colegioSeleccionado: "",
-      gradoSolicitado: "",
-      jornada: "",
-      necesitaTransporte: false,
-      documentos: {
-        notas: null,
-        eps: null,
-      },
-      anioEscolar: new Date().getFullYear(),
-      observaciones: "",
-    })
-    setErrors({})
-    setStep(1)
-    setRadicadoGenerado("")
-  }
+  // const resetForm = () => {
+  //   setFormData({
+  //     nombreNino: "",
+  //     documentoNino: "",
+  //     tipoDocumentoNino: "",
+  //     nombreAcudiente: "",
+  //     telefonoContacto: "",
+  //     direccion: "",
+  //     colegioSeleccionado: "",
+  //     gradoSolicitado: "",
+  //     jornada: "",
+  //     necesitaTransporte: false,
+  //     documentos: {
+  //       notas: null,
+  //       eps: null,
+  //     },
+  //     anioEscolar: new Date().getFullYear(),
+  //     observaciones: "",
+  //   })
+  //   setErrors({})
+  //   setStep(1)
+  //   setRadicadoGenerado("")
+  // }
 
   const getProgressValue = () => {
     return (step / 4) * 100
