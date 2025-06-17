@@ -1,11 +1,6 @@
 import ConductorDashboard from "@/components/conductor-dashboard"
 
-interface PageProps {
-  params: {
-    id: string
-  }
-}
 
-export default function DashboardConductorPage({ params }: PageProps) {
+export default function DashboardConductorPage({ params }: any) {
   return <ConductorDashboard conductorId={params.id} />
 }
