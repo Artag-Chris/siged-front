@@ -21,6 +21,10 @@ import {
   ChevronDown,
   Building2,
   Plus,
+  Car,
+  MapPin,
+  UserCheck,
+  Bus,
 } from "lucide-react"
 
 interface SidebarProps {
@@ -85,6 +89,38 @@ const menuItems = [
     ],
   },
   {
+    title: "Transporte",
+    icon: Bus,
+    key: "transporte",
+    items: [
+      {
+        title: "Conductores",
+        href: "/dashboard/transporte/conductores",
+        icon: Users,
+      },
+      {
+        title: "Vehículos",
+        href: "/dashboard/transporte/vehicles",
+        icon: Car,
+      },
+      {
+        title: "Rutas",
+        href: "/dashboard/transporte/rutas",
+        icon: MapPin,
+      },
+      {
+        title: "Asignaciones",
+        href: "/dashboard/transporte/asignaciones",
+        icon: UserCheck,
+      },
+      {
+        title: "Registro Conductor",
+        href: "/transporte/conductores/registro",
+        icon: UserPlus,
+      },
+    ],
+  },
+  {
     title: "Asignación de Cupos",
     href: "/dashboard/asignacion-cupos",
     icon: Calendar,
@@ -126,6 +162,7 @@ export function AdminSidebar({ className }: SidebarProps) {
     if (pathname.startsWith("/dashboard/profesores")) return "profesores"
     if (pathname.startsWith("/dashboard/instituciones")) return "instituciones"
     if (pathname.startsWith("/dashboard/estudiantes")) return "estudiantes"
+    if (pathname.startsWith("/dashboard/transporte") || pathname.startsWith("/transporte")) return "transporte"
     return null
   }
 
@@ -143,7 +180,14 @@ export function AdminSidebar({ className }: SidebarProps) {
   }
 
   const isPathInSection = (sectionKey: string) => {
+    if (sectionKey === "transporte") {
+      return pathname.startsWith(`/dashboard/${sectionKey}`) || pathname.startsWith("/transporte")
+    }
     return pathname.startsWith(`/dashboard/${sectionKey}`)
+  }
+
+  const isActiveSubItem = (href: string) => {
+    return pathname === href || (href.includes("/transporte") && pathname.startsWith(href))
   }
 
   return (
@@ -218,7 +262,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                             variant="ghost"
                             className={cn(
                               "w-full justify-start text-sm font-normal transition-colors",
-                              pathname === subItem.href
+                              isActiveSubItem(subItem.href)
                                 ? "bg-slate-50 text-slate-900 hover:bg-slate-50 border-l-2 border-slate-400"
                                 : "text-slate-600 hover:bg-gray-50 hover:text-slate-900",
                             )}
