@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,7 +18,7 @@ interface ConductorInfoEditProps {
 }
 
 export default function ConductorInfoEdit({ conductor, onCancel }: ConductorInfoEditProps) {
-  const router = useRouter()
+  
   const { updateConductor, isLoading } = useConductorStore()
 
   const [formData, setFormData] = useState({

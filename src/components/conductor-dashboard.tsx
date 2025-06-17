@@ -42,8 +42,8 @@ interface ConductorDashboardProps {
 export default function ConductorDashboard({ conductorId }: ConductorDashboardProps) {
   const router = useRouter()
   const { getConductor } = useConductorStore()
-  const { getVehiculo, vehiculos } = useVehiculoStore()
-  const { getRutasByConductor, getRuta } = useRutaStore()
+  const {  vehiculos } = useVehiculoStore()
+  const { getRutasByConductor,  } = useRutaStore()
   const { getInstitution } = useInstitutionStore()
 
   const [conductor, setConductor] = useState<Conductor | null>(null)

@@ -25,7 +25,7 @@ export default function AsignacionesDashboard() {
   const [rutaSeleccionada, setRutaSeleccionada] = useState<string>(rutaIdFromUrl || "")
   const [searchTerm, setSearchTerm] = useState("")
   const [filterInstitucion, setFilterInstitucion] = useState<string>("todos")
-  const [filterEstado, setFilterEstado] = useState<string>("todos")
+  const [filterEstado, ] = useState<string>("todos")
 
   // Obtener estudiantes que necesitan transporte y están aceptados
   const estudiantesDisponibles = useMemo(() => {

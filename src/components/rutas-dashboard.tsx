@@ -54,7 +54,7 @@ import { useVehiculoStore } from "@/lib/vehiculo-store"
 
 export default function RutasDashboard() {
   const router = useRouter()
-  const { rutas, deleteRuta, isLoading } = useRutaStore()
+  const { rutas, deleteRuta, } = useRutaStore()
   const { conductores } = useConductorStore()
   const { vehiculos } = useVehiculoStore()
   const { institutions } = useInstitutionStore()
