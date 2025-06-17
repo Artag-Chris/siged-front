@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Search, FileText, User, Phone, School, Calendar, CheckCircle, Clock, XCircle, Eye } from "lucide-react"
-
+import { Search, FileText, User, Phone, School, Calendar, Eye } from "lucide-react"
 import type { SolicitudCupo } from "@/interfaces/solicitud-cupo"
 import { useRouter } from "next/navigation"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { useSolicitudCupoStore } from "@/lib/solicitud-cupo-store"
+import { getEstadoColor, getEstadoIcon } from "@/funtions/solicitud-cupo"
 
 export default function SolicitudConsulta() {
   const router = useRouter()
@@ -55,28 +55,6 @@ export default function SolicitudConsulta() {
       setResultados(solicitudes)
       setLoading(false)
     }, 500)
-  }
-
-  const getEstadoIcon = (estado: string) => {
-    switch (estado) {
-      case "Aceptado":
-        return <CheckCircle className="w-4 h-4 text-green-600" />
-      case "Rechazado":
-        return <XCircle className="w-4 h-4 text-red-600" />
-      default:
-        return <Clock className="w-4 h-4 text-yellow-600" />
-    }
-  }
-
-  const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case "Aceptado":
-        return "bg-green-100 text-green-800 border-green-200"
-      case "Rechazado":
-        return "bg-red-100 text-red-800 border-red-200"
-      default:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
-    }
   }
 
   const resetSearch = () => {

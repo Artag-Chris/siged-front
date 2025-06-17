@@ -67,29 +67,29 @@ export default function AsignacionCuposPage() {
 
   // Filtrar instituciones activas
   const activeInstitutions = useMemo(() => {
-    return institutions.filter((institution:any) => institution.activa)
+    return institutions.filter((institution: any) => institution.activa)
   }, [institutions])
 
   // Cargar cupos disponibles cuando se selecciona una institución
   useEffect(() => {
-  if (selectedInstitution) {
-    const quotas = getGradeQuotasByInstitution(selectedInstitution, new Date().getFullYear())
-    setAvailableQuotas(quotas)
-  }
-}, [selectedInstitution, getGradeQuotasByInstitution])
+    if (selectedInstitution) {
+      const quotas = getGradeQuotasByInstitution(selectedInstitution, new Date().getFullYear())
+      setAvailableQuotas(quotas)
+    }
+  }, [selectedInstitution, getGradeQuotasByInstitution])
 
   // Obtener jornadas disponibles para el grado seleccionado
   const availableJornadas = useMemo(() => {
-  if (!selectedGrado || !selectedInstitution) return []
+    if (!selectedGrado || !selectedInstitution) return []
 
-  return availableQuotas
-    .filter((quota) => quota.grado === selectedGrado)
-    .map((quota) => ({
-      value: quota.jornada,
-      label: getJornadaLabel(quota.jornada),
-      available: quota.cuposTotales - quota.cuposAsignados,
-    }))
-}, [selectedGrado, selectedInstitution, availableQuotas])
+    return availableQuotas
+      .filter((quota) => quota.grado === selectedGrado)
+      .map((quota) => ({
+        value: quota.jornada,
+        label: getJornadaLabel(quota.jornada),
+        available: quota.cuposTotales - quota.cuposAsignados,
+      }))
+  }, [selectedGrado, selectedInstitution, availableQuotas])
 
   // Obtener cupos disponibles para la combinación seleccionada
   const currentAvailableQuotas = useMemo(() => {
@@ -106,7 +106,7 @@ export default function AsignacionCuposPage() {
     setSuccess("")
   }
 
-   const resetForm = () => {
+  const resetForm = () => {
     setSelectedStudent(null)
     setSelectedInstitution("")
     setSelectedGrado("")
@@ -217,9 +217,8 @@ export default function AsignacionCuposPage() {
                     filteredStudents.map((student) => (
                       <div
                         key={student.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedStudent?.id === student.id ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50"
-                        }`}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStudent?.id === student.id ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50"
+                          }`}
                         onClick={() => handleSelectStudent(student)}
                       >
                         <div className="flex justify-between items-start">
@@ -229,7 +228,7 @@ export default function AsignacionCuposPage() {
                               {student.tipoDocumento}: {student.numeroDocumento}
                             </p>
                             <p className="text-xs text-gray-600">
-                              Grado solicitado: {getGradoLabel(student.gradoSolicitado,GRADOS_DISPONIBLES)}
+                              Grado solicitado: {getGradoLabel(student.gradoSolicitado, GRADOS_DISPONIBLES)}
                             </p>
                           </div>
                           <Badge className={getEstadoColor(student.estado)}>{student.estado}</Badge>
@@ -270,7 +269,7 @@ export default function AsignacionCuposPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">Grado solicitado:</p>
-                        <p className="text-sm">{getGradoLabel(selectedStudent.gradoSolicitado,GRADOS_DISPONIBLES)}</p>
+                        <p className="text-sm">{getGradoLabel(selectedStudent.gradoSolicitado, GRADOS_DISPONIBLES)}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Acudiente:</p>
@@ -298,7 +297,7 @@ export default function AsignacionCuposPage() {
                         <SelectValue placeholder="Seleccione una institución" />
                       </SelectTrigger>
                       <SelectContent>
-                        {activeInstitutions.map((institution:any) => (
+                        {activeInstitutions.map((institution: any) => (
                           <SelectItem key={institution.id} value={institution.id}>
                             {institution.nombre}
                           </SelectItem>
@@ -435,13 +434,12 @@ export default function AsignacionCuposPage() {
                 {/* Información de cupos disponibles */}
                 {selectedInstitution && selectedGrado && selectedJornada && (
                   <div
-                    className={`p-3 rounded-lg ${
-                      currentAvailableQuotas > 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-                    } border`}
+                    className={`p-3 rounded-lg ${currentAvailableQuotas > 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                      } border`}
                   >
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">
-                        Cupos disponibles para {getGradoLabel(selectedGrado,GRADOS_DISPONIBLES)} - {getJornadaLabel(selectedJornada)}:
+                        Cupos disponibles para {getGradoLabel(selectedGrado, GRADOS_DISPONIBLES)} - {getJornadaLabel(selectedJornada)}:
                       </p>
                       <Badge variant={currentAvailableQuotas > 0 ? "default" : "destructive"}>
                         {currentAvailableQuotas}
@@ -452,24 +450,24 @@ export default function AsignacionCuposPage() {
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button
-                  onClick={()=>handleAssignQuota({
-      selectedStudent,
-      selectedInstitution,
-      selectedGrado,
-      selectedJornada,
-      selectedGrupo,
-      selectedModalidad,
-      selectedDate,
-      observaciones,
-      currentAvailableQuotas,
-      assignQuota,
-      assignInstitution: (studentId, institutionId, date, status) =>
-        assignInstitution(studentId, institutionId, date, status as "Activo" | "Retirado" | "Trasladado" | "Pendiente"),
-      setError,
-      setSuccess,
-      setIsSubmitting,
-      resetForm,
-    })}
+                  onClick={() => handleAssignQuota({
+                    selectedStudent,
+                    selectedInstitution,
+                    selectedGrado,
+                    selectedJornada,
+                    selectedGrupo,
+                    selectedModalidad,
+                    selectedDate,
+                    observaciones,
+                    currentAvailableQuotas,
+                    assignQuota,
+                    assignInstitution: (studentId, institutionId, date, status) =>
+                      assignInstitution(studentId, institutionId, date, status as "Activo" | "Retirado" | "Trasladado" | "Pendiente"),
+                    setError,
+                    setSuccess,
+                    setIsSubmitting,
+                    resetForm,
+                  })}
                   disabled={
                     !selectedStudent ||
                     !selectedInstitution ||

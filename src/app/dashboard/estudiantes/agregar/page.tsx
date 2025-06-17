@@ -193,7 +193,7 @@ export default function AgregarEstudiantePage() {
                     <Calendar
                       mode="single"
                       selected={fechaNacimiento}
-                      onSelect={(date:any) => {
+                      onSelect={(date: any) => {
                         setFechaNacimiento(date)
                         if (date) {
                           handleInputChange("fechaNacimiento", format(date, "yyyy-MM-dd"))
@@ -201,7 +201,7 @@ export default function AgregarEstudiantePage() {
                       }}
                       initialFocus
                       locale={es}
-                      disabled={(date:any) => date > new Date()}
+                      disabled={(date: any) => date > new Date()}
                     />
                   </PopoverContent>
                 </Popover>

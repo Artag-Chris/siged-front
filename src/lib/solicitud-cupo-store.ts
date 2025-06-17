@@ -2,7 +2,6 @@
 
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
-
 import { SolicitudCupo, SolicitudCupoFormData, SolicitudCupoState } from "@/interfaces/solicitud-cupo/solicitud-cupo"
 import { useRadicadoStore } from "./radicado-store"
 import { DUMMY_SOLICITUDES } from "@/dummyData/dummySolicitudes"

@@ -77,7 +77,7 @@ export default function DashboardPage() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {statsMainDashboard(professors,documents).map((stat, index) => (
+            {statsMainDashboard(professors, documents).map((stat, index) => (
               <Link key={index} href={stat.href}>
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-6">

@@ -10,21 +10,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { MapPin, Clock, School, AlertCircle, Plus, Trash2 } from "lucide-react"
-
-
-
 import { DIAS_SEMANA } from "@/dummyData/dummyRutas"
 import { RutaFormData, Parada } from "@/interfaces"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { useRutaStore } from "@/lib/ruta-store"
 import { useVehiculoStore } from "@/lib/vehiculo-store"
-
-
-interface RutaFormProps {
-  conductorId: string
-  vehiculoId?: string
-  onCancel: () => void
-}
+import { RutaFormProps } from "@/interfaces/rutas"
 
 export default function RutaForm({ conductorId, vehiculoId, onCancel }: RutaFormProps) {
   const { addRuta, isLoading } = useRutaStore()

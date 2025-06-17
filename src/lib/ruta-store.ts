@@ -1,6 +1,5 @@
 import { DUMMY_RUTAS, DUMMY_NOVEDADES } from "@/dummyData/dummyRutas"
 import { RutaState, RutaFormData, Ruta, Novedad } from "@/interfaces"
-
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 

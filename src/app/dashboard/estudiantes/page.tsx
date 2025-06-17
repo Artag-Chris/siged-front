@@ -213,7 +213,7 @@ export default function EstudiantesPage() {
                           <h3 className="font-medium text-gray-900">{student.nombreCompleto}</h3>
                           <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
                             <span>
-                              {getDocumentTypeLabel(student.tipoDocumento,TIPOS_DOCUMENTO)}: {student.numeroDocumento}
+                              {getDocumentTypeLabel(student.tipoDocumento, TIPOS_DOCUMENTO)}: {student.numeroDocumento}
                             </span>
                             <span>•</span>
                             <span>Grado: {student.gradoSolicitado}</span>

@@ -216,30 +216,6 @@ export default function SolicitudCupoForm() {
     }
   }
 
-  // const resetForm = () => {
-  //   setFormData({
-  //     nombreNino: "",
-  //     documentoNino: "",
-  //     tipoDocumentoNino: "",
-  //     nombreAcudiente: "",
-  //     telefonoContacto: "",
-  //     direccion: "",
-  //     colegioSeleccionado: "",
-  //     gradoSolicitado: "",
-  //     jornada: "",
-  //     necesitaTransporte: false,
-  //     documentos: {
-  //       notas: null,
-  //       eps: null,
-  //     },
-  //     anioEscolar: new Date().getFullYear(),
-  //     observaciones: "",
-  //   })
-  //   setErrors({})
-  //   setStep(1)
-  //   setRadicadoGenerado("")
-  // }
-
   const getProgressValue = () => {
     return (step / 4) * 100
   }
