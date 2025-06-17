@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -11,7 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, User, Lock } from "lucide-react"
-
 import { TIPOS_DOCUMENTO_CONDUCTOR } from "@/dummyData/dummyConductores"
 import { useConductorStore } from "@/lib/conductor-store"
 

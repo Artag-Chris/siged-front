@@ -147,8 +147,8 @@ export default function ConductorForm() {
               <p className="text-xl font-bold text-blue-800">{conductorId}</p>
             </div>
             <div className="flex flex-col gap-3">
-              <Button onClick={() => router.push("/transporte/conductores")} className="w-full">
-                Ver Lista de Conductores
+              <Button onClick={() => router.push(`/transporte/conductores/dashboard/${conductorId}`)} className="w-full">
+                Ver mi registro
               </Button>
               <Button onClick={resetForm} variant="outline" className="w-full">
                 Registrar Otro Conductor
