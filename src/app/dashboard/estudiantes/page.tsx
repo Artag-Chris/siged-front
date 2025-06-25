@@ -11,7 +11,9 @@ import Link from "next/link"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { TIPOS_DOCUMENTO, ESTADOS_ESTUDIANTE } from "@/dummyData"
 import { useStudentStore } from "@/lib/student-store"
-import { getDocumentTypeLabel, getEstadoColor } from "@/funtions"
+import { getEstadoColor } from "@/funtions"
+import { getDocumentTypeLabel } from "@/funtions/document"
+
 
 export default function EstudiantesPage() {
   const { students } = useStudentStore()
