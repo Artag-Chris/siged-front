@@ -53,7 +53,7 @@ export function DocumentUpload({ professorId, onUploadSuccess }: DocumentUploadP
     setError("")
     setSuccess("")
 
-    const success = await uploadDocument(professorId, selectedFile, category, description)
+    const success = await uploadDocument(professorId!, selectedFile, category, description)
 
     if (success) {
       setSuccess("Documento subido exitosamente")

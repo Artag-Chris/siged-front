@@ -25,6 +25,8 @@ export function AdminSidebar({ className }: SidebarProps) {
     if (pathname.startsWith("/dashboard/instituciones")) return "instituciones"
     if (pathname.startsWith("/dashboard/estudiantes")) return "estudiantes"
     if (pathname.startsWith("/dashboard/transporte") || pathname.startsWith("/transporte")) return "transporte"
+    if (pathname.startsWith("/dashboard/rectores")) return "rectores"
+    if (pathname.startsWith("/dashboard/pae")) return "pae"
     return null
   }
 

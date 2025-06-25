@@ -1,10 +1,45 @@
-import { Home, Users, UserPlus, Building2, Plus, GraduationCap, Bus, Car, MapPin, UserCheck, Calendar, BookOpen, BarChart3, FileText, Settings } from "lucide-react";
+import { Home, Users, UserPlus, Building2, Plus, GraduationCap, Bus, Car, MapPin, UserCheck, Calendar, BookOpen, BarChart3, FileText, Settings, List, UserCog, Utensils } from "lucide-react";
 
 export const menuItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: Home,
+  },
+   {
+    key: "rectores",
+    title: "Rectores",
+    icon: UserCog,
+    items: [
+      {
+        title: "Lista de Rectores",
+        href: "/dashboard/rectores",
+        icon: List,
+      },
+      {
+        title: "Agregar Rector",
+        href: "/dashboard/rectores/agregar",
+        icon: UserPlus,
+      },
+    ],
+  },
+  // Sección para PAE (preparación)
+  {
+    key: "pae",
+    title: "Programa PAE",
+    icon: Utensils,
+    items: [
+      {
+        title: "Lista de Beneficios",
+        href: "/dashboard/pae",
+        icon: List,
+      },
+      {
+        title: "Asignar Beneficio",
+        href: "/dashboard/pae/agregar",
+        icon: Plus,
+      },
+    ],
   },
   {
     title: "Profesores",
