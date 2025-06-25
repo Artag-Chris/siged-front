@@ -23,22 +23,21 @@ export const menuItems = [
       },
     ],
   },
-  // Sección para PAE (preparación)
   {
     key: "pae",
     title: "Programa PAE",
     icon: Utensils,
     items: [
       {
-        title: "Lista de Beneficios",
+        title: "Agregar, Listar PAE",
         href: "/dashboard/pae",
         icon: List,
       },
-      {
-        title: "Asignar Beneficio",
-        href: "/dashboard/pae/agregar",
-        icon: Plus,
-      },
+      // {
+      //   title: "Asignar Beneficio",
+      //   href: "/dashboard/pae/agregar",
+      //   icon: Plus,
+      // },
     ],
   },
   {

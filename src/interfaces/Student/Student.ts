@@ -14,6 +14,7 @@ export interface Student {
   parentescoAcudiente: "Padre" | "Madre" | "Tío" | "Abuelo" | "Tutor" | "Otro"
   telefonoAcudiente: string
   observaciones?: string
+  paeBeneficioId?: string; 
 }
 
 export interface StudentFormData {
@@ -51,4 +52,8 @@ export interface StudentState {
   ) => Promise<boolean>
   searchStudents: (query: string) => Student[]
   
+  // Nuevas funciones para gestión PAE
+  assignPAE: (studentId: string, paeBeneficioId: string) => Promise<boolean>
+  removePAE: (studentId: string) => Promise<boolean>
+  getStudentsByInstitution: (institucionId: string) => Student[]
 }

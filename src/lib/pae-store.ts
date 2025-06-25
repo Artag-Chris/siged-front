@@ -13,7 +13,7 @@ export const usePAEStore = create<PAEState>()(
       isLoading: false,
       currentBeneficio: null,
 
-      addBeneficio: async (beneficioData: PAEFormData): Promise<string> => {
+       addBeneficio: async (beneficioData: PAEFormData): Promise<string> => {
         set({ isLoading: true });
         try {
           await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -28,7 +28,7 @@ export const usePAEStore = create<PAEState>()(
             isLoading: false,
           }));
 
-          return newBeneficio.id;
+          return newBeneficio.id; // Devolver el ID del nuevo beneficio
         } catch (error) {
           console.error("Error adding PAE benefit:", error);
           set({ isLoading: false });
@@ -37,24 +37,24 @@ export const usePAEStore = create<PAEState>()(
       },
 
       updateBeneficio: async (id: string, beneficioData: Partial<PAEFormData>): Promise<boolean> => {
-        set({ isLoading: true });
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          
-          set((state) => ({
-            beneficios: state.beneficios.map((ben) => 
-              ben.id === id ? { ...ben, ...beneficioData } : ben
-            ),
-            isLoading: false,
-          }));
+  set({ isLoading: true });
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    
+    set((state) => ({
+      beneficios: state.beneficios.map((ben) => 
+        ben.id === id ? { ...ben, ...beneficioData } : ben
+      ),
+      isLoading: false,
+    }));
 
-          return true;
-        } catch (error) {
-          console.error("Error updating PAE benefit:", error);
-          set({ isLoading: false });
-          return false;
-        }
-      },
+    return true;
+  } catch (error) {
+    console.error("Error updating PAE benefit:", error);
+    set({ isLoading: false });
+    return false;
+  }
+},
 
       deleteBeneficio: async (id: string): Promise<boolean> => {
         set({ isLoading: true });

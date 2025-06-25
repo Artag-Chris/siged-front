@@ -124,6 +124,53 @@ export const useStudentStore = create<StudentState>()(
           return false
         }
       },
+       assignPAE: async (studentId: string, paeBeneficioId: string): Promise<boolean> => {
+        set({ isLoading: true });
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          
+          set((state) => ({
+            students: state.students.map(student => 
+              student.id === studentId 
+                ? { ...student, paeBeneficioId } 
+                : student
+            ),
+            isLoading: false,
+          }));
+          
+          return true;
+        } catch (error) {
+          console.error("Error asignando PAE:", error);
+          set({ isLoading: false });
+          return false;
+        }
+      },
+      removePAE: async (studentId: string): Promise<boolean> => {
+        set({ isLoading: true });
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          
+          set((state) => ({
+            students: state.students.map(student => 
+              student.id === studentId 
+                ? { ...student, paeBeneficioId: undefined } 
+                : student
+            ),
+            isLoading: false,
+          }));
+          
+          return true;
+        } catch (error) {
+          console.error("Error quitando PAE:", error);
+          set({ isLoading: false });
+          return false;
+        }
+      },
+      getStudentsByInstitution: (institucionId: string) => {
+        return get().students.filter(
+          student => student.institucionAsignada === institucionId
+        );
+      },
 
       searchStudents: (query: string) => {
         const lowercaseQuery = query.toLowerCase()
