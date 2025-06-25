@@ -14,13 +14,3 @@ export const getCategoryLabel = (category: string) => {
   return labels[category] || category
 }
 
-export const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    contrato: "bg-blue-100 text-blue-800",
-    hoja_vida: "bg-green-100 text-green-800",
-    certificados: "bg-yellow-100 text-yellow-800",
-    evaluacion: "bg-purple-100 text-purple-800",
-    otros: "bg-gray-100 text-gray-800",
-  }
-  return colors[category] || "bg-gray-100 text-gray-800"
-}
