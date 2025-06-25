@@ -9,3 +9,5 @@ export * from './dummySolicitudes'
 export * from './dummyConductores'
 export * from './dummyRutas'
 export * from './dummyVehiculos'
+export * from "./dummyRectores"
+export * from "./dummyPae"

@@ -7,3 +7,5 @@ export * from './Student'
 export * from './DashBoard'
 export * from './solicitud-cupo'
 export * from './transport'
+export * from "./principals"
+export * from "./pae"
