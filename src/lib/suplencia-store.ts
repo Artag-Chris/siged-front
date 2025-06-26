@@ -11,24 +11,44 @@ export const useSuplenciaStore = create<SuplenciaState>()(
       isLoading: false,
       currentSuplencia: null,
 
-      addSuplencia: async (suplencia: SuplenciaFormData): Promise<any> => {
+      addSuplencia: async (suplencia: SuplenciaFormData | FormData): Promise<any> => {
         set({ isLoading: true });
         try {
           // Simular llamada a API
+          let formData: SuplenciaFormData;
+          if (suplencia instanceof FormData) {
+            formData = {
+              docenteAusenteId: suplencia.get('docenteAusenteId') as string,
+              tipoAusencia: suplencia.get('tipoAusencia') as Suplencia["tipoAusencia"],
+              fechaInicioAusencia: suplencia.get('fechaInicioAusencia') as string,
+              fechaFinAusencia: suplencia.get('fechaFinAusencia') as string,
+              institucionId: suplencia.get('institucionId') as string,
+              docenteReemplazoId: suplencia.get('docenteReemplazoId') as string,
+              fechaInicioReemplazo: suplencia.get('fechaInicioReemplazo') as string,
+              fechaFinReemplazo: suplencia.get('fechaFinReemplazo') as string,
+              horasCubiertas: Number(suplencia.get('horasCubiertas')),
+              jornada: suplencia.get('jornada') as Suplencia["jornada"],
+              concepto: suplencia.get('concepto') as string,
+              observaciones: (suplencia.get('observaciones') as string) || undefined,
+            };
+          } else {
+            formData = suplencia;
+          }
+
           const newSuplencia: Suplencia = {
             id: Date.now().toString(),
-            docenteAusenteId: suplencia.docenteAusenteId,
-            tipoAusencia: suplencia.tipoAusencia as Suplencia["tipoAusencia"],
-            fechaInicioAusencia: suplencia.fechaInicioAusencia,
-            fechaFinAusencia: suplencia.fechaFinAusencia,
-            institucionId: suplencia.institucionId,
-            docenteReemplazoId: suplencia.docenteReemplazoId,
-            fechaInicioReemplazo: suplencia.fechaInicioReemplazo,
-            fechaFinReemplazo: suplencia.fechaFinReemplazo,
-            horasCubiertas: suplencia.horasCubiertas,
-            jornada: suplencia.jornada,
-            concepto: suplencia.concepto,
-            observaciones: suplencia.observaciones,
+            docenteAusenteId: formData.docenteAusenteId,
+            tipoAusencia: formData.tipoAusencia as Suplencia["tipoAusencia"],
+            fechaInicioAusencia: formData.fechaInicioAusencia,
+            fechaFinAusencia: formData.fechaFinAusencia,
+            institucionId: formData.institucionId,
+            docenteReemplazoId: formData.docenteReemplazoId,
+            fechaInicioReemplazo: formData.fechaInicioReemplazo,
+            fechaFinReemplazo: formData.fechaFinReemplazo,
+            horasCubiertas: formData.horasCubiertas,
+            jornada: formData.jornada,
+            concepto: formData.concepto,
+            observaciones: formData.observaciones,
           };
 
           set((state) => ({
