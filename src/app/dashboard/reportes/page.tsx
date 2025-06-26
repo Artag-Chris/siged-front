@@ -27,12 +27,9 @@ import { useInstitutionStore } from "@/lib/instituition-store"
 import { useStudentStore } from "@/lib/student-store"
 import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData"
 import { exportData, getStatusColor } from "@/funtions"
+import { ExportMenu } from "@/components/exportMenu"
 
 export default function ReportesPage() {
-
-  /* 
-  hay que mirar si este componente funciona bien
-  */
 
   const { students } = useStudentStore()
   const { institutions } = useInstitutionStore()
@@ -143,45 +140,8 @@ export default function ReportesPage() {
             <h1 className="text-2xl font-bold text-gray-900">Reportes y Analiticas</h1>
             <p className="text-gray-600">Análisis detallado del sistema educativo</p>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => exportData({
-              type: 'excel',
-              data: 'students',
-              filename: 'estudiantes'
-            })}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar estudiantes excel
-            </Button>
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => exportData({
-              type: 'pdf',
-              data: 'institutions',
-              filename: 'instituciones'
-            })}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Instituciones pdf
-            </Button>
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => exportData({
-              type: 'pdf',
-              data: 'all',
-              filename: 'reporte-completo'
-            })}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar todo pdf
-            </Button>
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => exportData({
-              type: 'excel',
-              data: 'all',
-              filename: 'reporte-completo'
-            })}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar todo excel
-            </Button>
+          <div className="flex flex-wrap gap-2">
+          <ExportMenu />
           </div>
         </div>
 
