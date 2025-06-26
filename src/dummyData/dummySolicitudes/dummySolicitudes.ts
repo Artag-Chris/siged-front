@@ -86,3 +86,16 @@ export const ESTADOS_SOLICITUD = [
   { value: "Aceptado", label: "Aceptado" },
   { value: "Rechazado", label: "Rechazado" },
 ]
+
+export const TIPOS_BENEFICIO = [
+  { value: "Desayuno", label: "Desayuno", color: "#FFC107" },
+  { value: "Almuerzo", label: "Almuerzo", color: "#FF9800" },
+  { value: "Completo", label: "Completo", color: "#F44336" },
+]
+
+export const TIPOS_AUSENCIA = [
+  { value: "Incapacidad EPS", label: "Incapacidad EPS", color: "#3F51B5" },
+  { value: "Licencia sin sueldo", label: "Licencia sin sueldo", color: "#2196F3" },
+  { value: "Comisión oficial", label: "Comisión oficial", color: "#4CAF50" },
+  { value: "Otro", label: "Otro", color: "#9E9E9E" },
+]

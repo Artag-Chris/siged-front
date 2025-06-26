@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useInstitutionStore } from "@/lib/instituition-store";
-
 import { useSuplenciaStore } from "@/lib/suplencia-store";
 import { SuplenciaFormData } from "@/interfaces/suplencia";
 import { useProfessorStore } from "@/lib/profesor-store";

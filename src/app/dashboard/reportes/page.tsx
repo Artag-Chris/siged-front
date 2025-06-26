@@ -1,10 +1,10 @@
+// page.tsx
 "use client"
 
 import { useState, useMemo } from "react"
 import { useGradeStore } from "@/lib/grade-store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
@@ -22,11 +22,18 @@ import {
   LineChart,
   Line,
 } from "recharts"
-import { Users, School, TrendingUp, TrendingDown, Download, Filter } from "lucide-react"
+import { 
+  Users, School, TrendingUp, TrendingDown, Filter, 
+  Bus, Sandwich, Route, UserCog 
+} from "lucide-react"
 import { useInstitutionStore } from "@/lib/instituition-store"
 import { useStudentStore } from "@/lib/student-store"
-import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE } from "@/dummyData"
-import { exportData, getStatusColor } from "@/funtions"
+import { useConductorStore } from "@/lib/conductor-store"
+import { usePAEStore } from "@/lib/pae-store"
+import { useRutaStore } from "@/lib/ruta-store"
+import { useSuplenciaStore } from "@/lib/suplencia-store"
+import { GRADOS_DISPONIBLES, ESTADOS_ESTUDIANTE, TIPOS_BENEFICIO, TIPOS_AUSENCIA } from "@/dummyData"
+import { getStatusColor } from "@/funtions"
 import { ExportMenu } from "@/components/exportMenu"
 
 export default function ReportesPage() {
@@ -34,6 +41,11 @@ export default function ReportesPage() {
   const { students } = useStudentStore()
   const { institutions } = useInstitutionStore()
   const { getAllQuotaAssignments, getAllGradeQuotas } = useGradeStore()
+  const { conductores } = useConductorStore()
+  const { beneficios } = usePAEStore()
+  const { rutas } = useRutaStore()
+  const { suplencias } = useSuplenciaStore()
+  
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString())
   const [selectedInstitution, setSelectedInstitution] = useState<string>("todas")
 
@@ -59,6 +71,38 @@ export default function ReportesPage() {
     })
   }, [assignments, selectedYear, selectedInstitution])
 
+  const filteredConductores = useMemo(() => {
+    return conductores.filter((conductor) => {
+      const yearMatch = new Date(conductor.fechaIngreso).getFullYear().toString() === selectedYear
+      // No aplicamos filtro de institución para conductores
+      return yearMatch
+    })
+  }, [conductores, selectedYear])
+
+  const filteredPAE = useMemo(() => {
+    return beneficios.filter((beneficio) => {
+      const yearMatch = new Date(beneficio.fechaAsignacion).getFullYear().toString() === selectedYear
+      const institutionMatch = selectedInstitution === "todas" || beneficio.institucionId === selectedInstitution
+      return yearMatch && institutionMatch
+    })
+  }, [beneficios, selectedYear, selectedInstitution])
+
+  const filteredRutas = useMemo(() => {
+    return rutas.filter((ruta) => {
+      const yearMatch = new Date(ruta.fechaCreacion).getFullYear().toString() === selectedYear
+      const institutionMatch = selectedInstitution === "todas" || ruta.institucionId === selectedInstitution
+      return yearMatch && institutionMatch
+    })
+  }, [rutas, selectedYear, selectedInstitution])
+
+  const filteredSuplencias = useMemo(() => {
+    return suplencias.filter((suplencia) => {
+      const yearMatch = new Date(suplencia.fechaInicioAusencia).getFullYear().toString() === selectedYear
+      const institutionMatch = selectedInstitution === "todas" || suplencia.institucionId === selectedInstitution
+      return yearMatch && institutionMatch
+    })
+  }, [suplencias, selectedYear, selectedInstitution])
+
   // Estadísticas generales
   const generalStats = useMemo(() => {
     const totalStudents = filteredStudents.length
@@ -80,8 +124,15 @@ export default function ReportesPage() {
       availableQuotas,
       occupancyRate: totalQuotas > 0 ? (assignedQuotas / totalQuotas) * 100 : 0,
       assignmentRate: totalStudents > 0 ? (assignedStudents / totalStudents) * 100 : 0,
+      totalConductores: filteredConductores.length,
+      activeConductores: filteredConductores.filter(c => c.estado === "Activo").length,
+      totalBeneficios: filteredPAE.length,
+      activeBeneficios: filteredPAE.filter(b => b.estado === "Activo").length,
+      totalRutas: filteredRutas.length,
+      activeRutas: filteredRutas.filter(r => r.estado === "Activa").length,
+      totalSuplencias: filteredSuplencias.length
     }
-  }, [filteredStudents, gradeQuotas])
+  }, [filteredStudents, gradeQuotas, filteredConductores, filteredPAE, filteredRutas, filteredSuplencias])
 
   // Datos para gráficos
   const studentsByGrade = useMemo(() => {
@@ -130,6 +181,64 @@ export default function ReportesPage() {
 
     return monthlyData
   }, [filteredAssignments])
+
+  // Nuevos datos para gráficos
+  const conductoresByStatus = useMemo(() => {
+    const statusCounts = filteredConductores.reduce((acc: Record<string, number>, conductor) => {
+      acc[conductor.estado] = (acc[conductor.estado] || 0) + 1
+      return acc
+    }, {})
+
+    return Object.entries(statusCounts).map(([estado, cantidad]) => ({
+      estado,
+      cantidad,
+      color: getStatusColor(estado)
+    }))
+  }, [filteredConductores])
+
+  const beneficiosByType = useMemo(() => {
+    return TIPOS_BENEFICIO.map((tipo: any) => ({
+      tipo: tipo.label,
+      cantidad: filteredPAE.filter((b) => b.tipoBeneficio === tipo.value).length,
+      color: tipo.color
+    })).filter(item => item.cantidad > 0)
+  }, [filteredPAE])
+
+  const beneficiosByStatus = useMemo(() => {
+    return filteredPAE.reduce((acc: Record<string, number>, beneficio) => {
+      acc[beneficio.estado] = (acc[beneficio.estado] || 0) + 1
+      return acc
+    }, {})
+  }, [filteredPAE])
+
+  const rutasByEstado = useMemo(() => {
+    return filteredRutas.reduce((acc: Record<string, number>, ruta) => {
+      acc[ruta.estado] = (acc[ruta.estado] || 0) + 1
+      return acc
+    }, {})
+  }, [filteredRutas])
+
+  const suplenciasByType = useMemo(() => {
+    return TIPOS_AUSENCIA.map((tipo: any) => ({
+      tipo: tipo.label,
+      cantidad: filteredSuplencias.filter((s) => s.tipoAusencia === tipo.value).length,
+      color: tipo.color
+    })).filter(item => item.cantidad > 0)
+  }, [filteredSuplencias])
+
+  const suplenciasByInstitution = useMemo(() => {
+    const institutionCounts = filteredSuplencias.reduce((acc: Record<string, number>, suplencia) => {
+      const institution = institutions.find(i => i.id === suplencia.institucionId)
+      const name = institution ? institution.nombre : 'Desconocida'
+      acc[name] = (acc[name] || 0) + 1
+      return acc
+    }, {})
+    
+    return Object.entries(institutionCounts).map(([nombre, cantidad]) => ({
+      nombre,
+      cantidad
+    })).sort((a, b) => b.cantidad - a.cantidad).slice(0, 10)
+  }, [filteredSuplencias, institutions])
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -189,11 +298,15 @@ export default function ReportesPage() {
         </Card>
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="estudiantes">Estudiantes</TabsTrigger>
             <TabsTrigger value="cupos">Cupos</TabsTrigger>
             <TabsTrigger value="instituciones">Instituciones</TabsTrigger>
+            <TabsTrigger value="conductores">Conductores</TabsTrigger>
+            <TabsTrigger value="pae">PAE</TabsTrigger>
+            <TabsTrigger value="rutas">Rutas</TabsTrigger>
+            <TabsTrigger value="suplencias">Suplencias</TabsTrigger>
           </TabsList>
 
           {/* Tab General */}
@@ -234,6 +347,63 @@ export default function ReportesPage() {
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Conductores Activos</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {generalStats.activeConductores}/{generalStats.totalConductores}
+                      </p>
+                    </div>
+                    <Bus className="h-8 w-8 text-yellow-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Beneficios PAE</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {generalStats.activeBeneficios}/{generalStats.totalBeneficios}
+                      </p>
+                    </div>
+                    <Sandwich className="h-8 w-8 text-orange-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Segunda fila de métricas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Rutas Activas</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {generalStats.activeRutas}/{generalStats.totalRutas}
+                      </p>
+                    </div>
+                    <Route className="h-8 w-8 text-purple-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Suplencias</p>
+                      <p className="text-2xl font-bold text-gray-900">{generalStats.totalSuplencias}</p>
+                    </div>
+                    <UserCog className="h-8 w-8 text-red-600" />
+                  </div>
+                </CardContent>
+              </Card>
+              
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -405,6 +575,326 @@ export default function ReportesPage() {
                 )
               })}
             </div>
+          </TabsContent>
+          
+          {/* Tab Conductores */}
+          <TabsContent value="conductores" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Conductores por estado */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Conductores por Estado</CardTitle>
+                  <CardDescription>Distribución de conductores según su estado actual</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={conductoresByStatus}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ estado, cantidad }) => `${estado}: ${cantidad}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="cantidad"
+                      >
+                        {conductoresByStatus.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              
+              {/* Licencias próximas a vencer */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Licencias Próximas a Vencer</CardTitle>
+                  <CardDescription>Conductores con licencias que expiran en los próximos 90 días</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {filteredConductores
+                      .filter(conductor => {
+                        if (!conductor.fechaVencimientoLicencia) return false;
+                        const expiration = new Date(conductor.fechaVencimientoLicencia);
+                        const today = new Date();
+                        const diffDays = Math.ceil((expiration.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                        return diffDays > 0 && diffDays <= 90;
+                      })
+                      .map(conductor => (
+                        <div key={conductor.id} className="flex items-center justify-between p-3 border-b">
+                          <div>
+                            <p className="font-medium">{conductor.nombreCompleto}</p>
+                            <p className="text-sm text-gray-600">
+                              Licencia: {conductor.licenciaConducir}
+                            </p>
+                          </div>
+                          <Badge variant="secondary">
+                            {new Date(conductor.fechaVencimientoLicencia).toLocaleDateString()}
+                          </Badge>
+                        </div>
+                      ))}
+                    
+                    {filteredConductores.filter(conductor => {
+                      if (!conductor.fechaVencimientoLicencia) return false;
+                      const expiration = new Date(conductor.fechaVencimientoLicencia);
+                      const today = new Date();
+                      return expiration.getTime() < today.getTime();
+                    }).length > 0 && (
+                      <div className="mt-4">
+                        <h3 className="font-medium text-red-600 mb-2">Licencias Vencidas</h3>
+                        {filteredConductores
+                          .filter(conductor => {
+                            if (!conductor.fechaVencimientoLicencia) return false;
+                            const expiration = new Date(conductor.fechaVencimientoLicencia);
+                            const today = new Date();
+                            return expiration.getTime() < today.getTime();
+                          })
+                          .map(conductor => (
+                            <div key={conductor.id} className="flex items-center justify-between p-3 border-b">
+                              <div>
+                                <p className="font-medium">{conductor.nombreCompleto}</p>
+                                <p className="text-sm text-gray-600">
+                                  Licencia: {conductor.licenciaConducir}
+                                </p>
+                              </div>
+                              <Badge variant="destructive">
+                                {new Date(conductor.fechaVencimientoLicencia).toLocaleDateString()}
+                              </Badge>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          {/* Tab PAE */}
+          <TabsContent value="pae" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Beneficios por tipo */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Beneficios por Tipo</CardTitle>
+                  <CardDescription>Distribución de los tipos de beneficios PAE asignados</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={beneficiosByType}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ tipo, cantidad }) => `${tipo}: ${cantidad}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="cantidad"
+                      >
+                        {beneficiosByType.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              
+              {/* Beneficios por estado */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Beneficios por Estado</CardTitle>
+                  <CardDescription>Distribución de beneficios según su estado actual</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={Object.entries(beneficiosByStatus).map(([estado, cantidad]) => ({ estado, cantidad }))}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="estado" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="cantidad" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Beneficios próximos a vencer */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Beneficios Próximos a Vencer</CardTitle>
+                <CardDescription>Beneficios PAE que expiran en los próximos 30 días</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {filteredPAE
+                    .filter(beneficio => {
+                      if (!beneficio.fechaVencimiento) return false;
+                      const expiration = new Date(beneficio.fechaVencimiento);
+                      const today = new Date();
+                      const diffDays = Math.ceil((expiration.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                      return diffDays > 0 && diffDays <= 30;
+                    })
+                    .map(beneficio => {
+                      const estudiante = students.find(s => s.id === beneficio.estudianteId);
+                      const institucion = institutions.find(i => i.id === beneficio.institucionId);
+                      
+                      return (
+                        <div key={beneficio.id} className="flex items-center justify-between p-3 border-b">
+                          <div>
+                            <p className="font-medium">{estudiante?.nombreCompleto || 'Estudiante no encontrado'}</p>
+                            <p className="text-sm text-gray-600">
+                              {institucion?.nombre || 'Institución no encontrada'} - {beneficio.tipoBeneficio}
+                            </p>
+                          </div>
+                          <Badge variant="secondary">
+                            {new Date(beneficio.fechaVencimiento).toLocaleDateString()}
+                          </Badge>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Tab Rutas */}
+          <TabsContent value="rutas" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Rutas por estado */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Rutas por Estado</CardTitle>
+                  <CardDescription>Distribución de rutas según su estado actual</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={Object.entries(rutasByEstado).map(([estado, cantidad]) => ({ estado, cantidad }))}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="estado" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="cantidad" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              
+              {/* Cupos disponibles */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cupos Disponibles</CardTitle>
+                  <CardDescription>Porcentaje de cupos disponibles en rutas activas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {filteredRutas
+                      .filter(ruta => ruta.estado === "Activa")
+                      .map(ruta => {
+                        const institucion = institutions.find(i => i.id === ruta.institucionId);
+                        const porcentaje = ruta.cuposDisponibles > 0 ? 
+                          Math.round((ruta.cuposDisponibles / (ruta.estudiantesAsignados.length + ruta.cuposDisponibles)) * 100) : 0;
+                        
+                        return (
+                          <div key={ruta.id} className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <h3 className="font-medium text-gray-900">
+                                {ruta.nombre} ({institucion?.nombre || 'N/A'})
+                              </h3>
+                              <div className="text-sm text-gray-600">
+                                {ruta.cuposDisponibles}/{ruta.estudiantesAsignados.length + ruta.cuposDisponibles} 
+                                ({porcentaje}%)
+                              </div>
+                            </div>
+                            <Progress value={porcentaje} className="h-2" />
+                          </div>
+                        );
+                      })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          {/* Tab Suplencias */}
+          <TabsContent value="suplencias" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Suplencias por tipo de ausencia */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Suplencias por Tipo</CardTitle>
+                  <CardDescription>Distribución según el motivo de la ausencia</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={suplenciasByType}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="tipo" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="cantidad" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              
+              {/* Suplencias por institución */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Suplencias por Institución</CardTitle>
+                  <CardDescription>Instituciones con más suplencias registradas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={suplenciasByInstitution}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="nombre" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="cantidad" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Total horas cubiertas */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Horas Cubiertas</CardTitle>
+                <CardDescription>Total de horas cubiertas por suplencias en el año</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center h-40">
+                  <div className="text-center">
+                    <p className="text-4xl font-bold text-blue-600">
+                      {filteredSuplencias.reduce((sum, s) => sum + s.horasCubiertas, 0)}
+                    </p>
+                    <p className="text-lg text-gray-600 mt-2">Horas de suplencia</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
