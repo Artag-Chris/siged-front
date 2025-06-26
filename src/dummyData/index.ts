@@ -12,3 +12,4 @@ export * from './dummyVehiculos'
 export * from "./dummyRectores"
 export * from "./dummyPae"
 export * from "./dummyRectorDocuments.ts"
+export * from "./dummySuplencias"

@@ -1,4 +1,4 @@
-import { Home, Users, UserPlus, Building2, Plus, GraduationCap, Bus, Car, MapPin, UserCheck, Calendar, BookOpen, BarChart3, FileText, Settings, List, UserCog, Utensils } from "lucide-react";
+import { Home, Users, UserPlus, Building2, Plus, GraduationCap, Bus, Car, MapPin, UserCheck, Calendar, BookOpen, BarChart3, FileText, Settings, List, UserCog, Utensils, Clock } from "lucide-react";
 
 export const menuItems = [
   {
@@ -20,6 +20,18 @@ export const menuItems = [
         title: "Agregar Rector",
         href: "/dashboard/rectores/agregar",
         icon: UserPlus,
+      },
+    ],
+  },
+   {
+    key: "horas-extra",
+    title: "Horas Extra",
+    icon: Clock,
+    items: [
+      {
+        title: "Registro de Suplencias",
+        href: "/dashboard/horas-extra",
+        icon: List,
       },
     ],
   },

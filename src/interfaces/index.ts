@@ -9,3 +9,4 @@ export * from './solicitud-cupo'
 export * from './transport'
 export * from "./principals"
 export * from "./pae"
+export * from "./suplencia"
