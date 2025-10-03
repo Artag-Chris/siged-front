@@ -12,15 +12,20 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Upload, FileText, X } from "lucide-react"
 import { DOCUMENT_CATEGORIES, DocumentUploadProps, ProfessorDocument } from "@/interfaces/Documents"
 import { useDocumentStore } from "@/lib/document-store"
+import { useProfessorStore } from "@/lib/profesor-store"
 
 export function DocumentUpload({ professorId, onUploadSuccess }: DocumentUploadProps) {
   const { uploadDocument, isLoading } = useDocumentStore()
+  const { getProfessor } = useProfessorStore()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [category, setCategory] = useState<ProfessorDocument["category"]>("otros")
   const [description, setDescription] = useState("")
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Obtener datos del profesor para el upload
+  const professor = professorId ? getProfessor(professorId) : null;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -29,11 +34,12 @@ export function DocumentUpload({ professorId, onUploadSuccess }: DocumentUploadP
         setError("Solo se permiten archivos PDF")
         return
       }
-      if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
-        setError("El archivo no puede ser mayor a 10MB")
-        return
-      }
+      // Removida la validación de tamaño para permitir archivos más grandes
+      // if (file.size > 10 * 1024 * 1024) {
+      //   // 10MB limit
+      //   setError("El archivo no puede ser mayor a 10MB")
+      //   return
+      // }
       setSelectedFile(file)
       setError("")
     }
@@ -53,19 +59,49 @@ export function DocumentUpload({ professorId, onUploadSuccess }: DocumentUploadP
     setError("")
     setSuccess("")
 
-    const success = await uploadDocument(professorId!, selectedFile, category, description)
+    // Preparar datos del profesor para la nueva API
+    const professorData = professor ? {
+      name: `${professor.nombres} ${professor.apellidos}`,
+      cedula: professor.cedula
+    } : undefined;
 
-    if (success) {
-      setSuccess("Documento subido exitosamente")
-      setSelectedFile(null)
-      setDescription("")
-      setCategory("otros")
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
+    // 🐛 DEBUG: Mostrar datos que se enviarán
+    console.log('🚀 [DEBUG TRADITIONAL] Datos para upload tradicional:');
+    console.log('📁 Archivo (se enviará como "document"):', {
+      name: selectedFile.name,
+      size: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
+      type: selectedFile.type
+    });
+    console.log('👤 Profesor:', professorData || 'Datos no disponibles');
+    console.log('📋 Metadatos:', {
+      professorId: professorId,
+      category,
+      description: description || 'Sin descripción'
+    });
+
+    try {
+      const success = await uploadDocument(
+        professorId!, 
+        selectedFile, 
+        category, 
+        description,
+        professorData
+      )
+
+      if (success) {
+        setSuccess("✅ Documento subido exitosamente")
+        setSelectedFile(null)
+        setDescription("")
+        setCategory("otros")
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+        onUploadSuccess?.()
+      } else {
+        setError("Error al subir el documento")
       }
-      onUploadSuccess?.()
-    } else {
-      setError("Error al subir el documento")
+    } catch (error: any) {
+      setError(`Error: ${error.message}`)
     }
   }
 

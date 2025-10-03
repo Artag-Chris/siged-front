@@ -20,6 +20,7 @@ export interface DocumentState {
     file: File,
     category: ProfessorDocument["category"],
     description?: string,
+    professorData?: { name: string; cedula: string } // Agregar datos del profesor
   ) => Promise<boolean>
   deleteDocument: (documentId: string) => Promise<boolean>
   getDocumentsByProfessor: (professorId: string) => ProfessorDocument[]
