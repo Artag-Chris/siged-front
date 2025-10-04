@@ -131,12 +131,7 @@ export default function CrearUsuarioPage() {
     setError(null);
 
     try {
-      console.log('👤 [CREAR-USUARIO] Enviando datos al servidor...');
-      console.log('📤 [CREAR-USUARIO] Endpoint: http://localhost:3000/api/usuario');
-      console.log('📊 [CREAR-USUARIO] Datos:', {
-        ...formData,
-        contrasena: '[OCULTA]'
-      });
+     
 
       const result = await JwtUserService.createUser(formData);
       
@@ -211,37 +206,13 @@ export default function CrearUsuarioPage() {
             <UserPlus className="h-8 w-8 text-blue-600" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Crear Nuevo Usuario</h1>
-              <p className="text-gray-600">Sistema de autenticación JWT</p>
+              <p className="text-gray-600">Sistema de autenticación</p>
             </div>
           </div>
         </div>
 
-        {/* Información del endpoint */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-green-600" />
-              <span>Información del Endpoint</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium">Endpoint:</Label>
-                <p className="text-sm font-mono bg-gray-100 p-2 rounded">
-                  POST http://localhost:3000/api/usuario
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Autenticación:</Label>
-                <p className="text-sm text-green-600 flex items-center gap-1">
-                  <CheckCircle className="h-3 w-3" />
-                  JWT Token en Headers
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      
+       
 
         {/* Formulario */}
         <Card>

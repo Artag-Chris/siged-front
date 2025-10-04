@@ -58,7 +58,7 @@ export class JwtUserService {
     try {
       // FETCH BÁSICO SIN QUERY PARAMS POR AHORA
       const endpoint = '/api/usuario';
-      const apiBaseUrl = process.env.NEXT_PUBLIC_JWT_API_BASE_URL || 'localhost:3000';
+      const apiBaseUrl = process.env.NEXT_PUBLIC_JWT_API_BASE_URL || 'https://demo-api-user.facilcreditos.co';
       const fullUrl = `${apiBaseUrl}${endpoint}`;
 
       console.log('🔍 [USER-SERVICE] Obteniendo usuarios...');
@@ -103,8 +103,6 @@ export class JwtUserService {
         count: adaptedResponse.data.length,
         pagination: adaptedResponse.pagination
       });
-
-      return adaptedResponse;
 
       return adaptedResponse;
 

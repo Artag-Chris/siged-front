@@ -43,35 +43,38 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   // Insufficient role
-  if (requiredRole && !hasRole(requiredRole)) {
-    console.log('⚠️ [PROTECTED-ROUTE] Rol insuficiente:', {
-      userRole: user.rol,
-      requiredRole,
-      hasRole: hasRole(requiredRole)
-    })
-    
-    if (typeof window !== 'undefined') {
-      window.location.href = "/unauthorized"
-    }
-    
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-pulse">
-            <div className="h-4 w-40 bg-red-300 rounded mx-auto mb-2"></div>
-            <div className="h-3 w-56 bg-red-200 rounded mx-auto"></div>
+  if (requiredRole) {
+    // Si requiredRole es un array, verificar si el usuario tiene alguno de los roles
+    const hasRequiredRole = Array.isArray(requiredRole) 
+      ? requiredRole.some(role => hasRole(role))
+      : hasRole(requiredRole);
+
+    if (!hasRequiredRole) {
+      console.log('⚠️ [PROTECTED-ROUTE] Rol insuficiente:', {
+        userRole: user.rol,
+        requiredRole,
+        hasRole: hasRequiredRole
+      })
+      
+      if (typeof window !== 'undefined') {
+        window.location.href = "/unauthorized"
+      }
+      
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-4 w-40 bg-red-300 rounded mx-auto mb-2"></div>
+              <div className="h-3 w-56 bg-red-200 rounded mx-auto"></div>
+            </div>
+            <p className="text-red-500 text-sm mt-4">Acceso no autorizado...</p>
           </div>
-          <p className="text-red-500 text-sm mt-4">Acceso no autorizado...</p>
         </div>
-      </div>
-    )
+      )
+    }
   }
 
-  console.log('✅ [PROTECTED-ROUTE] Acceso autorizado para:', {
-    nombre: user.nombre,
-    rol: user.rol,
-    requiredRole: requiredRole || 'ninguno'
-  })
+
 
   return <>{children}</>
 }

@@ -31,8 +31,17 @@ import {
 import { User, UserFilters, UsersListResponse } from '@/types/auth.types';
 import JwtUserService from '@/services/jwt-user.service';
 import { getRoleLabel, getDocumentTypeLabel } from '@/utils/jwt-validators';
+import { ProtectedRoute } from '@/components/protected-route';
 
 export default function UsuariosPage() {
+  return (
+    <ProtectedRoute requiredRole={['super_admin', 'admin']}>
+      <UsuariosContent />
+    </ProtectedRoute>
+  );
+}
+
+function UsuariosContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -36,5 +36,5 @@ export interface AuthState {
 
 export interface ProtectedRouteProps {
   children: React.ReactNode
-  requiredRole?: "super_admin" | "admin" | "gestor"
+  requiredRole?: "super_admin" | "admin" | "gestor" | ("super_admin" | "admin" | "gestor")[]
 }
