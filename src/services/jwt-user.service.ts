@@ -48,22 +48,19 @@ export class JwtUserService {
   // =============== CREAR USUARIO (REQUIERE AUTH) ===============
   static async createUser(userData: CreateUserRequest): Promise<User> {
     try {
-      const endpoint = '/usuarios';
-      const fullUrl = `${JwtApiService.getBaseUrl()}${endpoint}`;
-      
-      console.log('🚀 [USER-SERVICE] Creando usuario (requiere auth)...');
-      console.log('🌐 [USER-SERVICE] URL completa:', fullUrl);
-      console.log('📤 [USER-SERVICE] Datos enviados:', {
+      const endpoint = '/api/usuario';
+      console.log('👤 [USER-SERVICE] Creando usuario con JWT...');
+      console.log('📤 [USER-SERVICE] Datos del usuario:', {
         tipo_documento: userData.tipo_documento,
         documento: userData.documento,
         nombre: userData.nombre,
         apellido: userData.apellido,
         email: userData.email,
-        celular: userData.celular || 'No especificado',
         rol: userData.rol,
-        contrasena: '[OCULTA POR SEGURIDAD]'
+        estado: userData.estado
       });
 
+      // El JwtApiService automáticamente añade el token JWT en los headers
       const response = await JwtApiService.post<ApiResponse<User>>(
         endpoint,
         userData

@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuthStore } from "@/lib/auth-store"
+import { useJwtAuth } from "@/hooks/useJwtAuth"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -12,22 +12,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Search, Settings, LogOut, User, Shield } from "lucide-react"
-
+import { Bell, Search, Settings, LogOut, User, Shield, Crown } from "lucide-react"
 
 export function Navbar() {
-  const { user, forceLogout } = useAuthStore()
+  const { user, logout, isAuthenticated } = useJwtAuth({
+    redirectTo: '/login' // Redirigir al login después del logout
+  })
+
+  const handleLogout = async () => {
   
-
-  const handleLogout = () => {
-    // Usar forceLogout en lugar de logout para asegurar limpieza completa
-    forceLogout()
-
-    // Forzar redirección y recarga completa
-    window.location.href = "/login"
+    
+    try {
+   
+      await logout()
+    } catch (error) {
+      console.error('❌ [NAVBAR] Error en logout:', error)
+      // Aunque haya error, el hook debería manejar la redirección
+    }
   }
 
-  if (!user) return null
+  // No mostrar navbar si no hay usuario autenticado
+  if (!isAuthenticated || !user) {
+    return null
+  }
 
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -39,12 +46,21 @@ export function Navbar() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Shield className="h-5 w-5 text-white" />
               </div>
-              <h1 className="text-xl font-semibold text-gray-900">AdminPanel</h1>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">SIGED Dashboard</h1>
+                <p className="text-xs text-gray-500 hidden lg:block">Sistema Integrado de Gestión Educativa</p>
+              </div>
             </div>
           </div>
 
           {/* Acciones del header */}
           <div className="flex items-center space-x-4">
+            {/* Indicador JWT */}
+            <div className="hidden lg:flex items-center space-x-2 px-3 py-1 bg-green-50 border border-green-200 rounded-full">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-xs text-green-700 font-medium">JWT Activo</span>
+            </div>
+
             {/* Búsqueda */}
             <Button variant="ghost" size="sm" className="hidden md:flex">
               <Search className="h-4 w-4" />
@@ -61,7 +77,7 @@ export function Navbar() {
               <Settings className="h-4 w-4" />
             </Button>
 
-            {/* Botón de logout directo para asegurar que siempre esté disponible */}
+            {/* Botón de logout directo */}
             <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-600 hover:bg-red-50">
               <LogOut className="h-4 w-4 mr-2" />
               <span className="hidden md:inline">Cerrar Sesión</span>
@@ -72,31 +88,62 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-50">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                    <AvatarImage src={"/placeholder.svg"} alt={user?.nombre || "Usuario"} />
                     <AvatarFallback>
-                      {user.name
-                        .split(" ")
-                        .map((n) => n[0])
+                      {user?.nombre
+                        ?.split(" ")
+                        .map((n: string) => n[0])
                         .join("")
-                        .toUpperCase()}
+                        .toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-sm font-medium text-gray-900">{user?.nombre}</p>
                     <div className="flex items-center space-x-1">
-                      <Badge variant={user.role === "admin" ? "default" : "secondary"} className="text-xs">
-                        {user.role === "admin" ? "Administrador" : "Usuario"}
+                      <Badge 
+                        variant={
+                          user?.rol === "super_admin" ? "destructive" : 
+                          user?.rol === "admin" ? "default" : 
+                          "secondary"
+                        } 
+                        className="text-xs flex items-center gap-1"
+                      >
+                        {user?.rol === "super_admin" && <Crown className="h-3 w-3" />}
+                        {user?.rol === "admin" && <Shield className="h-3 w-3" />}
+                        {user?.rol === "super_admin" ? "Super Admin" :
+                         user?.rol === "admin" ? "Administrador" :
+                         user?.rol === "gestor" ? "Gestor" : "Usuario"}
                       </Badge>
                     </div>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-64">
                 <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                    <p className="text-xs text-gray-500">{user.department}</p>
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium">{user?.nombre}</p>
+                      <Badge 
+                        variant={
+                          user?.rol === "super_admin" ? "destructive" : 
+                          user?.rol === "admin" ? "default" : 
+                          "secondary"
+                        } 
+                        className="text-xs flex items-center gap-1"
+                      >
+                        {user?.rol === "super_admin" && <Crown className="h-2 w-2" />}
+                        {user?.rol === "admin" && <Shield className="h-2 w-2" />}
+                        {user?.rol}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-green-600 font-medium">Autenticado con JWT</span>
+                    </div>
+                    <div className="text-xs text-gray-400 border-t pt-2">
+                      ID: {user?.id}
+                    </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

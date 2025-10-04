@@ -12,13 +12,13 @@ export const menuItems = [
     icon: Shield,
     items: [
       {
-        title: "Gestión de Usuarios",
+        title: "Lista de Usuarios",
         href: "/dashboard/usuarios",
         icon: Users,
       },
       {
-        title: "Usuario Inicial",
-        href: "/dashboard/usuarios/crear-inicial",
+        title: "Crear Usuario",
+        href: "/dashboard/usuarios/crear",
         icon: UserPlus,
       },
     ],

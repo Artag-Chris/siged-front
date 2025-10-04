@@ -3,6 +3,74 @@
 
 import { ValidationResult } from '@/types/auth.types';
 
+// =============== FUNCIONES DE VALIDACIÓN SIMPLES ===============
+export const validateEmail = (email: string): boolean => {
+  if (!email) return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 150;
+};
+
+export const validatePassword = (password: string): boolean => {
+  if (!password || password.length < 8) return false;
+  
+  // Al menos una mayúscula, una minúscula, un número y un símbolo
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+  return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
+};
+
+export const validateDocumentType = (tipo: string): boolean => {
+  return ['CC', 'CE', 'TI', 'PP'].includes(tipo);
+};
+
+export const validateDocument = (documento: string, tipo: string): boolean => {
+  if (!documento || !tipo) return false;
+  
+  switch (tipo) {
+    case 'CC':
+    case 'CE':
+      return /^[0-9]{6,12}$/.test(documento);
+    case 'TI':
+      return /^[0-9]{10,11}$/.test(documento);
+    case 'PP':
+      return documento.length >= 6 && documento.length <= 20;
+    default:
+      return false;
+  }
+};
+
+// =============== FUNCIONES DE ETIQUETAS ===============
+export const getRoleLabel = (rol: string): string => {
+  switch (rol) {
+    case 'admin':
+      return 'Administrador';
+    case 'gestor':
+      return 'Gestor';
+    default:
+      return 'Usuario';
+  }
+};
+
+export const getDocumentTypeLabel = (tipo: string): string => {
+  switch (tipo) {
+    case 'CC':
+      return 'Cédula de Ciudadanía';
+    case 'CE':
+      return 'Cédula de Extranjería';
+    case 'TI':
+      return 'Tarjeta de Identidad';
+    case 'PP':
+      return 'Pasaporte';
+    default:
+      return tipo;
+  }
+};
+
+// =============== CLASE DE VALIDADORES COMPLEJOS ===============
+
 export class JwtValidators {
   
   // =============== VALIDACIÓN DE EMAIL ===============
@@ -212,27 +280,6 @@ export const formatPhone = (phone: string): string => {
   }
   
   return phone; // Devolver original si no se puede formatear
-};
-
-export const getRoleLabel = (role: string): string => {
-  const roleLabels: Record<string, string> = {
-    super_admin: 'Super Administrador',
-    admin: 'Administrador',
-    gestor: 'Gestor'
-  };
-  
-  return roleLabels[role] || role;
-};
-
-export const getDocumentTypeLabel = (type: string): string => {
-  const typeLabels: Record<string, string> = {
-    CC: 'Cédula de Ciudadanía',
-    CE: 'Cédula de Extranjería',
-    TI: 'Tarjeta de Identidad',
-    PP: 'Pasaporte'
-  };
-  
-  return typeLabels[type] || type;
 };
 
 export default JwtValidators;

@@ -51,6 +51,7 @@ export interface CreateUserRequest {
   celular?: string;
   contrasena: string;
   rol?: 'super_admin' | 'admin' | 'gestor';
+  estado?: 'activo' | 'inactivo';
 }
 
 export interface RefreshTokenRequest {

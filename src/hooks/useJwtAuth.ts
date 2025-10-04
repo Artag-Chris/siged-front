@@ -108,16 +108,30 @@ export const useJwtAuth = (options: UseJwtAuthOptions = {}): UseJwtAuthReturn =>
 
   // =============== LOGOUT WRAPPER ===============
   const logout = async (): Promise<void> => {
-    console.log('🔓 [USE-JWT-AUTH] Cerrando sesión...');
+    console.log('🔓 [USE-JWT-AUTH] Iniciando logout desde hook...');
     
-    await storeLogout();
-    
-    // Redireccionar después del logout
-    if (redirectTo) {
-      router.push(redirectTo);
+    try {
+      // Llamar al logout del store (que a su vez llama al servicio)
+      await storeLogout();
+      
+      console.log('✅ [USE-JWT-AUTH] Logout exitoso, redirigiendo...');
+      
+      // Redireccionar después del logout exitoso
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else {
+        // Redirección por defecto al login si no se especifica redirectTo
+        router.push('/login');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ [USE-JWT-AUTH] Error en logout:', error.message);
+      
+      // Aunque haya error, redirigir al login
+      router.push(redirectTo || '/login');
     }
     
-    console.log('✅ [USE-JWT-AUTH] Logout completado');
+    console.log('📍 [USE-JWT-AUTH] Logout completado con redirección');
   };
 
   return {

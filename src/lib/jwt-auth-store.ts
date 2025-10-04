@@ -109,10 +109,12 @@ export const useJwtAuthStore = create<AuthState>()(
         set({ isLoading: true });
         
         try {
-          console.log('🔓 [JWT-STORE] Cerrando sesión...');
+          console.log('🔓 [JWT-STORE] Iniciando proceso de logout...');
           
+          // Llamar al servicio que enviará el JWT al servidor
           await JwtAuthService.logout();
 
+          // Limpiar estado del store
           set({
             user: null,
             accessToken: null,
@@ -122,12 +124,13 @@ export const useJwtAuthStore = create<AuthState>()(
             error: null
           });
 
-          console.log('✅ [JWT-STORE] Logout completado');
+          console.log('✅ [JWT-STORE] Logout completado exitosamente');
 
         } catch (error: any) {
           console.error('❌ [JWT-STORE] Error en logout:', error.message);
           
-          // Limpiar state local aunque falle el API
+          // Limpiar estado local aunque falle el API
+          // Es importante que el usuario pueda cerrar sesión aunque el servidor falle
           set({
             user: null,
             accessToken: null,
@@ -136,6 +139,8 @@ export const useJwtAuthStore = create<AuthState>()(
             isLoading: false,
             error: null
           });
+          
+          console.log('🧹 [JWT-STORE] Logout local forzado completado');
         }
       },
 

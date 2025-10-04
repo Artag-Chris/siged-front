@@ -55,21 +55,30 @@ export class JwtAuthService {
   static async logout(): Promise<void> {
     try {
       const endpoint = '/api/auth/logout';
-      console.log('🔓 [AUTH-SERVICE] Cerrando sesión...');
+      console.log('🔓 [AUTH-SERVICE] Cerrando sesión en el servidor...');
 
-      // Obtener refresh token para enviarlo al logout
-      const refreshToken = this.getRefreshToken();
-      if (refreshToken) {
-        await JwtApiService.post(endpoint, { refreshToken });
+      // Verificar que tenemos token antes de hacer la petición
+      const accessToken = this.getAccessToken();
+      if (accessToken) {
+        console.log('📤 [AUTH-SERVICE] Enviando logout al servidor con token JWT');
+        
+        // El JwtApiService ya maneja automáticamente el header Authorization
+        // a través de los interceptores, solo necesitamos hacer la petición
+        await JwtApiService.post(endpoint, {});
+        
+        console.log('✅ [AUTH-SERVICE] Logout del servidor exitoso');
+      } else {
+        console.log('ℹ️ [AUTH-SERVICE] No hay token activo, solo limpieza local');
       }
 
-      console.log('✅ [AUTH-SERVICE] Logout exitoso');
-    } catch (error) {
-      console.warn('⚠️ [AUTH-SERVICE] Error en logout API:', error);
+    } catch (error: any) {
+      console.warn('⚠️ [AUTH-SERVICE] Error en logout del servidor:', error.message);
       // Continuar con logout local aunque falle el API
+      // Esto es importante para que el usuario pueda cerrar sesión aunque el servidor falle
     } finally {
-      this.clearTokens();
-      console.log('🧹 [AUTH-SERVICE] Tokens limpiados del storage');
+      // SIEMPRE limpiar tokens locales, sin importar si el API falló
+      this.clearAllStorage();
+      console.log('🧹 [AUTH-SERVICE] Logout local completado, tokens eliminados');
     }
   }
 

@@ -140,10 +140,10 @@ export default function UsuariosPage() {
           </div>
           
           <div className="flex space-x-2">
-            <Link href="/dashboard/usuarios/crear-inicial">
-              <Button variant="outline" size="sm">
+            <Link href="/dashboard/usuarios/crear">
+              <Button>
                 <UserPlus className="h-4 w-4 mr-2" />
-                Usuario Inicial
+                Nuevo Usuario
               </Button>
             </Link>
             <Button onClick={loadUsers} variant="outline" size="sm" disabled={isLoading}>
@@ -467,12 +467,12 @@ export default function UsuariosPage() {
                   No hay usuarios
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  Comienza creando tu primer usuario administrativo
+                  Comienza creando tu primer usuario en el sistema
                 </p>
-                <Link href="/dashboard/usuarios/crear-inicial">
+                <Link href="/dashboard/usuarios/crear">
                   <Button>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Crear Usuario Inicial
+                    Crear Usuario
                   </Button>
                 </Link>
               </div>
