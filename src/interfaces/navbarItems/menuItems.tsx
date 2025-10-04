@@ -1,10 +1,27 @@
-import { Home, Users, UserPlus, Building2, Plus, GraduationCap, Bus, Car, MapPin, UserCheck, Calendar, BookOpen, BarChart3, FileText, Settings, List, UserCog, Utensils, Clock } from "lucide-react";
+import { Home, Users, UserPlus, Building2, Plus, GraduationCap, Bus, Car, MapPin, UserCheck, Calendar, BookOpen, BarChart3, FileText, Settings, List, UserCog, Utensils, Clock, Shield, Database } from "lucide-react";
 
 export const menuItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: Home,
+  },
+  {
+    key: "usuarios",
+    title: "Usuarios JWT",
+    icon: Shield,
+    items: [
+      {
+        title: "Gestión de Usuarios",
+        href: "/dashboard/usuarios",
+        icon: Users,
+      },
+      {
+        title: "Usuario Inicial",
+        href: "/dashboard/usuarios/crear-inicial",
+        icon: UserPlus,
+      },
+    ],
   },
    {
     key: "rectores",

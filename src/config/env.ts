@@ -6,6 +6,7 @@ interface EnvConfig {
   API_BASE_URL: string;
   DOCUMENT_API_URL: string;
   CV_UPLOAD_API_URL: string;
+  JWT_API_BASE_URL: string; // Nueva variable para JWT
   MAX_FILE_SIZE: number;
   ALLOWED_FILE_TYPES: string[];
 }
@@ -17,6 +18,7 @@ function validateEnvVars(): EnvConfig {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const DOCUMENT_API_URL = process.env.NEXT_PUBLIC_DOCUMENT_API_URL;
   const CV_UPLOAD_API_URL = process.env.NEXT_PUBLIC_CV_UPLOAD_API_URL;
+  const JWT_API_BASE_URL = process.env.NEXT_PUBLIC_JWT_API_BASE_URL;
   const MAX_FILE_SIZE = process.env.NEXT_PUBLIC_MAX_FILE_SIZE;
   const ALLOWED_FILE_TYPES = process.env.NEXT_PUBLIC_ALLOWED_FILE_TYPES;
 
@@ -33,6 +35,10 @@ function validateEnvVars(): EnvConfig {
     throw new Error('NEXT_PUBLIC_CV_UPLOAD_API_URL is required but not defined in environment variables');
   }
 
+  if (!JWT_API_BASE_URL) {
+    throw new Error('NEXT_PUBLIC_JWT_API_BASE_URL is required but not defined in environment variables');
+  }
+
   // Parse and validate optional variables with defaults
   const maxFileSize = MAX_FILE_SIZE ? parseInt(MAX_FILE_SIZE, 10) : 104857600; // 100MB default
   const allowedFileTypes = ALLOWED_FILE_TYPES 
@@ -47,6 +53,7 @@ function validateEnvVars(): EnvConfig {
     API_BASE_URL,
     DOCUMENT_API_URL,
     CV_UPLOAD_API_URL,
+    JWT_API_BASE_URL,
     MAX_FILE_SIZE: maxFileSize,
     ALLOWED_FILE_TYPES: allowedFileTypes,
   };
@@ -60,6 +67,7 @@ export const {
   API_BASE_URL,
   DOCUMENT_API_URL,
   CV_UPLOAD_API_URL,
+  JWT_API_BASE_URL,
   MAX_FILE_SIZE,
   ALLOWED_FILE_TYPES,
 } = env;

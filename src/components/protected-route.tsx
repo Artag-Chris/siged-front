@@ -1,47 +1,77 @@
 "use client"
 
 import type React from "react"
-import { useAuthStore } from "@/lib/auth-store"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useJwtAuth } from "@/hooks/useJwtAuth"
 import { ProtectedRouteProps } from "@/interfaces/AuthContext"
 
-
-
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { user, isLoading, isAuthenticated } = useAuthStore()
-  const router = useRouter()
+  // NO usar redirección automática en el hook para evitar bucles
+  const { user, isLoading, isAuthenticated, hasRole } = useJwtAuth({
+    autoInitialize: true
+    // NO incluir redirectTo aquí para evitar bucles
+  })
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated || !user) {
-        // Forzar redirección completa para evitar problemas de estado
-        window.location.href = "/login"
-        return
-      }
-
-      if (requiredRole && user.role !== requiredRole) {
-        router.push("/unauthorized")
-        return
-      }
-    }
-  }, [user, isLoading, isAuthenticated, router, requiredRole])
-
+  // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-sm">Verificando autenticación JWT...</p>
+        </div>
       </div>
     )
   }
 
+  // Not authenticated - redirigir manualmente UNA SOLA VEZ
   if (!isAuthenticated || !user) {
-    return null
+    console.log('🚫 [PROTECTED-ROUTE] Usuario no autenticado, redirigiendo a login...')
+    if (typeof window !== 'undefined') {
+      window.location.href = "/login"
+    }
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="h-4 w-32 bg-gray-300 rounded mx-auto mb-2"></div>
+            <div className="h-3 w-48 bg-gray-200 rounded mx-auto"></div>
+          </div>
+          <p className="text-gray-500 text-sm mt-4">Redirigiendo a login...</p>
+        </div>
+      </div>
+    )
   }
 
-  if (requiredRole && user.role !== requiredRole) {
-    return null
+  // Insufficient role
+  if (requiredRole && !hasRole(requiredRole)) {
+    console.log('⚠️ [PROTECTED-ROUTE] Rol insuficiente:', {
+      userRole: user.rol,
+      requiredRole,
+      hasRole: hasRole(requiredRole)
+    })
+    
+    if (typeof window !== 'undefined') {
+      window.location.href = "/unauthorized"
+    }
+    
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="h-4 w-40 bg-red-300 rounded mx-auto mb-2"></div>
+            <div className="h-3 w-56 bg-red-200 rounded mx-auto"></div>
+          </div>
+          <p className="text-red-500 text-sm mt-4">Acceso no autorizado...</p>
+        </div>
+      </div>
+    )
   }
+
+  console.log('✅ [PROTECTED-ROUTE] Acceso autorizado para:', {
+    nombre: user.nombre,
+    rol: user.rol,
+    requiredRole: requiredRole || 'ninguno'
+  })
 
   return <>{children}</>
 }

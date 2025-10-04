@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { useJwtAuth } from "@/hooks/useJwtAuth"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/lib/auth-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,83 +15,54 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [localError, setLocalError] = useState("")
+  const [error, setError] = useState("")
+  const { login, user, isLoading, isAuthenticated, clearAllStorage } = useAuthStore()
+  const router = useRouter()
 
-  // Hook JWT con redirección automática
-  const { 
-    login, 
-    user, 
-    isLoading, 
-    isAuthenticated, 
-    error: authError,
-    clearError 
-  } = useJwtAuth({
-    redirectIfAuthenticated: "/dashboard",
-    autoInitialize: true
-  })
+  // Limpiar cualquier estado anterior al cargar la página de login
+  useEffect(() => {
+    clearAllStorage()
+  }, [clearAllStorage])
+
+  // Redirigir si ya está logueado
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      router.push("/dashboard")
+    }
+  }, [isAuthenticated, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLocalError("")
-    clearError()
+    setError("")
 
     if (!email || !password) {
-      setLocalError("Por favor completa todos los campos")
+      setError("Por favor completa todos los campos")
       return
     }
 
-    if (!email.includes("@")) {
-      setLocalError("Por favor ingresa un email válido")
-      return
-    }
-
-    if (password.length < 3) {
-      setLocalError("La contraseña debe tener al menos 3 caracteres")
-      return
-    }
-
-    console.log('🔐 [LOGIN2] Iniciando proceso de login con JWT...');
-    
     try {
       const success = await login(email, password)
-      
-      if (!success) {
-        setLocalError("Credenciales incorrectas. Verifica tu email y contraseña.")
+      if (success) {
+        router.push("/dashboard")
+      } else {
+        setError("Credenciales incorrectas")
       }
-      // Si success es true, el hook se encarga de la redirección automática
-      
     } catch (error) {
-      console.error("❌ [LOGIN2] Error al iniciar sesión:", error)
-      setLocalError("Error al iniciar sesión. Intenta nuevamente.")
+      console.error("Error al iniciar sesión:", error)
+      setError("Error al iniciar sesión. Intenta nuevamente.")
     }
   }
 
-  // Mostrar loading mientras se inicializa o redirige
   if (isAuthenticated && user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirigiendo...</p>
-        </div>
-      </div>
-    )
+    return null // Evitar flash mientras redirige
   }
-
-  const displayError = localError || authError
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión JWT</CardTitle>
-          <CardDescription className="text-center">
-            Ingresa tus credenciales para acceder al dashboard
-            <br />
-            <span className="text-xs text-blue-600 mt-1 block">
-              Sistema de autenticación JWT real
-            </span>
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión</CardTitle>
+          <CardDescription className="text-center">Ingresa tus credenciales para acceder al dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -99,11 +71,10 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="usuario@facilcreditos.co"
+                placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                autoComplete="email"
               />
             </div>
 
@@ -117,7 +88,6 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                  autoComplete="current-password"
                 />
                 <Button
                   type="button"
@@ -132,9 +102,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {displayError && (
+            {error && (
               <Alert variant="destructive">
-                <AlertDescription>{displayError}</AlertDescription>
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
@@ -153,14 +123,15 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm font-medium text-blue-700 mb-2">Sistema JWT Activo:</p>
-            <div className="space-y-1 text-xs text-blue-600">
-              <p>✅ Autenticación real con API</p>
-              <p>✅ Tokens JWT con refresh automático</p>
-              <p>✅ Roles y permisos por usuario</p>
-              <p className="text-orange-600 mt-2">
-                <strong>Nota:</strong> Usa credenciales reales del sistema
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm font-medium text-gray-700 mb-2">Credenciales de prueba:</p>
+            <div className="space-y-1 text-xs text-gray-600">
+             
+              <p>
+                <strong>Usuario:</strong> user@example.com /pass: user123
+              </p>
+              <p>
+                <strong>Admin :</strong> manager@example.com /pass: manager123
               </p>
             </div>
           </div>

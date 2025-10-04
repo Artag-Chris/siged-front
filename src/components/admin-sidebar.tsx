@@ -21,6 +21,7 @@ export function AdminSidebar({ className }: SidebarProps) {
 
   // Determinar qué sección debería estar abierta basada en la ruta actual
   const getActiveSectionFromPath = () => {
+    if (pathname.startsWith("/dashboard/usuarios")) return "usuarios"
     if (pathname.startsWith("/dashboard/profesores")) return "profesores"
     if (pathname.startsWith("/dashboard/instituciones")) return "instituciones"
     if (pathname.startsWith("/dashboard/estudiantes")) return "estudiantes"
