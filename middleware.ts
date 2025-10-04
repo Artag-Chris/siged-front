@@ -2,13 +2,38 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // =============================================
+  // MANEJO DE RUTAS API - CORS y otros headers
+  // =============================================
+  if (pathname.startsWith('/api/')) {
+    // Headers CORS para todas las rutas API
+    const response = NextResponse.next()
+    
+    response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.set('Access-Control-Max-Age', '86400')
+    
+    // Para rutas de upload, agregar headers específicos
+    if (pathname.includes('/upload')) {
+      response.headers.set('Access-Control-Allow-Credentials', 'false')
+      // No establecer Content-Length para uploads
+    }
+    
+    return response
+  }
+
+  // =============================================
+  // AUTENTICACIÓN - Rutas protegidas
+  // =============================================
+  
   // Rutas que requieren autenticación
   const protectedPaths = ["/dashboard"]
 
   // Rutas que solo pueden acceder usuarios no autenticados
   const authPaths = ["/login"]
-
-  const { pathname } = request.nextUrl
 
   // Verificar si la ruta actual es protegida
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path))
@@ -37,11 +62,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * Note: Incluimos /api/ para manejar CORS
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 }

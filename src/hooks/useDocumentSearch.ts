@@ -287,19 +287,64 @@ export const useDocumentSearch = (config?: {
         });
       }, 300);
 
-      // Enviar a la API real
-      const uploadUrl = `${CV_UPLOAD_API_URL}/upload`;
-      
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-      });
+      let response: Response;
+      let uploadUrl: string;
+
+      try {
+        // Intentar primero con la API directa del backend
+        uploadUrl = `${CV_UPLOAD_API_URL}/upload`;
+        console.log('🌐 [UPLOAD] Intentando upload directo al backend:', uploadUrl);
+        
+        response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        console.log(`📡 [UPLOAD] Respuesta directa: ${response.status} ${response.statusText}`);
+
+      } catch (directError: any) {
+        console.warn('⚠️ [UPLOAD] Error directo (probablemente CORS):', directError.message);
+        console.log('🔄 [UPLOAD] Intentando con proxy interno...');
+        
+        // Fallback: usar nuestra API interna como proxy
+        uploadUrl = '/api/documents/upload';
+        response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        console.log(`🔄 [UPLOAD] Respuesta del proxy: ${response.status} ${response.statusText}`);
+      }
 
       clearInterval(progressInterval);
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error ${response.status}: ${response.statusText} - ${errorText}`);
+        let errorMessage = `Error ${response.status}: ${response.statusText}`;
+        
+        // Mensajes de error más específicos
+        if (response.status === 413) {
+          errorMessage = 'El archivo es demasiado grande. El servidor no acepta archivos de este tamaño.';
+        } else if (response.status === 415) {
+          errorMessage = 'Tipo de archivo no soportado. Solo se permiten archivos PDF.';
+        } else if (response.status >= 500) {
+          errorMessage = 'Error interno del servidor. Intenta nuevamente más tarde.';
+        }
+        
+        console.error('❌ [UPLOAD] Error detallado:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: uploadUrl,
+          errorText: errorText.substring(0, 500) // Limitar log
+        });
+        
+        throw new Error(`${errorMessage}\n\nDetalles técnicos: ${errorText}`);
       }
 
       const result: DocumentUploadResponse = await response.json();

@@ -63,11 +63,8 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
       return;
     }
 
-    // Removida la validación de tamaño para permitir archivos más grandes
-    // if (file.size > 10 * 1024 * 1024) { // 10MB
-    //   onUploadError?.('El archivo no puede ser mayor a 10MB');
-    //   return;
-    // }
+    // SIN VALIDACIÓN DE TAMAÑO - Permitir archivos de cualquier tamaño
+    // El límite lo maneja el servidor backend, no el frontend
 
     setSelectedFile(file);
     
@@ -78,6 +75,12 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
         title: `Hoja de Vida - ${professorData.name}`
       }));
     }
+
+    console.log('✅ Archivo seleccionado:', {
+      name: file.name,
+      size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+      type: file.type
+    });
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -228,7 +231,27 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
       <CardContent className="space-y-6">
         {error && (
           <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              <div className="space-y-2">
+                <p className="font-medium">Error al subir el documento:</p>
+                <p className="text-sm">{error}</p>
+                {error.includes('413') && (
+                  <div className="mt-2 p-2 bg-red-50 rounded text-xs">
+                    <p><strong>Sugerencias para archivos grandes:</strong></p>
+                    <ul className="list-disc list-inside mt-1 space-y-1">
+                      <li>Comprimir el PDF usando herramientas online</li>
+                      <li>Reducir la calidad de las imágenes dentro del PDF</li>
+                      <li>Dividir el documento en partes más pequeñas</li>
+                    </ul>
+                  </div>
+                )}
+                {error.toLowerCase().includes('cors') && (
+                  <div className="mt-2 p-2 bg-red-50 rounded text-xs">
+                    <p><strong>Error de conexión:</strong> El sistema está intentando usar diferentes métodos de subida. Si el problema persiste, contacta al administrador.</p>
+                  </div>
+                )}
+              </div>
+            </AlertDescription>
           </Alert>
         )}
 
@@ -436,6 +459,16 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
             <li>• ✅ Organización por estructura de carpetas</li>
             <li>• ✅ URLs de descarga y visualización</li>
           </ul>
+          
+          <div className="mt-3 pt-2 border-t border-gray-200">
+            <h5 className="font-medium text-gray-700">Configuración:</h5>
+            <ul className="space-y-1 text-gray-600 text-xs">
+              <li>• 📄 Solo archivos PDF</li>
+              <li>• 📏 Sin límite de tamaño en el frontend</li>
+              <li>• 🔄 El sistema intenta múltiples métodos de subida automáticamente</li>
+              <li>• ⏱️ Tiempo máximo de procesamiento: 60 segundos</li>
+            </ul>
+          </div>
         </div>
       </CardContent>
     </Card>
