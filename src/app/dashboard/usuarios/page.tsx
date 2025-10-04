@@ -18,7 +18,13 @@ import {
   Trash2,
   UserCheck,
   UserX,
-  Eye
+  Eye,
+  Grid3X3,
+  List,
+  Mail,
+  Phone,
+  Calendar,
+  IdCard
 } from 'lucide-react';
 
 // Importar tipos y servicios JWT
@@ -30,6 +36,9 @@ export default function UsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -92,6 +101,22 @@ export default function UsuariosPage() {
     }));
   };
 
+  const handleUserSelect = (user: User) => {
+    setSelectedUser(user);
+    setSelectedUserId(user.id);
+    console.log('👤 Usuario seleccionado:', {
+      id: user.id,
+      nombre: `${user.nombre} ${user.apellido}`,
+      email: user.email,
+      rol: user.rol
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedUser(null);
+    setSelectedUserId(null);
+  };
+
   const handleDeactivateUser = async (userId: string) => {
     if (!confirm('¿Estás seguro de que quieres desactivar este usuario?')) {
       return;
@@ -134,12 +159,34 @@ export default function UsuariosPage() {
           <div className="flex items-center space-x-3 mb-4 sm:mb-0">
             <Users className="h-8 w-8 text-blue-600" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios JWT</h1>
-              <p className="text-gray-600">Sistema de autenticación con tokens JWT</p>
+              <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios </h1>
+              <p className="text-gray-600">Sistema de autenticación</p>
             </div>
           </div>
           
           <div className="flex space-x-2">
+            {/* Toggle de vista */}
+            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+              <Button
+                variant={viewMode === 'cards' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('cards')}
+                className="rounded-r-none"
+              >
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                Tarjetas
+              </Button>
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('table')}
+                className="rounded-l-none"
+              >
+                <List className="h-4 w-4 mr-2" />
+                Tabla
+              </Button>
+            </div>
+            
             <Link href="/dashboard/usuarios/crear">
               <Button>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -152,6 +199,41 @@ export default function UsuariosPage() {
             </Button>
           </div>
         </div>
+
+        {/* Usuario seleccionado */}
+        {selectedUser && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2 text-blue-700">
+                  <UserCheck className="h-5 w-5" />
+                  <span>Usuario Seleccionado</span>
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={clearSelection}>
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Nombre Completo</p>
+                  <p className="text-blue-900 font-semibold">
+                    {selectedUser.nombre} {selectedUser.apellido}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Email</p>
+                  <p className="text-blue-900">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">UUID</p>
+                  <p className="text-blue-900 font-mono text-sm">{selectedUser.id}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filtros */}
         <Card className="mb-6">
@@ -252,19 +334,152 @@ export default function UsuariosPage() {
           </div>
         )}
 
-        {/* Tabla de usuarios */}
+        {/* Vista de usuarios */}
         {!isLoading && !error && (
           <>
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  Usuarios ({pagination.totalItems} total)
-                </CardTitle>
-                <CardDescription>
-                  Página {pagination.currentPage} de {pagination.totalPages}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            {/* Vista de Tarjetas */}
+            {viewMode === 'cards' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                {users.map((user) => (
+                  <Card 
+                    key={user.id}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                      selectedUserId === user.id 
+                        ? 'ring-2 ring-blue-500 bg-blue-50' 
+                        : 'hover:shadow-md'
+                    }`}
+                    onClick={() => handleUserSelect(user)}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`
+                            w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg
+                            ${user.rol === 'super_admin' ? 'bg-red-500' : 
+                              user.rol === 'admin' ? 'bg-blue-500' : 'bg-gray-500'}
+                          `}>
+                            {user.nombre.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              {user.nombre} {user.apellido}
+                            </h3>
+                            <Badge 
+                              variant={
+                                user.rol === 'super_admin' ? 'destructive' :
+                                user.rol === 'admin' ? 'default' : 'secondary'
+                              }
+                              className="text-xs"
+                            >
+                              {getRoleLabel(user.rol)}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <Badge 
+                          variant={user.estado === 'activo' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {user.estado === 'activo' ? (
+                            <>
+                              <UserCheck className="h-3 w-3 mr-1" />
+                              Activo
+                            </>
+                          ) : (
+                            <>
+                              <UserX className="h-3 w-3 mr-1" />
+                              Inactivo
+                            </>
+                          )}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent className="pt-0">
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <Mail className="h-4 w-4" />
+                          <span className="truncate">{user.email}</span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <IdCard className="h-4 w-4" />
+                          <span>
+                            {getDocumentTypeLabel(user.tipo_documento)} - {user.documento}
+                          </span>
+                        </div>
+                        
+                        {user.celular && (
+                          <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <Phone className="h-4 w-4" />
+                            <span>{user.celular}</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate(user.fecha_creacion)}</span>
+                        </div>
+                        
+                        {selectedUserId === user.id && (
+                          <div className="mt-3 p-2 bg-blue-100 rounded text-xs">
+                            <p className="font-medium text-blue-700">UUID:</p>
+                            <p className="font-mono text-blue-600 break-all">{user.id}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-end space-x-2 mt-4 pt-3 border-t">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        {user.estado === 'activo' ? (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeactivateUser(user.id);
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <UserX className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReactivateUser(user.id);
+                            }}
+                            className="text-green-600 hover:text-green-700"
+                          >
+                            <UserCheck className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Vista de Tabla */}
+            {viewMode === 'table' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    Usuarios ({pagination.totalItems} total)
+                  </CardTitle>
+                  <CardDescription>
+                    Página {pagination.currentPage} de {pagination.totalPages}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -387,6 +602,7 @@ export default function UsuariosPage() {
                 </div>
               </CardContent>
             </Card>
+            )}
 
             {/* Paginación */}
             {pagination.totalPages > 1 && (

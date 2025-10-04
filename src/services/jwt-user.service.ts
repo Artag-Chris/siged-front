@@ -12,39 +12,7 @@ import {
 
 export class JwtUserService {
   
-  // =============== CREAR USUARIO INICIAL ===============
-  // Este endpoint es público y no requiere autenticación
-  static async createInitialUser(userData: CreateUserRequest): Promise<User> {
-    try {
-      const endpoint = '/api/usuario/create-initial-user';
-      const fullUrl = `${JwtApiService.getBaseUrl()}${endpoint}`;
-      
- 
-
-      const response = await JwtApiService.post<ApiResponse<User>>(
-        endpoint,
-        userData
-      );
-
-      if (!response.ok || !response.data) {
-        throw new Error(response.msg || response.message || 'Error creando usuario inicial');
-      }
-
-      console.log('✅ [USER-SERVICE] Usuario inicial creado exitosamente:', {
-        id: response.data.id,
-        email: response.data.email,
-        rol: response.data.rol,
-        estado: response.data.estado
-      });
-      
-      return response.data;
-
-    } catch (error: any) {
-      console.error('❌ [USER-SERVICE] Error creando usuario inicial:', error.message);
-      throw this.handleApiError(error);
-    }
-  }
-
+  
   // =============== CREAR USUARIO (REQUIERE AUTH) ===============
   static async createUser(userData: CreateUserRequest): Promise<User> {
     try {
@@ -88,35 +56,57 @@ export class JwtUserService {
   // =============== OBTENER USUARIOS ===============
   static async getUsers(filters: UserFilters = {}): Promise<UsersListResponse> {
     try {
-      // Construir query params
-      const queryParams = new URLSearchParams();
-      
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          queryParams.append(key, value.toString());
-        }
-      });
-
-      const queryString = queryParams.toString();
-      const endpoint = queryString ? `/usuarios?${queryString}` : '/usuarios';
-      const fullUrl = `${JwtApiService.getBaseUrl()}${endpoint}`;
+      // FETCH BÁSICO SIN QUERY PARAMS POR AHORA
+      const endpoint = '/api/usuario';
+      const apiBaseUrl = process.env.NEXT_PUBLIC_JWT_API_BASE_URL || 'localhost:3000';
+      const fullUrl = `${apiBaseUrl}${endpoint}`;
 
       console.log('🔍 [USER-SERVICE] Obteniendo usuarios...');
       console.log('🌐 [USER-SERVICE] URL completa:', fullUrl);
-      console.log('🔧 [USER-SERVICE] Filtros aplicados:', filters);
+      console.log('🔧 [USER-SERVICE] Sin filtros por ahora - fetch básico');
 
-      const response = await JwtApiService.get<UsersListResponse>(endpoint);
-
-      if (!response.success) {
-        throw new Error(response.message || 'Error obteniendo usuarios');
-      }
-
-      console.log('✅ [USER-SERVICE] Usuarios obtenidos:', {
-        count: response.data.length,
-        pagination: response.pagination
+      // Obtener token del localStorage
+      const token = localStorage.getItem('siged_access_token');
+      
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        }
       });
 
-      return response;
+      console.log('📡 [USER-SERVICE] Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('📦 [USER-SERVICE] Response data:', data);
+
+      // Adaptamos la respuesta al formato esperado
+      const adaptedResponse: UsersListResponse = {
+        success: true,
+        data: Array.isArray(data) ? data : data.data || [],
+        message: 'Usuarios obtenidos exitosamente',
+        pagination: data.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: Array.isArray(data) ? data.length : (data.data?.length || 0),
+          itemsPerPage: 10
+        }
+      };
+
+      console.log('✅ [USER-SERVICE] Usuarios obtenidos:', {
+        count: adaptedResponse.data.length,
+        pagination: adaptedResponse.pagination
+      });
+
+      return adaptedResponse;
+
+      return adaptedResponse;
 
     } catch (error: any) {
       console.error('❌ [USER-SERVICE] Error obteniendo usuarios:', error.message);
