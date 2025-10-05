@@ -360,7 +360,10 @@ export const useDocumentSearch = (config?: {
 
   const downloadDocument = useCallback(async (documentId: string): Promise<void> => {
     try {
-      const response = await axios.get(`${baseUrl}/download/${documentId}`, {
+      const downloadUrl = `${baseUrl}/api/retrieval/download/${documentId}`;
+      console.log('📥 [DOWNLOAD] Downloading document:', documentId, 'from:', downloadUrl);
+      
+      const response = await axios.get(downloadUrl, {
         responseType: 'blob',
         timeout: 60000 // 60 segundos para descargas
       });
@@ -407,7 +410,9 @@ export const useDocumentSearch = (config?: {
   }, [baseUrl]);
 
   const viewDocument = useCallback((documentId: string): void => {
-    window.open(`${baseUrl}/view/${documentId}`, '_blank');
+    const viewUrl = `${baseUrl}/api/retrieval/view/${documentId}`;
+    console.log('👁️ [VIEW] Opening document:', documentId, 'at:', viewUrl);
+    window.open(viewUrl, '_blank');
   }, [baseUrl]);
 
   const clearResults = useCallback(() => {

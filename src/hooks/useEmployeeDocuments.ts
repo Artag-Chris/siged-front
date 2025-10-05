@@ -110,8 +110,8 @@ export interface UseEmployeeDocumentsReturn {
   fetchEmployeeDocuments: (employeeUuid: string, options?: SearchFilters) => Promise<void>;
   searchEmployeeDocuments: (employeeUuid: string, filters: SearchFilters) => Promise<void>;
   clearResults: () => void;
-  downloadDocument: (documentId: string) => Promise<void>;
-  viewDocument: (documentId: string) => void;
+  downloadDocument: (documentId: string, providedUrl?: string) => Promise<void>;
+  viewDocument: (documentId: string, providedUrl?: string) => void;
 }
 
 // URL base de la API (desde env o config)
@@ -396,11 +396,13 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
     setError(null);
   }, []);
 
-  // Función para descargar documento
-  const downloadDocument = useCallback(async (documentId: string): Promise<void> => {
+  // Función para descargar documento (optimizada para usar URL del API cuando esté disponible)
+  const downloadDocument = useCallback(async (documentId: string, providedUrl?: string): Promise<void> => {
     try {
-      const downloadUrl = `${API_BASE_URL}/api/retrieval/download/${documentId}`;
+      // Usar la URL proporcionada del API si está disponible, sino construir la URL
+      const downloadUrl = providedUrl || `${API_BASE_URL}/api/retrieval/download/${documentId}`;
       console.log('📥 [DOWNLOAD] Downloading document:', documentId, 'from:', downloadUrl);
+      console.log('📥 [DOWNLOAD] Using provided URL:', !!providedUrl);
       
       // Usar fetch nativo para descargas también
       const response = await fetch(downloadUrl, {
@@ -453,11 +455,13 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
     }
   }, []);
 
-  // Función para ver documento
-  const viewDocument = useCallback((documentId: string): void => {
-    const url = `${API_BASE_URL}/api/retrieval/view/${documentId}`;
-    window.open(url, '_blank');
-    console.log('👁️ [VIEW] Opening document:', documentId);
+  // Función para ver documento (optimizada para usar URL del API cuando esté disponible)
+  const viewDocument = useCallback((documentId: string, providedUrl?: string): void => {
+    // Usar la URL proporcionada del API si está disponible, sino construir la URL
+    const viewUrl = providedUrl || `${API_BASE_URL}/api/retrieval/view/${documentId}`;
+    console.log('👁️ [VIEW] Opening document:', documentId, 'at:', viewUrl);
+    console.log('👁️ [VIEW] Using provided URL:', !!providedUrl);
+    window.open(viewUrl, '_blank');
   }, []);
 
   return {

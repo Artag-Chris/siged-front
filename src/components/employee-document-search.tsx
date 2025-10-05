@@ -129,16 +129,26 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
     handleLoadDocuments();
   };
 
-  const handleDownload = async (documentId: string, filename: string) => {
+  const handleDownload = async (documentId: string, filename: string, doc?: any) => {
     try {
-      await downloadDocument(documentId);
+      // Usar la URL del API si está disponible en el documento
+      const downloadUrl = doc?.downloadUrl;
+      console.log('📥 [COMPONENT] Downloading with URL from API:', downloadUrl);
+      await downloadDocument(documentId, downloadUrl);
     } catch (error) {
       console.error('Error downloading document:', error);
     }
   };
 
-  const handleView = (documentId: string) => {
-    viewDocument(documentId);
+  const handleView = (documentId: string, doc?: any) => {
+    try {
+      // Usar la URL del API si está disponible en el documento
+      const viewUrl = doc?.viewUrl;
+      console.log('👁️ [COMPONENT] Viewing with URL from API:', viewUrl);
+      viewDocument(documentId, viewUrl);
+    } catch (error) {
+      console.error('Error viewing document:', error);
+    }
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -404,14 +414,16 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleView(doc.id)}
+                        onClick={() => handleView(doc.id, doc)}
+                        title="Ver documento"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDownload(doc.id, doc.filename)}
+                        onClick={() => handleDownload(doc.id, doc.filename, doc)}
+                        title="Descargar documento"
                       >
                         <Download className="h-4 w-4" />
                       </Button>
