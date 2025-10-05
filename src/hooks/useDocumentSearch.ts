@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import axios, { AxiosResponse, AxiosError } from 'axios';
 import { 
   AdvancedSearchParams, 
   AdvancedSearchResponse,
@@ -86,10 +87,6 @@ export const useDocumentSearch = (config?: {
     
     let url = `${baseUrl}/${endpoint}`;
     
-    if (method === 'GET' && Object.keys(params).length > 0) {
-      url += `?${buildQueryString(params)}`;
-    }
-
     const controller = signal ? undefined : new AbortController();
     const requestSignal = signal || controller?.signal;
 
@@ -98,32 +95,39 @@ export const useDocumentSearch = (config?: {
     }
 
     try {
-      const requestOptions: RequestInit = {
-        method,
-        signal: requestSignal,
-        headers: method === 'POST' && body instanceof FormData 
+      let response: AxiosResponse<T>;
+      
+      if (method === 'GET') {
+        response = await axios.get<T>(url, {
+          params,
+          signal: requestSignal,
+          timeout: 30000
+        });
+      } else if (method === 'POST') {
+        const headers = body instanceof FormData 
           ? {} 
-          : {
-              'Content-Type': 'application/json',
-            },
-      };
-
-      if (method === 'POST' && body) {
-        requestOptions.body = body instanceof FormData ? body : JSON.stringify(body);
+          : { 'Content-Type': 'application/json' };
+          
+        response = await axios.post<T>(url, body, {
+          headers,
+          signal: requestSignal,
+          timeout: 30000
+        });
+      } else {
+        throw new Error(`Método HTTP ${method} no soportado`);
       }
 
-      const response = await fetch(url, requestOptions);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
-      }
-
-      return await response.json();
+      return response.data;
     } catch (error: any) {
-      if (error.name === 'AbortError') {
+      if (axios.isCancel(error)) {
         throw new Error('Búsqueda cancelada');
       }
+      
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message || error.message || 'Error desconocido';
+        throw new Error(message);
+      }
+      
       throw error;
     }
   };
@@ -287,7 +291,7 @@ export const useDocumentSearch = (config?: {
         });
       }, 300);
 
-      let response: Response;
+      let response: AxiosResponse<DocumentUploadResponse>;
       let uploadUrl: string;
 
       try {
@@ -295,12 +299,12 @@ export const useDocumentSearch = (config?: {
         uploadUrl = `${CV_UPLOAD_API_URL}/upload`;
         console.log('🌐 [UPLOAD] Intentando upload directo al backend:', uploadUrl);
         
-        response = await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
+        response = await axios.post<DocumentUploadResponse>(uploadUrl, formData, {
           headers: {
             'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data'
           },
+          timeout: 120000 // 2 minutos para uploads
         });
 
         console.log(`📡 [UPLOAD] Respuesta directa: ${response.status} ${response.statusText}`);
@@ -311,12 +315,12 @@ export const useDocumentSearch = (config?: {
         
         // Fallback: usar nuestra API interna como proxy
         uploadUrl = '/api/documents/upload';
-        response = await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
+        response = await axios.post<DocumentUploadResponse>(uploadUrl, formData, {
           headers: {
             'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data'
           },
+          timeout: 120000 // 2 minutos para uploads
         });
 
         console.log(`🔄 [UPLOAD] Respuesta del proxy: ${response.status} ${response.statusText}`);
@@ -324,30 +328,10 @@ export const useDocumentSearch = (config?: {
 
       clearInterval(progressInterval);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = `Error ${response.status}: ${response.statusText}`;
-        
-        // Mensajes de error más específicos
-        if (response.status === 413) {
-          errorMessage = 'El archivo es demasiado grande. El servidor no acepta archivos de este tamaño.';
-        } else if (response.status === 415) {
-          errorMessage = 'Tipo de archivo no soportado. Solo se permiten archivos PDF.';
-        } else if (response.status >= 500) {
-          errorMessage = 'Error interno del servidor. Intenta nuevamente más tarde.';
-        }
-        
-        console.error('❌ [UPLOAD] Error detallado:', {
-          status: response.status,
-          statusText: response.statusText,
-          url: uploadUrl,
-          errorText: errorText.substring(0, 500) // Limitar log
-        });
-        
-        throw new Error(`${errorMessage}\n\nDetalles técnicos: ${errorText}`);
-      }
-
-      const result: DocumentUploadResponse = await response.json();
+      // Con axios, los errores HTTP se manejan automáticamente
+      // Solo llegamos aquí si fue exitoso (status 2xx)
+      
+      const result: DocumentUploadResponse = response.data;
       setUploadProgress(100);
 
       if (!result.success) {
@@ -376,21 +360,49 @@ export const useDocumentSearch = (config?: {
 
   const downloadDocument = useCallback(async (documentId: string): Promise<void> => {
     try {
-      const response = await fetch(`${baseUrl}/download/${documentId}`);
-      if (!response.ok) throw new Error('Error descargando el documento');
+      const response = await axios.get(`${baseUrl}/download/${documentId}`, {
+        responseType: 'blob',
+        timeout: 60000 // 60 segundos para descargas
+      });
       
-      const blob = await response.blob();
+      const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `document-${documentId}`;
+      
+      // Intentar obtener el nombre del archivo desde los headers
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `document-${documentId}`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error: any) {
-      setError(error.message || 'Error descargando el documento');
-      throw error;
+      let errorMessage = 'Error descargando el documento';
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          errorMessage = `Error ${error.response.status}: ${error.response.statusText || error.message}`;
+        } else if (error.request) {
+          errorMessage = 'No se pudo conectar con el servidor para la descarga';
+        } else {
+          errorMessage = error.message;
+        }
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   }, [baseUrl]);
 

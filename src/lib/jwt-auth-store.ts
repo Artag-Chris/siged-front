@@ -33,6 +33,11 @@ interface AuthState {
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
   
+  // Getters para JWT
+  getAccessToken: () => string | null;
+  getRefreshToken: () => string | null;
+  getCurrentUser: () => AuthUser | null;
+  
   // Inicialización
   initializeAuth: () => void;
 }
@@ -207,6 +212,22 @@ export const useJwtAuthStore = create<AuthState>()(
       hasAnyRole: (roles: string[]): boolean => {
         const { user } = get();
         return user ? roles.includes(user.rol) : false;
+      },
+
+      // =============== GETTERS JWT ===============
+      getAccessToken: (): string | null => {
+        const { accessToken } = get();
+        return accessToken;
+      },
+
+      getRefreshToken: (): string | null => {
+        const { refreshToken } = get();
+        return refreshToken;
+      },
+
+      getCurrentUser: (): AuthUser | null => {
+        const { user } = get();
+        return user;
       },
 
       // =============== INICIALIZACIÓN ===============

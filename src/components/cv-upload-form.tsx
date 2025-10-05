@@ -139,12 +139,10 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
     try {
       const finalTags = formData.tags.length > 0 ? formData.tags : ['curriculum', 'docente', 'profesor'];
       
-      // TODO: Cambiar por UUID real del profesor cuando esté disponible
-      const simulatedUUID = crypto.randomUUID ? crypto.randomUUID() : '550e8400-e29b-41d4-a716-446655440002';
-      
+      // ✅ USAR UUID REAL del profesor recibido como prop
       const uploadParams: DocumentUploadParams = {
         file: selectedFile,
-        employeeUuid: simulatedUUID,
+        employeeUuid: professorId, // UUID REAL del profesor
         employeeName: professorData.name,
         employeeCedula: professorData.cedula,
         title: formData.title.trim(),
@@ -162,8 +160,8 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
         type: selectedFile.type,
         lastModified: new Date(selectedFile.lastModified).toLocaleString()
       });
-      console.log('👤 Datos del profesor:', {
-        employeeUuid: simulatedUUID,
+      console.log('👤 Datos del profesor (UUID REAL):', {
+        employeeUuid: professorId, // UUID REAL del profesor
         employeeName: professorData.name,
         employeeCedula: professorData.cedula
       });

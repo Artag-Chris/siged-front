@@ -1,12 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { useDocumentStore } from "@/lib/document-store"
-import { DocumentUpload } from "@/components/document-upload"
-import { DocumentViewer } from "@/components/document-viewer"
-import DocumentSearch from "@/components/document-search"
 import CVUploadForm from "@/components/cv-upload-form"
+import EmployeeDocumentSearch from "@/components/employee-document-search"
+import EmployeeDocumentStats from "@/components/employee-document-stats"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,92 +14,146 @@ import {
   ArrowLeft,
   User,
   Mail,
-  Phone,
   MapPin,
   Calendar,
   GraduationCap,
   FileText,
-  Download,
-  Trash2,
   Edit,
-  Search,
   Upload,
   Eye,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  UserCheck
 } from "lucide-react"
 import Link from "next/link"
-import { Professor } from "@/interfaces/Professor"
-import { useProfessorStore } from "@/lib/profesor-store"
-import { getCategoryColor, getCategoryLabel } from "@/funtions/professor"
-import { Document } from "@/types/documentSearch"
 
+// Importar la nueva arquitectura de empleados
+import { useEmpleados } from '@/hooks/useEmpleados';
+import { Empleado } from '@/types/empleados.types';
+import { ProtectedRoute } from '@/components/protected-route';
 
-export default function ProfessorDetailPage() {
+function ProfessorDetailContent() {
   const params = useParams()
   const professorId = params.id as string
-  const { getProfessor } = useProfessorStore()
-  const { getDocumentsByProfessor, deleteDocument } = useDocumentStore()
-  const [professor, setProfessor] = useState<Professor | null>(null)
-  const [documents, setDocuments] = useState<any[]>([])
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
-  const [activeTab, setActiveTab] = useState("search")
+  
+  // Usar el hook de empleados
+  const {
+    selectedEmpleado,
+    isLoading,
+    error,
+    
+    // Operaciones
+    getEmpleadoById,
+    uploadDocument,
+    clearErrors,
+    
+    // Auth
+    isUserAuthenticated,
+    currentUser
+  } = useEmpleados();
 
+  const [professor, setProfessor] = useState<Empleado | null>(null)
+  const [activeTab, setActiveTab] = useState("profile")
+  const [documents, setDocuments] = useState<any[]>([]) // Para almacenar documentos cargados
+  const [refreshDocuments, setRefreshDocuments] = useState(0) // Para triggear recarga de documentos
+
+  // Cargar profesor al montar el componente
   useEffect(() => {
-    const prof = getProfessor(professorId)
-    if (prof) {
-      setProfessor(prof)
-      const docs = getDocumentsByProfessor(professorId)
-      setDocuments(docs)
+    if (professorId && isUserAuthenticated) {
+      loadProfessor()
     }
-  }, [professorId, getProfessor, getDocumentsByProfessor, refreshKey])
+  }, [professorId, isUserAuthenticated])
 
-  const handleDocumentUploadSuccess = () => {
-    setRefreshKey((prev) => prev + 1)
-    // Cambiar a la pestaña de búsqueda para ver el documento subido
-    setActiveTab("search")
-  }
-
-  const handleDocumentSelect = (document: Document) => {
-    setSelectedDocument(document)
-    console.log('Documento seleccionado:', document)
-    // Aquí puedes abrir un modal, navegar a otra página, etc.
-  }
-
-  const handleDeleteDocument = async (documentId: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este documento?")) {
-      const success = await deleteDocument(documentId)
-      if (success) {
-        setRefreshKey((prev) => prev + 1)
+  const loadProfessor = async () => {
+    try {
+      console.log('🔍 [PROFESSOR] Cargando profesor con UUID:', professorId);
+      const empleado = await getEmpleadoById(professorId);
+      
+      if (empleado && empleado.cargo === 'Docente') {
+        setProfessor(empleado);
+        console.log('✅ [PROFESSOR] Profesor cargado:', {
+          uuid: empleado.id,
+          nombre: `${empleado.nombre} ${empleado.apellido}`,
+          documento: empleado.documento,
+          email: empleado.email
+        });
+      } else {
+        console.warn('⚠️ [PROFESSOR] Empleado no es Docente o no existe');
+        setProfessor(null);
       }
+    } catch (error) {
+      console.error('❌ [PROFESSOR] Error cargando profesor:', error);
+      setProfessor(null);
     }
   }
 
-  const handleDownloadDocument = (doc: any) => {
-    // En producción, esto descargaría el archivo real
-    const link = document.createElement("a")
-    link.href = doc.fileUrl
-    link.download = doc.fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  // Callbacks para CV Upload (arquitectura real)
+  const handleCVUploadSuccess = (document: any) => {
+    console.log('✅ [CV-UPLOAD] Documento subido exitosamente:', {
+      id: document.id,
+      filename: document.filename,
+      empleadoUuid: professor?.id
+    });
+    
+    // Agregar el documento a la lista local
+    setDocuments(prev => [document, ...prev]);
+    
+    // Triggear recarga de documentos en el componente de búsqueda
+    setRefreshDocuments(prev => prev + 1);
+    
+    // Cambiar a la pestaña de documentos para ver el resultado
+    setActiveTab("documents");
   }
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  const handleCVUploadError = (error: string) => {
+    console.error('❌ [CV-UPLOAD] Error subiendo documento:', error);
+    // El error se maneja en el componente CVUploadForm
+  }
+
+  if (!isUserAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <UserCheck className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Acceso Restringido</h2>
+          <p className="text-gray-600">Debes estar autenticado para ver esta página</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando información del profesor...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!professor) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <Alert variant="destructive">
-          <AlertDescription>Profesor no encontrado</AlertDescription>
-        </Alert>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Profesor no encontrado</h2>
+            <p className="text-gray-600 mb-6">
+              El profesor con ID {professorId} no existe o no es un Docente válido.
+            </p>
+            <Link href="/dashboard/profesores">
+              <Button>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver a Profesores
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -111,333 +163,381 @@ export default function ProfessorDetailPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <Link href="/dashboard/profesores">
-              <Button variant="outline" size="sm">
+              <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
               </Button>
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {professor.nombres} {professor.apellidos}
+                {professor.nombre} {professor.apellido}
               </h1>
-              <p className="text-gray-600">{professor.cargo}</p>
+              <p className="text-gray-600">Perfil del Profesor - Arquitectura JWT</p>
             </div>
           </div>
           <div className="flex space-x-2">
-            <Link href={`/dashboard/profesores/${professorId}/editar`}>
+            <Link href={`/dashboard/profesores/${professor.id}/editar`}>
               <Button variant="outline">
                 <Edit className="h-4 w-4 mr-2" />
                 Editar
               </Button>
             </Link>
-            <Badge variant={professor.estado === "activa" ? "default" : "secondary"}>
-              {professor.estado === "activa" ? "Activo" : "Inactivo"}
-            </Badge>
+            <Button onClick={loadProfessor} variant="outline" size="sm" disabled={isLoading}>
+              <Clock className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Actualizar
+            </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Información del Profesor */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Datos Personales */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
-                  <span>Información Personal</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-3">
-                    <User className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Cédula</p>
-                      <p className="text-sm text-gray-900">{professor.cedula}</p>
-                    </div>
-                  </div>
+        {/* Error */}
+        {error && (
+          <Alert className="mb-6" variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error}
+              <Button onClick={clearErrors} variant="ghost" size="sm" className="ml-2">
+                Cerrar
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Email</p>
-                      <p className="text-sm text-gray-900">{professor.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Teléfono</p>
-                      <p className="text-sm text-gray-900">{professor.telefono}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Fecha de Nacimiento</p>
-                      <p className="text-sm text-gray-900">
-                        {new Date(professor.fechaNacimiento).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3 md:col-span-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Dirección</p>
-                      <p className="text-sm text-gray-900">{professor.direccion}</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Información Académica */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <GraduationCap className="h-5 w-5" />
-                  <span>Información Académica</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Nivel Educativo</p>
-                    <p className="text-sm text-gray-900 capitalize">{professor.nivelEducativo.replace("_", " ")}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Años de Experiencia</p>
-                    <p className="text-sm text-gray-900">{professor.experienciaAnios} años</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Fecha de Vinculación</p>
-                    <p className="text-sm text-gray-900">{new Date(professor.fechaVinculacion).toLocaleDateString()}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Institución de Graduación</p>
-                    <p className="text-sm text-gray-900">{professor.institucionGraduacion}</p>
-                  </div>
-                </div>
-
+        {/* Usuario actual */}
+        {currentUser && (
+          <Card className="mb-6 border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-green-700">
+                <CheckCircle className="h-5 w-5" />
+                <span>Sesión Activa</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">Materias que puede enseñar</p>
-                  <div className="flex flex-wrap gap-1">
-                    {professor.materias.map((materia:any) => (
-                      <Badge key={materia} variant="outline">
-                        {materia}
-                      </Badge>
-                    ))}
-                  </div>
+                  <p className="text-sm font-medium text-gray-700">Usuario</p>
+                  <p className="text-green-900 font-semibold">{currentUser.nombre}</p>
                 </div>
-
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">Materias asignadas actualmente</p>
-                  <div className="flex flex-wrap gap-1">
-                    {professor.materiasAsignadas.map((materia:any) => (
-                      <Badge key={materia} variant="default">
-                        {materia}
-                      </Badge>
-                    ))}
-                  </div>
+                  <p className="text-sm font-medium text-gray-700">Email</p>
+                  <p className="text-green-900">{currentUser.email}</p>
                 </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Rol</p>
+                  <Badge variant="default">{currentUser.rol}</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-                {professor.observaciones && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Observaciones</p>
-                    <p className="text-sm text-gray-900">{professor.observaciones}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="profile">
+              <User className="h-4 w-4 mr-2" />
+              Perfil
+            </TabsTrigger>
+            <TabsTrigger value="upload">
+              <Upload className="h-4 w-4 mr-2" />
+              Subir CV (API Real)
+            </TabsTrigger>
+            <TabsTrigger value="documents">
+              <Eye className="h-4 w-4 mr-2" />
+              Buscar & Ver Documentos
+            </TabsTrigger>
+          </TabsList>
 
-            {/* Gestión de Documentos */}
+          {/* TAB: Perfil */}
+          <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5" />
-                  <span>Gestión de Documentos</span>
-                </CardTitle>
+                <CardTitle>Información Personal</CardTitle>
                 <CardDescription>
-                  Busca documentos existentes o sube nuevos documentos
+                  Datos personales y profesionales del docente (UUID: {professor.id})
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="search" className="flex items-center space-x-2">
-                      <Search className="h-4 w-4" />
-                      <span>Buscar</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="upload" className="flex items-center space-x-2">
-                      <Upload className="h-4 w-4" />
-                      <span>Subir</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="local" className="flex items-center space-x-2">
-                      <FileText className="h-4 w-4" />
-                      <span>Locales ({documents.length})</span>
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="search" className="space-y-4">
-                    <DocumentSearch
-                      professorId={professorId}
-                      professorName={`${professor?.nombres} ${professor?.apellidos}`}
-                      onDocumentSelect={handleDocumentSelect}
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="upload" className="space-y-4">
-                    {/* Nuevo componente de subida CV */}
-                    <CVUploadForm
-                      professorId={professorId}
-                      professorData={{
-                        name: `${professor.nombres} ${professor.apellidos}`,
-                        cedula: professor.cedula
-                      }}
-                      onUploadSuccess={(document) => {
-                        console.log('✅ Documento CV subido:', document);
-                        handleDocumentUploadSuccess();
-                      }}
-                      onUploadError={(error) => {
-                        console.error('❌ Error subiendo CV:', error);
-                      }}
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Información Personal */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Datos Personales</h3>
                     
-                    {/* Separador */}
-                    <div className="relative my-6">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <User className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Nombre Completo</p>
+                          <p className="text-gray-900">{professor.nombre} {professor.apellido}</p>
+                        </div>
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                          O usar subida tradicional
-                        </span>
+
+                      <div className="flex items-center space-x-3">
+                        <FileText className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Documento</p>
+                          <p className="text-gray-900">{professor.tipo_documento}: {professor.documento}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <Mail className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Email</p>
+                          <p className="text-gray-900">{professor.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Dirección</p>
+                          <p className="text-gray-900">{professor.direccion}</p>
+                        </div>
                       </div>
                     </div>
-                    
-                    {/* Componente tradicional de subida */}
-                    <DocumentUpload 
-                      professorId={professorId} 
-                      onUploadSuccess={handleDocumentUploadSuccess} 
-                    />
-                  </TabsContent>
+                  </div>
 
-                  <TabsContent value="local" className="space-y-4">
-                    {documents.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>No hay documentos subidos localmente</p>
-                        <p className="text-sm">Usa la pestaña "Subir" para agregar documentos</p>
+                  {/* Información Profesional */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Información Profesional</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <GraduationCap className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Cargo</p>
+                          <Badge variant="default">{professor.cargo}</Badge>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {documents.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                          >
-                            <div className="flex items-center space-x-3 flex-1">
-                              <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{doc.fileName}</p>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <Badge className={`text-xs ${getCategoryColor(doc.category)}`}>
-                                    {getCategoryLabel(doc.category)}
-                                  </Badge>
-                                  <span className="text-xs text-gray-500">{formatFileSize(doc.fileSize)}</span>
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(doc.uploadDate).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                {doc.description && (
-                                  <p className="text-xs text-gray-600 mt-1 truncate">{doc.description}</p>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex space-x-2 flex-shrink-0">
-                              <DocumentViewer fileName={doc.fileName} fileType={doc.fileType} />
-                              <Button variant="outline" size="sm" onClick={() => handleDownloadDocument(doc)}>
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteDocument(doc.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
+
+                      <div className="flex items-center space-x-3">
+                        <CheckCircle className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Estado</p>
+                          <Badge variant={professor.estado === "activo" ? "default" : "secondary"}>
+                            {professor.estado}
+                          </Badge>
+                        </div>
                       </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
+
+                      <div className="flex items-center space-x-3">
+                        <Calendar className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Fecha de Registro</p>
+                          <p className="text-gray-900">
+                            {new Date(professor.created_at).toLocaleDateString('es-ES')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <Clock className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Última Actualización</p>
+                          <p className="text-gray-900">
+                            {new Date(professor.updated_at).toLocaleDateString('es-ES')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          </div>
+          </TabsContent>
 
-          {/* Sidebar - Información adicional */}
-          <div className="space-y-6">
-            {selectedDocument && (
-              <Card>
+          {/* TAB: Subir CV - Arquitectura Real */}
+          <TabsContent value="upload">
+            <div className="space-y-6">
+              {/* Información del profesor para CV Upload */}
+              <Card className="border-blue-200 bg-blue-50">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <FileText className="h-5 w-5" />
-                    <span>Documento Seleccionado</span>
+                  <CardTitle className="flex items-center space-x-2 text-blue-700">
+                    <Upload className="h-5 w-5" />
+                    <span>Sistema de Upload Real - CV API</span>
                   </CardTitle>
+                  <CardDescription className="text-blue-600">
+                    Subir documentos PDF usando la API real de procesamiento de hojas de vida
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <p className="font-medium">{selectedDocument.title || selectedDocument.filename}</p>
-                    <p className="text-sm text-gray-600">{selectedDocument.description}</p>
-                    <div className="flex space-x-2">
-                      <Button size="sm" onClick={() => window.open(selectedDocument.viewUrl, '_blank')}>
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => window.open(selectedDocument.downloadUrl, '_blank')}>
-                        <Download className="h-4 w-4 mr-1" />
-                        Descargar
-                      </Button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">UUID Real</p>
+                      <p className="text-blue-900 font-mono text-sm">{professor.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Nombre Completo</p>
+                      <p className="text-blue-900 font-semibold">{professor.nombre} {professor.apellido}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Documento</p>
+                      <p className="text-blue-900">{professor.tipo_documento}: {professor.documento}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            )}
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Estadísticas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Documentos locales:</span>
-                    <span className="font-medium">{documents.length}</span>
+
+              {/* CV Upload Form - Componente Real */}
+              <CVUploadForm
+                professorId={professor.id}
+                professorData={{
+                  name: `${professor.nombre} ${professor.apellido}`,
+                  cedula: professor.documento
+                }}
+                onUploadSuccess={handleCVUploadSuccess}
+                onUploadError={handleCVUploadError}
+              />
+            </div>
+          </TabsContent>
+
+          {/* TAB: Buscar y Ver Documentos - Arquitectura Real */}
+          <TabsContent value="documents">
+            <div className="space-y-6">
+              {/* Estadísticas de documentos */}
+              <EmployeeDocumentStats 
+                employeeUuid={professor.id}
+                refreshTrigger={refreshDocuments}
+              />
+
+              {/* Info del sistema de búsqueda */}
+              <Card className="border-green-200 bg-green-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-green-700">
+                    <Eye className="h-5 w-5" />
+                    <span>Sistema Específico del Empleado - Nueva API</span>
+                  </CardTitle>
+                  <CardDescription className="text-green-600">
+                    Usando <code>/api/retrieval/employee/{professor.id}</code> para filtrar solo documentos de este profesor
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Endpoint Optimizado</p>
+                      <Badge variant="default" className="font-mono text-xs">
+                        /employee/{professor.id.slice(0, 8)}...
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Beneficios</p>
+                      <p className="text-green-900 text-sm">Solo docs del profesor, búsqueda rápida</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Refresh Trigger</p>
+                      <p className="text-green-900 text-sm">Auto-recarga: {refreshDocuments}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Última actualización:</span>
-                    <span className="font-medium">
-                      {documents.length > 0 
-                        ? new Date(Math.max(...documents.map(d => new Date(d.uploadDate).getTime()))).toLocaleDateString()
-                        : 'N/A'
-                      }
-                    </span>
+                </CardContent>
+              </Card>
+
+              {/* EmployeeDocumentSearch con API específica */}
+              <EmployeeDocumentSearch
+                employeeUuid={professor.id}
+                employeeName={`${professor.nombre} ${professor.apellido}`}
+                onDocumentSelect={(doc) => {
+                  console.log('📄 [DOCUMENT] Documento seleccionado:', doc);
+                  // Opcional: agregar lógica adicional cuando se selecciona un documento
+                }}
+                autoLoad={true}
+                key={refreshDocuments} // Force re-render when documents are uploaded
+              />
+              
+              {/* Debug Section - Testing con UUID conocido */}
+              <Card className="border-orange-200 bg-orange-50 mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-orange-700">
+                    <AlertCircle className="h-5 w-5" />
+                    <span>Debug: Testing con UUID Conocido</span>
+                  </CardTitle>
+                  <CardDescription className="text-orange-600">
+                    Prueba temporal con el UUID que sabemos que funciona
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">UUID Actual del Profesor:</p>
+                      <code className="bg-gray-100 px-2 py-1 rounded text-sm">{professor.id}</code>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">UUID de Prueba (que funciona):</p>
+                      <code className="bg-green-100 px-2 py-1 rounded text-sm">3389ecbe-a18c-11f0-99f3-0242ac120002</code>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        const testUuid = '3389ecbe-a18c-11f0-99f3-0242ac120002';
+                        console.log('🧪 [TEST] Probando con UUID conocido:', testUuid);
+                        window.open(`https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/${testUuid}`, '_blank');
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      🧪 Probar API con UUID Conocido (abrir en nueva pestaña)
+                    </Button>
+                    
+                    {/* Botón para probar con fetch directo */}
+                    <Button 
+                      onClick={async () => {
+                        const testUrl = 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/3389ecbe-a18c-11f0-99f3-0242ac120002';
+                        console.log('🔬 [FETCH-TEST] Probando con fetch directo:', testUrl);
+                        
+                        try {
+                          const response = await fetch(testUrl, {
+                            method: 'GET',
+                            headers: {
+                              'Accept': 'application/json'
+                            }
+                          });
+                          
+                          console.log('🔬 [FETCH-TEST] Response status:', response.status);
+                          console.log('🔬 [FETCH-TEST] Response ok:', response.ok);
+                          
+                          if (response.ok) {
+                            const data = await response.json();
+                            console.log('✅ [FETCH-TEST] SUCCESS! Data:', data);
+                            alert(`¡Fetch directo funcionó! Total documentos: ${data.documents?.length || 0}`);
+                          } else {
+                            console.error('❌ [FETCH-TEST] Error:', response.statusText);
+                            alert(`Fetch directo falló: ${response.status} ${response.statusText}`);
+                          }
+                        } catch (error) {
+                          console.error('❌ [FETCH-TEST] Error:', error);
+                          alert(`Error: ${error}`);
+                        }
+                      }}
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      🔬 Probar con Fetch Directo (Console)
+                    </Button>
+                    
+                    {/* Componente temporal para testing */}
+                    <div className="border-2 border-dashed border-orange-300 p-4 rounded-lg">
+                      <p className="text-sm font-medium text-orange-700 mb-2">Testing Temporal:</p>
+                      <EmployeeDocumentSearch
+                        employeeUuid="3389ecbe-a18c-11f0-99f3-0242ac120002"
+                        employeeName="Pepa Pig (Test)"
+                        onDocumentSelect={(doc) => {
+                          console.log('📄 [TEST-DOCUMENT] Documento de prueba seleccionado:', doc);
+                        }}
+                        autoLoad={true}
+                      />
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
+}
+
+export default function ProfessorDetailPage() {
+  return (
+    <ProtectedRoute requiredRole={['super_admin', 'admin', 'gestor']}>
+      <ProfessorDetailContent />
+    </ProtectedRoute>
+  );
 }

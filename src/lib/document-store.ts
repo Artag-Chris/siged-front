@@ -1,4 +1,5 @@
 
+import axios, { AxiosResponse } from 'axios';
 import { DUMMY_DOCUMENTS } from "@/dummyData/dummyDocuments"
 import { ProfessorDocument, DocumentState } from "@/interfaces/Documents/Documents"
 import { DocumentUploadParams, DocumentUploadResponse } from "@/types/documentSearch"
@@ -43,9 +44,14 @@ export const useDocumentStore = create<DocumentState>()(
           // Crear FormData según la estructura de la CV API
           const formData = new FormData()
           formData.append('document', file)
-          // TODO: Cambiar por UUID real del profesor cuando esté disponible
-          const simulatedUUID = crypto.randomUUID ? crypto.randomUUID() : '550e8400-e29b-41d4-a716-446655440001';
-          formData.append('employeeUuid', simulatedUUID)
+          
+          // ✅ USAR UUID REAL DEL PROFESOR/EMPLEADO (ya no datos dummy)
+          if (!professorId || professorId === 'uuid-placeholder') {
+            throw new Error('UUID del profesor/empleado es requerido y debe ser válido');
+          }
+          
+          console.log('📎 [DOCUMENT-STORE] Usando UUID real del empleado:', professorId);
+          formData.append('employeeUuid', professorId) // UUID REAL del empleado seleccionado
           formData.append('employeeName', employeeName)
           formData.append('employeeCedula', employeeCedula)
           formData.append('documentType', 'hojas-de-vida')
@@ -56,16 +62,18 @@ export const useDocumentStore = create<DocumentState>()(
           if (uploadParams.tags) formData.append('tags', JSON.stringify(uploadParams.tags))
 
           // Llamada a la nueva API de documentos CV
-          const response = await fetch(`${CV_UPLOAD_API_URL}/upload`, {
-            method: 'POST',
-            body: formData,
-          })
+          const response: AxiosResponse<DocumentUploadResponse> = await axios.post(
+            `${CV_UPLOAD_API_URL}/upload`,
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              },
+              timeout: 60000 // 60 segundos para uploads
+            }
+          );
 
-          if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`)
-          }
-
-          const result: DocumentUploadResponse = await response.json()
+          const result = response.data;
 
           if (result.success && result.document) {
             // Convertir el documento de la API al formato local
@@ -109,13 +117,9 @@ export const useDocumentStore = create<DocumentState>()(
 
         try {
           // Llamada a la API para eliminar documento
-          const response = await fetch(`${DOCUMENT_API_URL}/delete/${documentId}`, {
-            method: 'DELETE',
-          })
-
-          if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`)
-          }
+          const response: AxiosResponse = await axios.delete(`${DOCUMENT_API_URL}/delete/${documentId}`, {
+            timeout: 30000
+          });
 
           set((state) => ({
             documents: state.documents.filter((doc) => doc.id !== documentId),

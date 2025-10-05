@@ -1,6 +1,7 @@
 // services/jwt-user.service.ts
 // Servicio para gestión de usuarios usando la API JWT
 
+import axios, { AxiosResponse, AxiosError } from 'axios';
 import JwtApiService from './jwt-api.service';
 import { 
   CreateUserRequest, 
@@ -68,22 +69,18 @@ export class JwtUserService {
       // Obtener token del localStorage
       const token = localStorage.getItem('siged_access_token');
       
-      const response = await fetch(fullUrl, {
-        method: 'GET',
+      const response: AxiosResponse<any> = await axios.get(fullUrl, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
-        }
+        },
+        timeout: 30000
       });
 
       console.log('📡 [USER-SERVICE] Response status:', response.status);
       
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       console.log('📦 [USER-SERVICE] Response data:', data);
 
       // Adaptamos la respuesta al formato esperado
