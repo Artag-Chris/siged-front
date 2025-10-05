@@ -511,6 +511,52 @@ function ProfessorDetailContent() {
                       🔬 Probar con Fetch Directo (Console)
                     </Button>
                     
+                    {/* Debugging directo - comparar UUIDs */}
+                    <div className="border-2 border-red-300 p-4 rounded-lg bg-red-50">
+                      <p className="text-sm font-medium text-red-700 mb-2">🚨 DEBUGGING CRÍTICO:</p>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="font-bold">UUID del profesor actual:</span>
+                          <br />
+                          <code className="bg-red-100 px-1 rounded">{professor.id}</code>
+                        </div>
+                        <div>
+                          <span className="font-bold">UUID que funciona:</span>
+                          <br />
+                          <code className="bg-green-100 px-1 rounded">3389ecbe-a18c-11f0-99f3-0242ac120002</code>
+                        </div>
+                        <div>
+                          <span className="font-bold">¿Son iguales?</span>
+                          <br />
+                          <Badge variant={professor.id === '3389ecbe-a18c-11f0-99f3-0242ac120002' ? 'default' : 'destructive'}>
+                            {professor.id === '3389ecbe-a18c-11f0-99f3-0242ac120002' ? 'SÍ ✅' : 'NO ❌'}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => {
+                          console.log('🔍 DEBUGGING INFO:');
+                          console.log('- Professor ID:', professor.id);
+                          console.log('- Professor ID length:', professor.id.length);
+                          console.log('- Working UUID:', '3389ecbe-a18c-11f0-99f3-0242ac120002');
+                          console.log('- Working UUID length:', '3389ecbe-a18c-11f0-99f3-0242ac120002'.length);
+                          console.log('- Are equal?:', professor.id === '3389ecbe-a18c-11f0-99f3-0242ac120002');
+                          console.log('- Character by character comparison:');
+                          for (let i = 0; i < Math.max(professor.id.length, 36); i++) {
+                            const char1 = professor.id[i] || 'undefined';
+                            const char2 = '3389ecbe-a18c-11f0-99f3-0242ac120002'[i] || 'undefined';
+                            console.log(`  [${i}]: "${char1}" vs "${char2}" ${char1 === char2 ? '✅' : '❌'}`);
+                          }
+                        }}
+                        variant="destructive" 
+                        size="sm"
+                        className="mt-2 w-full"
+                      >
+                        🔍 Debug UUID Comparison (Console)
+                      </Button>
+                    </div>
+                    
                     {/* Componente temporal para testing */}
                     <div className="border-2 border-dashed border-orange-300 p-4 rounded-lg">
                       <p className="text-sm font-medium text-orange-700 mb-2">Testing Temporal:</p>

@@ -36,13 +36,24 @@ const EmployeeDocumentStats: React.FC<EmployeeDocumentStatsProps> = ({
       const statsUrl = `${API_BASE_URL}/api/retrieval/employee/${employeeUuid}?limit=100`;
       console.log('📊 [EMPLOYEE-STATS] Fetching stats from:', statsUrl);
       console.log('🔧 [EMPLOYEE-STATS] Using FETCH (not axios)');
+      console.log('🧪 [EMPLOYEE-STATS] Employee UUID:', employeeUuid);
+      console.log('🧪 [EMPLOYEE-STATS] Is test UUID?:', employeeUuid === '3389ecbe-a18c-11f0-99f3-0242ac120002');
       
-      const response = await fetch(statsUrl, {
+      // Para debugging, forzar la URL que funciona si es el UUID de prueba
+      const WORKING_STATS_URL = 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/3389ecbe-a18c-11f0-99f3-0242ac120002?limit=100';
+      const urlToUse = employeeUuid === '3389ecbe-a18c-11f0-99f3-0242ac120002' ? WORKING_STATS_URL : statsUrl;
+      
+      console.log('🔄 [EMPLOYEE-STATS] URL being used:', urlToUse);
+      
+      const response = await fetch(urlToUse, {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
         }
       });
+      
+      console.log('📊 [EMPLOYEE-STATS] Response status:', response.status);
+      console.log('📊 [EMPLOYEE-STATS] Response ok:', response.ok);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
