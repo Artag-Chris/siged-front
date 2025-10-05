@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-// Ya no necesitamos axios - usando fetch nativo
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Download, Calendar, BarChart3 } from 'lucide-react';
 
@@ -16,7 +15,7 @@ interface DocumentStats {
   byType: Record<string, number>;
   byCategory: Record<string, number>;
   totalSize: number;
-  recentUploads: number; // últimos 7 días
+  recentUploads: number; 
 }
 
 const EmployeeDocumentStats: React.FC<EmployeeDocumentStatsProps> = ({
@@ -25,35 +24,22 @@ const EmployeeDocumentStats: React.FC<EmployeeDocumentStatsProps> = ({
 }) => {
   const [stats, setStats] = useState<DocumentStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL|| 'localhost:3000';
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_CV_UPLOAD_API_URL || 'https://demo-facilwhatsappapi.facilcreditos.co';
-
-  console.log('🔧 [EMPLOYEE-STATS] API_BASE_URL configured as:', API_BASE_URL);
+ 
 
   const fetchStats = async () => {
     setLoading(true);
     try {
       const statsUrl = `${API_BASE_URL}/api/retrieval/employee/${employeeUuid}?limit=100`;
-      console.log('📊 [EMPLOYEE-STATS] Fetching stats from:', statsUrl);
-      console.log('🔧 [EMPLOYEE-STATS] Using FETCH (not axios)');
-      console.log('🧪 [EMPLOYEE-STATS] Employee UUID:', employeeUuid);
-      console.log('🧪 [EMPLOYEE-STATS] Is test UUID?:', employeeUuid === '3389ecbe-a18c-11f0-99f3-0242ac120002');
-      
-      // Para debugging, forzar la URL que funciona si es el UUID de prueba
-      const WORKING_STATS_URL = 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/3389ecbe-a18c-11f0-99f3-0242ac120002?limit=100';
-      const urlToUse = employeeUuid === '3389ecbe-a18c-11f0-99f3-0242ac120002' ? WORKING_STATS_URL : statsUrl;
-      
-      console.log('🔄 [EMPLOYEE-STATS] URL being used:', urlToUse);
-      
-      const response = await fetch(urlToUse, {
+
+      const response = await fetch(statsUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
         }
       });
       
-      console.log('📊 [EMPLOYEE-STATS] Response status:', response.status);
-      console.log('📊 [EMPLOYEE-STATS] Response ok:', response.ok);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -61,8 +47,6 @@ const EmployeeDocumentStats: React.FC<EmployeeDocumentStatsProps> = ({
 
       const data = await response.json();
       const documents = data.documents || [];
-
-      // Calcular estadísticas
       const byType: Record<string, number> = {};
       const byCategory: Record<string, number> = {};
       let totalSize = 0;
@@ -72,18 +56,15 @@ const EmployeeDocumentStats: React.FC<EmployeeDocumentStatsProps> = ({
       let recentUploads = 0;
 
       documents.forEach((doc: any) => {
-        // Por tipo
+        
         const type = doc.documentType || 'sin-tipo';
         byType[type] = (byType[type] || 0) + 1;
 
-        // Por categoría
         const category = doc.category || 'sin-categoria';
         byCategory[category] = (byCategory[category] || 0) + 1;
 
-        // Tamaño total
         totalSize += doc.size || 0;
 
-        // Recientes
         if (new Date(doc.uploadDate) > oneWeekAgo) {
           recentUploads++;
         }
@@ -106,6 +87,12 @@ const EmployeeDocumentStats: React.FC<EmployeeDocumentStatsProps> = ({
         errorMessage = error.message;
       } else {
         errorMessage = error.message || errorMessage;
+      }
+      
+   
+      if (error.message.includes('404') || errorMessage.includes('404')) {       
+        setLoading(false);
+        return;
       }
       
       console.error('Error fetching document stats:', errorMessage, error);

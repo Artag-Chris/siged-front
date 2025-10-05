@@ -116,7 +116,7 @@ export interface UseEmployeeDocumentsReturn {
 
 // URL base de la API (desde env o config)
 // Configuración de la API - usar la URL que funciona
-const API_BASE_URL = process.env.NEXT_PUBLIC_CV_UPLOAD_API_URL || 'https://demo-facilwhatsappapi.facilcreditos.co';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://demo-facilwhatsappapi.facilcreditos.co';
 
 console.log('🔧 [EMPLOYEE-DOCS] API_BASE_URL configured as:', API_BASE_URL);
 
@@ -126,18 +126,21 @@ const cleanTags = (tags: string[] | undefined): string[] => {
   
   try {
     // Si es un array con elementos que parecen ser JSON string mal formateado
-    if (tags.length > 0 && tags[0].startsWith('[')) {
-      // Intentar parsear como JSON juntando todos los elementos
-      const joinedString = tags.join('');
+    if (tags.length > 0 && typeof tags[0] === 'string' && tags[0].includes('[')) {
+      // Intentar parsear como JSON juntando todos los elementos y limpiando
+      const joinedString = tags.join('').trim();
+      console.log('🔧 [TAGS] Attempting to parse joined string:', joinedString);
       const parsed = JSON.parse(joinedString);
+      console.log('✅ [TAGS] Successfully parsed:', parsed);
       return Array.isArray(parsed) ? parsed : [];
     }
     
     // Si son tags normales, devolverlos como están
     return tags.filter(tag => tag && typeof tag === 'string');
   } catch (error) {
-    console.warn('🚨 [EMPLOYEE-DOCS] Error parsing tags:', tags, error);
-    return tags.filter(tag => tag && typeof tag === 'string');
+    console.warn('🚨 [EMPLOYEE-DOCS] Error parsing tags:', tags, 'Error:', error);
+    // En caso de error, intentar devolver los tags como están
+    return tags.filter(tag => tag && typeof tag === 'string' && !tag.includes('['));
   }
 };
 
@@ -184,20 +187,11 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
       console.log('🌐 [EMPLOYEE-DOCS] Final URL:', finalUrl);
       console.log('🔧 [EMPLOYEE-DOCS] Using FETCH (not axios)');
       console.log('🧪 [EMPLOYEE-DOCS] Comparing with working test URL...');
-      console.log('🧪 [EMPLOYEE-DOCS] Working URL: https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/3389ecbe-a18c-11f0-99f3-0242ac120002');
-      console.log('🧪 [EMPLOYEE-DOCS] Current URL:', finalUrl);
-      console.log('🧪 [EMPLOYEE-DOCS] URLs match:', finalUrl === 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/3389ecbe-a18c-11f0-99f3-0242ac120002');
+      console.log('🧪 [EMPLOYEE-DOCS] Expected employee UUID:', employeeUuid);
       console.log('================================\n');
 
-      // FORZAR la URL exacta que funciona para debugging
-      const WORKING_URL = 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/3389ecbe-a18c-11f0-99f3-0242ac120002';
-      const urlToUse = employeeUuid === '3389ecbe-a18c-11f0-99f3-0242ac120002' ? WORKING_URL : finalUrl;
-      
-      console.log('🔄 [EMPLOYEE-DOCS] URL being used:', urlToUse);
-      console.log('🔄 [EMPLOYEE-DOCS] Forced override:', urlToUse !== finalUrl);
-
       // Usar fetch nativo (igual que el test exitoso)
-      const response = await fetch(urlToUse, {
+      const response = await fetch(finalUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
@@ -210,40 +204,6 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
       console.log('📡 [EMPLOYEE-DOCS] Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        // Si falla, intentar directamente con la URL que sabemos que funciona
-        console.log('🚨 [EMPLOYEE-DOCS] Primary fetch failed, trying with hardcoded working URL...');
-        const fallbackResponse = await fetch('https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval/employee/3389ecbe-a18c-11f0-99f3-0242ac120002', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        
-        console.log('🔄 [EMPLOYEE-DOCS] Fallback response status:', fallbackResponse.status);
-        console.log('🔄 [EMPLOYEE-DOCS] Fallback response ok:', fallbackResponse.ok);
-        
-        if (fallbackResponse.ok) {
-          console.log('✅ [EMPLOYEE-DOCS] FALLBACK WORKED! The issue is with URL construction');
-          const fallbackData = await fallbackResponse.json();
-          console.log('✅ [EMPLOYEE-DOCS] Fallback data:', fallbackData);
-          
-          // Usar los datos del fallback
-          const cleanedDocuments = fallbackData.documents.map((doc: any) => ({
-            ...doc,
-            tags: cleanTags(doc.tags)
-          }));
-
-          setDocuments(cleanedDocuments);
-          setPagination({
-            ...fallbackData.pagination,
-            totalPages: Math.ceil(fallbackData.pagination.total / fallbackData.pagination.limit)
-          });
-          setEmployeeInfo(fallbackData.meta.employeeInfo);
-          
-          setLoading(false);
-          return; // Exit early con éxito
-        }
-        
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 

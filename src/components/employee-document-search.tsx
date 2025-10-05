@@ -8,12 +8,9 @@ import {
   Eye, 
   FileText, 
   Calendar, 
-  User, 
   Tag,
   RefreshCw,
   AlertCircle,
-  CheckCircle,
-  Clock
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -61,6 +58,8 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
     viewDocument
   } = useEmployeeDocuments();
 
+  const [lastEmployeeUuid, setLastEmployeeUuid] = useState<string>('');
+
   const [searchText, setSearchText] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -72,14 +71,39 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
     sortOrder: 'desc' as 'asc' | 'desc'
   });
 
-  // Auto-cargar documentos al montar el componente
+
+  useEffect(() => {
+    if (lastEmployeeUuid && lastEmployeeUuid !== employeeUuid) {
+      clearResults();
+    }
+    setLastEmployeeUuid(employeeUuid);
+  }, [employeeUuid, lastEmployeeUuid, documents.length, clearResults]);
+
+
   useEffect(() => {
     if (autoLoad && employeeUuid) {
-      handleLoadDocuments();
+      const timer = setTimeout(() => {
+        handleLoadDocuments();
+      }, 200);
+      
+      return () => clearTimeout(timer);
     }
   }, [employeeUuid, autoLoad]);
 
+  useEffect(() => {
+    if (documents.length > 0) {
+    
+      const inconsistentDocs = documents.filter(doc => doc.employeeUuid !== employeeUuid);
+      if (inconsistentDocs.length > 0) {
+       
+      } else {
+        
+      }
+    }
+  }, [documents, employeeUuid]);
+
   const handleLoadDocuments = async () => {
+
     try {
       await fetchEmployeeDocuments(employeeUuid, {
         page: 1,
@@ -87,14 +111,22 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
         sortBy: filters.sortBy,
         sortOrder: filters.sortOrder
       });
+ 
+      if (documents.length > 0) {
+        const firstDoc = documents[0];
+      }
+
+      if (employeeInfo) {
+
+      }
+      
     } catch (error) {
-      console.error('Error loading documents:', error);
+      console.error('❌ [SEARCH] Error loading documents:', error);
     }
   };
 
   const handleSearch = async () => {
     if (!searchText.trim() && !filters.documentType && !filters.category) {
-      // Si no hay filtros, cargar todos los documentos
       await handleLoadDocuments();
       return;
     }
@@ -131,9 +163,7 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
 
   const handleDownload = async (documentId: string, filename: string, doc?: any) => {
     try {
-      // Usar la URL del API si está disponible en el documento
       const downloadUrl = doc?.downloadUrl;
-      console.log('📥 [COMPONENT] Downloading with URL from API:', downloadUrl);
       await downloadDocument(documentId, downloadUrl);
     } catch (error) {
       console.error('Error downloading document:', error);
@@ -142,9 +172,7 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
 
   const handleView = (documentId: string, doc?: any) => {
     try {
-      // Usar la URL del API si está disponible en el documento
       const viewUrl = doc?.viewUrl;
-      console.log('👁️ [COMPONENT] Viewing with URL from API:', viewUrl);
       viewDocument(documentId, viewUrl);
     } catch (error) {
       console.error('Error viewing document:', error);
@@ -171,38 +199,6 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header con información del empleado */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-blue-700">
-            <User className="h-5 w-5" />
-            <span>Documentos del Empleado - API Específica</span>
-          </CardTitle>
-          <CardDescription className="text-blue-600">
-            Búsqueda optimizada usando <code>/api/retrieval/employee/{employeeUuid}</code>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm font-medium text-gray-700">UUID del Empleado</p>
-              <p className="text-blue-900 font-mono text-sm">{employeeUuid}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-700">Nombre</p>
-              <p className="text-blue-900 font-semibold">
-                {employeeInfo?.employeeName || employeeName || 'Cargando...'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-700">Total Documentos</p>
-              <p className="text-blue-900 font-semibold">
-                {pagination?.total || documents.length} documento(s)
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Barra de búsqueda */}
       <Card>
@@ -318,8 +314,9 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
         <Card>
           <CardContent className="flex items-center justify-center py-8">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-gray-600">Buscando documentos del empleado...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Cargando documentos del empleado...</p>
+              <p className="text-sm text-gray-500">UUID: {employeeUuid.slice(0, 8)}...</p>
             </div>
           </CardContent>
         </Card>
@@ -477,23 +474,49 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
         </Card>
       )}
 
-      {/* Sin resultados */}
+      {/* Sin resultados - Mejorado para distinguir entre diferentes estados */}
       {!loading && documents.length === 0 && !error && (
         <Card>
           <CardContent className="text-center py-8">
             <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No se encontraron documentos
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {searchText || Object.values(filters).some(f => f) 
-                ? 'Intenta con diferentes términos de búsqueda o filtros'
-                : 'Este empleado aún no tiene documentos cargados'
-              }
-            </p>
-            <Button variant="outline" onClick={handleLoadDocuments}>
+            
+            {/* Determinar el tipo de mensaje basado en el contexto */}
+            {pagination && pagination.total === 0 ? (
+              // API respondió exitosamente pero con 0 documentos
+              <>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No hay documentos para este profesor
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {searchText || Object.values(filters).some(f => f) 
+                    ? 'No se encontraron documentos que coincidan con los filtros aplicados'
+                    : `El profesor ${employeeName || 'seleccionado'} aún no tiene documentos cargados en el sistema`
+                  }
+                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500">
+                    UUID del profesor: <code className="bg-gray-100 px-1 rounded">{employeeUuid.slice(0, 8)}...</code>
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    ✅ Conexión con API exitosa - Sistema funcionando correctamente
+                  </p>
+                </div>
+              </>
+            ) : (
+              // Estado inicial o error no detectado
+              <>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Inicializando búsqueda de documentos
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Cargando información del empleado...
+                </p>
+              </>
+            )}
+            
+            <Button variant="outline" onClick={handleLoadDocuments} className="mt-4">
               <RefreshCw className="h-4 w-4 mr-2" />
-              Recargar
+              {pagination?.total === 0 ? 'Recargar' : 'Cargar documentos'}
             </Button>
           </CardContent>
         </Card>

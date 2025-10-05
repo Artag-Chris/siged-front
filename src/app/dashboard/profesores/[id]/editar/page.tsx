@@ -11,13 +11,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Save, ArrowLeft, CheckCircle, AlertCircle, UserCheck, Edit } from "lucide-react"
 import Link from "next/link"
-
-// Importar la nueva arquitectura de empleados
 import { useEmpleados } from '@/hooks/useEmpleados';
 import { Empleado, UpdateEmpleadoRequest } from '@/types/empleados.types';
 import { ProtectedRoute } from '@/components/protected-route';
 
-// Tipos de documento disponibles
+
 const TIPOS_DOCUMENTO = [
   { value: 'CC', label: 'Cédula de Ciudadanía' },
   { value: 'CE', label: 'Cédula de Extranjería' },
@@ -25,7 +23,6 @@ const TIPOS_DOCUMENTO = [
   { value: 'PP', label: 'Pasaporte' }
 ];
 
-// Estados disponibles
 const ESTADOS = [
   { value: 'activo', label: 'Activo' },
   { value: 'inactivo', label: 'Inactivo' }
@@ -36,18 +33,12 @@ function EditarProfesorContent() {
   const router = useRouter()
   const professorId = params.id as string
   
-  // Usar el hook de empleados
   const {
-    selectedEmpleado,
     isLoading,
     error,
-    
-    // Operaciones
     getEmpleadoById,
     updateEmpleado,
     clearErrors,
-    
-    // Auth
     isUserAuthenticated,
     currentUser
   } = useEmpleados();
@@ -94,15 +85,15 @@ function EditarProfesorContent() {
   const loadProfessor = async () => {
     try {
       setLoadingProfessor(true);
-      console.log('Loading professor for edit:', professorId);
+
       
       const empleado = await getEmpleadoById(professorId);
       
       if (empleado && empleado.cargo === 'Docente') {
         setProfessor(empleado);
-        console.log('Professor loaded for edit:', empleado.nombre, empleado.apellido);
+
       } else {
-        console.warn('Employee is not a Docente or does not exist');
+
         setLocalError('El profesor no existe o no es un Docente válido');
       }
     } catch (error) {
@@ -160,16 +151,14 @@ function EditarProfesorContent() {
     }
 
     try {
-      console.log('Updating professor:', professorId, formData);
+
       
       const updatedEmpleado = await updateEmpleado(professorId, formData);
       
       if (updatedEmpleado) {
         setSuccess(`Profesor ${updatedEmpleado.nombre} ${updatedEmpleado.apellido} actualizado exitosamente`);
         setProfessor(updatedEmpleado);
-        console.log('Professor updated successfully:', updatedEmpleado.id);
         
-        // Redirigir después de 2 segundos
         setTimeout(() => {
           router.push(`/dashboard/profesores/${professorId}`);
         }, 2000);

@@ -1,47 +1,36 @@
 "use client"
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, } from 'react';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserPlus, Users, Search, Eye, FileText, Activity, Clock, GraduationCap, BookOpen, CheckCircle, AlertCircle } from "lucide-react"
+import { UserPlus, Users, Search, Eye, Activity, GraduationCap, CheckCircle, AlertCircle } from "lucide-react"
 import Link from "next/link"
-
-// Importar la nueva arquitectura de empleados
 import { useEmpleados } from '@/hooks/useEmpleados';
-import { Empleado } from '@/types/empleados.types';
 import { ProtectedRoute } from '@/components/protected-route';
 
 function ProfesoresContent() {
-  // Estados locales para evitar bucles infinitos
+
   const [searchTerm, setSearchTerm] = useState("")
   const [filterEstado, setFilterEstado] = useState<string>("todos")
 
-  // Usar el hook de empleados con configuración más estable
   const {
     empleados,
     selectedEmpleado,
     isLoading,
     error,
-    stats,
-    
-    // Operaciones
     refreshEmpleados,
     selectEmpleado,
     clearErrors,
-    
-    // Auth
     isUserAuthenticated,
     currentUser
   } = useEmpleados({
     autoLoad: true,
-    // Remover filtros iniciales que pueden causar re-renders
-    // initialFilters: { cargo: 'Docente', estado: 'activo' } 
   });
 
-  // Calcular estadísticas específicas para profesores
+
   const profesoresStats = React.useMemo(() => {
     const docentes = empleados.filter(emp => emp.cargo === 'Docente');
     const activosDocentes = docentes.filter(emp => emp.estado === 'activo').length;
@@ -56,10 +45,10 @@ function ProfesoresContent() {
   }, [empleados]);
   const filteredProfessors = React.useMemo(() => {
     return empleados.filter((empleado) => {
-      // Primero filtrar solo Docentes
+
       if (empleado.cargo !== 'Docente') return false;
 
-      // Luego aplicar filtros de búsqueda
+
       const matchesSearch =
         empleado.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         empleado.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
