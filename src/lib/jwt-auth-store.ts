@@ -1,6 +1,3 @@
-// lib/jwt-auth-store.ts
-// Store de Zustand para autenticación JWT
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import JwtAuthService from '@/services/jwt-auth.service';
@@ -14,7 +11,7 @@ interface AuthUser {
 }
 
 interface AuthState {
-  // Estado
+  
   user: AuthUser | null;
   accessToken: string | null;
   refreshToken: string | null;
@@ -47,7 +44,7 @@ interface AuthState {
 export const useJwtAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      // =============== ESTADO INICIAL ===============
+
       user: null,
       accessToken: null,
       refreshToken: null,
@@ -55,7 +52,6 @@ export const useJwtAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
 
-      // =============== LOGIN ===============
       login: async (email: string, password: string): Promise<boolean> => {
         set({ isLoading: true, error: null });
         
@@ -69,8 +65,7 @@ export const useJwtAuthStore = create<AuthState>()(
 
           if (response.ok && response.data) {
             const { usuario, token, refreshToken } = response.data;
-            
-            // Guardar en el store
+
             set({
               user: usuario,
               accessToken: token,
@@ -80,15 +75,9 @@ export const useJwtAuthStore = create<AuthState>()(
               error: null
             });
 
-            // Guardar tokens en el servicio
+
             JwtAuthService.setTokens(token, refreshToken);
             JwtAuthService.setUser(usuario);
-
-            console.log('✅ [JWT-STORE] Login exitoso, usuario logueado:', {
-              nombre: usuario.nombre,
-              email: usuario.email,
-              rol: usuario.rol
-            });
 
             return true;
           }
@@ -111,17 +100,13 @@ export const useJwtAuthStore = create<AuthState>()(
         }
       },
 
-      // =============== LOGOUT ===============
       logout: async (): Promise<void> => {
         set({ isLoading: true });
         
         try {
-          console.log('🔓 [JWT-STORE] Iniciando proceso de logout...');
-          
-          // Llamar al servicio que enviará el JWT al servidor
+
           await JwtAuthService.logout();
 
-          // Limpiar estado del store
           set({
             user: null,
             accessToken: null,
@@ -136,8 +121,6 @@ export const useJwtAuthStore = create<AuthState>()(
         } catch (error: any) {
           console.error('❌ [JWT-STORE] Error en logout:', error.message);
           
-          // Limpiar estado local aunque falle el API
-          // Es importante que el usuario pueda cerrar sesión aunque el servidor falle
           set({
             user: null,
             accessToken: null,
@@ -146,8 +129,7 @@ export const useJwtAuthStore = create<AuthState>()(
             isLoading: false,
             error: null
           });
-          
-          console.log('🧹 [JWT-STORE] Logout local forzado completado');
+
         }
       },
 
@@ -156,12 +138,10 @@ export const useJwtAuthStore = create<AuthState>()(
         const { refreshToken } = get();
         
         if (!refreshToken) {
-          console.warn('⚠️ [JWT-STORE] No hay refresh token disponible');
           return false;
         }
 
         try {
-          console.log('🔄 [JWT-STORE] Renovando tokens...');
           
           const newToken = await JwtAuthService.refreshToken();
           
@@ -175,19 +155,16 @@ export const useJwtAuthStore = create<AuthState>()(
 
         } catch (error: any) {
           console.error('❌ [JWT-STORE] Error renovando tokens:', error.message);
-          
-          // Limpiar sesión si falló la renovación
+
           get().logout();
           return false;
         }
       },
 
-      // =============== UPDATE USER ===============
       updateUser: async (userId: string, userData: UpdateUserRequest): Promise<boolean> => {
         set({ isLoading: true, error: null });
 
         try {
-          console.log('✏️ [JWT-STORE] Actualizando usuario:', userId);
           
           const response = await JwtAuthService.updateUser(userId, userData);
 
@@ -206,7 +183,6 @@ export const useJwtAuthStore = create<AuthState>()(
                 isLoading: false,
                 error: null
               });
-              console.log('✅ [JWT-STORE] Usuario actual actualizado en store');
             } else {
               set({ isLoading: false });
             }
@@ -228,14 +204,11 @@ export const useJwtAuthStore = create<AuthState>()(
         }
       },
 
-      // =============== UTILIDADES ===============
       clearError: () => {
         set({ error: null });
       },
 
       clearAllStorage: () => {
-        console.log('🧹 [JWT-STORE] Limpiando todo el storage...');
-        
         JwtAuthService.clearAllStorage();
         
         set({
@@ -262,7 +235,6 @@ export const useJwtAuthStore = create<AuthState>()(
         return user ? roles.includes(user.rol) : false;
       },
 
-      // =============== GETTERS JWT ===============
       getAccessToken: (): string | null => {
         const { accessToken } = get();
         return accessToken;
@@ -278,10 +250,7 @@ export const useJwtAuthStore = create<AuthState>()(
         return user;
       },
 
-      // =============== INICIALIZACIÓN ===============
-      initializeAuth: () => {
-        console.log('🔧 [JWT-STORE] Inicializando autenticación...');
-        
+      initializeAuth: () => {       
         const token = JwtAuthService.getAccessToken();
         const refreshToken = JwtAuthService.getRefreshToken();
         const user = JwtAuthService.getUser();
@@ -294,14 +263,9 @@ export const useJwtAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false
           });
-          
-          console.log('✅ [JWT-STORE] Sesión restaurada:', {
-            nombre: user.nombre,
-            email: user.email,
-            rol: user.rol
-          });
+
         } else {
-          console.log('ℹ️ [JWT-STORE] No hay sesión activa');
+
         }
       }
     }),

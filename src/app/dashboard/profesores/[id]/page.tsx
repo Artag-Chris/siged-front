@@ -26,9 +26,8 @@ import {
   Clock,
   UserCheck
 } from "lucide-react"
+
 import Link from "next/link"
-
-
 import { useEmpleados } from '@/hooks/useEmpleados';
 import { Empleado } from '@/types/empleados.types';
 import { ProtectedRoute } from '@/components/protected-route';
@@ -37,14 +36,12 @@ function ProfessorDetailContent() {
   const params = useParams()
   const professorId = params.id as string
 
-
   const {
     isLoading,
     error,
     getEmpleadoById,
     clearErrors,
     isUserAuthenticated,
-    currentUser
   } = useEmpleados();
 
   const [professor, setProfessor] = useState<Empleado | null>(null)

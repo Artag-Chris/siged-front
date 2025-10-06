@@ -18,24 +18,22 @@ import { Bell, Search, Settings, LogOut, User, Shield, Crown, UserCog } from "lu
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useJwtAuth({
-    redirectTo: '/login' // Redirigir al login después del logout
+    redirectTo: '/login' 
   })
   
   const [profileDialogOpen, setProfileDialogOpen] = useState(false)
 
   const handleLogout = async () => {
   
-    
     try {
    
       await logout()
     } catch (error) {
       console.error('❌ [NAVBAR] Error en logout:', error)
-      // Aunque haya error, el hook debería manejar la redirección
+
     }
   }
 
-  // No mostrar navbar si no hay usuario autenticado
   if (!isAuthenticated || !user) {
     return null
   }

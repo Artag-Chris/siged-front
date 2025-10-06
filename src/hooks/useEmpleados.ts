@@ -1,6 +1,3 @@
-// hooks/useEmpleados.ts
-// Custom hook para gestión de empleados con todas las operaciones API
-
 import { useCallback, useEffect } from 'react';
 import { useEmpleadosStore } from '@/lib/empleados-store';
 import { useJwtAuthStore } from '@/lib/jwt-auth-store';
@@ -21,7 +18,6 @@ interface UseEmpleadosOptions {
 export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
   const { autoLoad = true, initialFilters } = options;
 
-  // Store state
   const {
     empleados,
     selectedEmpleado,
@@ -29,7 +25,6 @@ export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
     error,
     filters,
     pagination,
-    // Actions
     getEmpleados,
     getEmpleadoById,
     createEmpleado,
@@ -43,20 +38,16 @@ export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
     setLoading
   } = useEmpleadosStore();
 
-  // Auth state
   const { getCurrentUser, getAccessToken, isAuthenticated } = useJwtAuthStore();
 
-  // =============== CARGAR EMPLEADOS ===============
   const loadEmpleados = useCallback(async (customFilters?: EmpleadoFilters) => {
     if (!isAuthenticated) {
-      console.warn('⚠️ [USE-EMPLEADOS] Usuario no autenticado');
       return;
     }
 
     await getEmpleados(customFilters || initialFilters);
   }, [getEmpleados, initialFilters, isAuthenticated]);
 
-  // =============== OPERACIONES CRUD ===============
   const handleCreateEmpleado = useCallback(async (data: CreateEmpleadoRequest): Promise<Empleado | null> => {
     if (!isAuthenticated) {
       throw new Error('Usuario no autenticado');
@@ -88,14 +79,12 @@ export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
 
   const handleGetEmpleadoById = useCallback(async (id: string): Promise<Empleado | null> => {
     if (!isAuthenticated) {
-      console.warn('⚠️ [USE-EMPLEADOS] Usuario no autenticado');
       return null;
     }
 
     return await getEmpleadoById(id);
   }, [getEmpleadoById, isAuthenticated]);
 
-  // =============== COMENTARIOS ===============
   const handleAddComentario = useCallback(async (empleadoId: string, observacion: string): Promise<boolean> => {
     if (!isAuthenticated) {
       throw new Error('Usuario no autenticado');
@@ -116,7 +105,6 @@ export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
     return result !== null;
   }, [addComentario, isAuthenticated, getCurrentUser]);
 
-  // =============== DOCUMENTOS ===============
   const handleUploadDocument = useCallback(async (
     empleadoId: string, 
     file: File, 
@@ -132,18 +120,16 @@ export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
     }
 
     const uploadData: EmpleadoDocumentUpload = {
-      empleado_id: empleadoId, // UUID REAL del empleado, NO datos dummy
+      empleado_id: empleadoId, 
       file,
       document_type: documentType,
       description
     };
 
-    console.log('📎 [USE-EMPLEADOS] Subiendo documento con UUID real:', empleadoId);
-
     return await uploadDocument(uploadData);
   }, [uploadDocument, isAuthenticated]);
 
-  // =============== UTILIDADES ===============
+
   const selectEmpleado = useCallback((empleado: Empleado | null) => {
     setSelectedEmpleado(empleado);
     
@@ -168,7 +154,6 @@ export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
     loadEmpleados();
   }, [loadEmpleados]);
 
-  // =============== FILTROS ESPECÍFICOS ===============
   const getDocentes = useCallback((additionalFilters?: Partial<EmpleadoFilters>) => {
     return loadEmpleados({ 
       ...additionalFilters, 
@@ -190,15 +175,13 @@ export const useEmpleados = (options: UseEmpleadosOptions = {}) => {
     });
   }, [loadEmpleados]);
 
-  // =============== EFECTO DE AUTO-CARGA ===============
+
   useEffect(() => {
     if (autoLoad && isAuthenticated) {
-      console.log('🔄 [USE-EMPLEADOS] Auto-cargando empleados...');
       loadEmpleados();
     }
   }, [autoLoad, loadEmpleados, isAuthenticated]);
 
-  // =============== DATOS DERIVADOS ===============
   const stats = {
     total: empleados.length,
     docentes: empleados.filter(emp => emp.cargo === 'Docente').length,

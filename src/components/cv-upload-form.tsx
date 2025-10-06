@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Upload, FileText, X, User, Hash, Tag, FileUp } from 'lucide-react';
+import { Upload, FileText, X, User, Tag, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +41,6 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
     tags: [] as string[]
   });
 
-  // Tipos de documento permitidos según la API
   const documentTypes = [
     { value: 'hojas', label: 'Hojas de Vida' },
     { value: 'contratos', label: 'Contratos' },
@@ -55,20 +54,14 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
   ];
 
   const [dragActive, setDragActive] = useState(false);
-
   const handleFileSelect = (file: File) => {
-    // Validaciones según la documentación CV API
+
     if (file.type !== 'application/pdf') {
       onUploadError?.('Solo se permiten archivos PDF');
       return;
     }
-
-    // SIN VALIDACIÓN DE TAMAÑO - Permitir archivos de cualquier tamaño
-    // El límite lo maneja el servidor backend, no el frontend
-
     setSelectedFile(file);
     
-    // Auto-generar título si no existe
     if (!formData.title && professorData?.name) {
       setFormData(prev => ({
         ...prev,
@@ -76,11 +69,6 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
       }));
     }
 
-    console.log('✅ Archivo seleccionado:', {
-      name: file.name,
-      size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-      type: file.type
-    });
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -138,8 +126,7 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
 
     try {
       const finalTags = formData.tags.length > 0 ? formData.tags : ['curriculum', 'docente', 'profesor'];
-      
-      // ✅ USAR UUID REAL del profesor recibido como prop
+
       const uploadParams: DocumentUploadParams = {
         file: selectedFile,
         employeeUuid: professorId, // UUID REAL del profesor
@@ -152,30 +139,8 @@ const CVUploadForm: React.FC<CVUploadFormProps> = ({
         tags: finalTags
       };
 
-      // 🐛 DEBUG: Mostrar parámetros completos antes del upload
-      console.log('🚀 [DEBUG CV-FORM] Parámetros para upload CV:');
-      console.log('📁 Archivo seleccionado (se enviará como "document"):', {
-        name: selectedFile.name,
-        size: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
-        type: selectedFile.type,
-        lastModified: new Date(selectedFile.lastModified).toLocaleString()
-      });
-      console.log('👤 Datos del profesor (UUID REAL):', {
-        employeeUuid: professorId, // UUID REAL del profesor
-        employeeName: professorData.name,
-        employeeCedula: professorData.cedula
-      });
-      console.log('📋 Metadatos del formulario:', {
-        title: formData.title.trim(),
-        description: formData.description || 'Sin descripción',
-        category: formData.category,
-        documentType: formData.documentType,
-        tags: finalTags
-      });
-
       const result = await uploadDocument(uploadParams);
 
-      // Reset form
       setSelectedFile(null);
       setFormData({
         title: '',

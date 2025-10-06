@@ -48,7 +48,6 @@ function ProfesoresContent() {
 
       if (empleado.cargo !== 'Docente') return false;
 
-
       const matchesSearch =
         empleado.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         empleado.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||

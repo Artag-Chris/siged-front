@@ -5,13 +5,13 @@ import { useJwtAuth } from "@/hooks/useJwtAuth"
 import { ProtectedRouteProps } from "@/interfaces/AuthContext"
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  // NO usar redirección automática en el hook para evitar bucles
+
   const { user, isLoading, isAuthenticated, hasRole } = useJwtAuth({
     autoInitialize: true
-    // NO incluir redirectTo aquí para evitar bucles
+
   })
 
-  // Loading state
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -23,7 +23,6 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     )
   }
 
-  // Not authenticated - redirigir manualmente UNA SOLA VEZ
   if (!isAuthenticated || !user) {
     console.log('🚫 [PROTECTED-ROUTE] Usuario no autenticado, redirigiendo a login...')
     if (typeof window !== 'undefined') {
@@ -42,9 +41,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     )
   }
 
-  // Insufficient role
+
   if (requiredRole) {
-    // Si requiredRole es un array, verificar si el usuario tiene alguno de los roles
+   
     const hasRequiredRole = Array.isArray(requiredRole) 
       ? requiredRole.some(role => hasRole(role))
       : hasRole(requiredRole);

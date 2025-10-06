@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Save, ArrowLeft, CheckCircle, AlertCircle, UserCheck, Edit } from "lucide-react"
+import { Save, ArrowLeft, CheckCircle, AlertCircle, UserCheck, } from "lucide-react"
 import Link from "next/link"
 import { useEmpleados } from '@/hooks/useEmpleados';
 import { Empleado, UpdateEmpleadoRequest } from '@/types/empleados.types';
@@ -59,14 +59,13 @@ function EditarProfesorContent() {
   const [success, setSuccess] = useState('')
   const [loadingProfessor, setLoadingProfessor] = useState(true)
 
-  // Cargar profesor al montar el componente
   useEffect(() => {
     if (professorId && isUserAuthenticated) {
       loadProfessor()
     }
   }, [professorId, isUserAuthenticated])
 
-  // Actualizar formulario cuando se carga el profesor
+
   useEffect(() => {
     if (professor) {
       setFormData({
@@ -93,7 +92,6 @@ function EditarProfesorContent() {
         setProfessor(empleado);
 
       } else {
-
         setLocalError('El profesor no existe o no es un Docente válido');
       }
     } catch (error) {
@@ -152,7 +150,6 @@ function EditarProfesorContent() {
 
     try {
 
-      
       const updatedEmpleado = await updateEmpleado(professorId, formData);
       
       if (updatedEmpleado) {

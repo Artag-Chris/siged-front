@@ -11,13 +11,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Save, ArrowLeft, CheckCircle, AlertCircle, UserPlus } from "lucide-react"
 import Link from "next/link"
-
-// Importar la nueva arquitectura de empleados
 import { useEmpleados } from '@/hooks/useEmpleados';
 import { CreateEmpleadoRequest } from '@/types/empleados.types';
 import { ProtectedRoute } from '@/components/protected-route';
 
-// Tipos de documento disponibles
 const TIPOS_DOCUMENTO = [
   { value: 'CC', label: 'Cédula de Ciudadanía' },
   { value: 'CE', label: 'Cédula de Extranjería' },
@@ -25,7 +22,7 @@ const TIPOS_DOCUMENTO = [
   { value: 'PP', label: 'Pasaporte' }
 ];
 
-// Estados disponibles
+
 const ESTADOS = [
   { value: 'activo', label: 'Activo' },
   { value: 'inactivo', label: 'Inactivo' }
@@ -33,16 +30,13 @@ const ESTADOS = [
 
 function AgregarProfesorContent() {
   const router = useRouter()
-  
-  // Usar el hook de empleados
+
   const {
     isLoading,
-    error,
-    
+    error, 
     // Operaciones
     createEmpleado,
     clearErrors,
-    
     // Auth
     isUserAuthenticated,
     currentUser
@@ -55,7 +49,7 @@ function AgregarProfesorContent() {
     documento: '',
     email: '',
     direccion: '',
-    cargo: 'Docente', // Fijo para profesores
+    cargo: 'Docente',
     estado: 'activo'
   });
 
@@ -104,15 +98,10 @@ function AgregarProfesorContent() {
     }
 
     try {
-      console.log('Creating new professor:', formData);
-      
       const newEmpleado = await createEmpleado(formData);
-      
       if (newEmpleado) {
         setSuccess(`Profesor ${newEmpleado.nombre} ${newEmpleado.apellido} creado exitosamente`);
-        console.log('Professor created successfully:', newEmpleado.id);
-        
-        // Redirigir después de 2 segundos
+
         setTimeout(() => {
           router.push('/dashboard/profesores');
         }, 2000);
