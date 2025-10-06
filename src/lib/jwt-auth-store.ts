@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import JwtAuthService from '@/services/jwt-auth.service';
+import { UpdateUserRequest } from '@/types/auth.types';
 
 interface AuthUser {
   id: string;
@@ -25,6 +26,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<boolean>;
+  updateUser: (userId: string, userData: UpdateUserRequest) => Promise<boolean>;
   clearError: () => void;
   clearAllStorage: () => void;
   setLoading: (loading: boolean) => void;
@@ -176,6 +178,52 @@ export const useJwtAuthStore = create<AuthState>()(
           
           // Limpiar sesión si falló la renovación
           get().logout();
+          return false;
+        }
+      },
+
+      // =============== UPDATE USER ===============
+      updateUser: async (userId: string, userData: UpdateUserRequest): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+
+        try {
+          console.log('✏️ [JWT-STORE] Actualizando usuario:', userId);
+          
+          const response = await JwtAuthService.updateUser(userId, userData);
+
+          if (response.ok && response.data) {
+            const { user: currentUser } = get();
+            
+            // Si es el usuario actual, actualizar el estado
+            if (currentUser && currentUser.id === userId) {
+              set({
+                user: {
+                  id: response.data.id,
+                  nombre: response.data.nombre,
+                  email: response.data.email,
+                  rol: response.data.rol as 'super_admin' | 'admin' | 'gestor'
+                },
+                isLoading: false,
+                error: null
+              });
+              console.log('✅ [JWT-STORE] Usuario actual actualizado en store');
+            } else {
+              set({ isLoading: false });
+            }
+
+            return true;
+          }
+
+          throw new Error('Error actualizando usuario');
+
+        } catch (error: any) {
+          console.error('❌ [JWT-STORE] Error actualizando usuario:', error.message);
+          
+          set({
+            isLoading: false,
+            error: error.message
+          });
+
           return false;
         }
       },

@@ -11,11 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Users, 
   UserPlus, 
-  Search, 
   Filter, 
   RefreshCw,
   Edit,
-  Trash2,
   UserCheck,
   UserX,
   Eye,
@@ -27,11 +25,11 @@ import {
   IdCard
 } from 'lucide-react';
 
-// Importar tipos y servicios JWT
 import { User, UserFilters, UsersListResponse } from '@/types/auth.types';
 import JwtUserService from '@/services/jwt-user.service';
 import { getRoleLabel, getDocumentTypeLabel } from '@/utils/jwt-validators';
 import { ProtectedRoute } from '@/components/protected-route';
+import { UserEditDialog } from '@/components/user-edit-dialog';
 
 export default function UsuariosPage() {
   return (
@@ -48,6 +46,8 @@ function UsuariosContent() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -75,7 +75,6 @@ function UsuariosContent() {
     setError(null);
     
     try {
-      console.log('🔍 Cargando usuarios con filtros:', filters);
       const response: UsersListResponse = await JwtUserService.getUsers(filters);
       
       if (response.success) {
@@ -83,7 +82,6 @@ function UsuariosContent() {
         if (response.pagination) {
           setPagination(response.pagination);
         }
-        console.log('✅ Usuarios cargados:', response.data.length);
       } else {
         throw new Error(response.message || 'Error cargando usuarios');
       }
@@ -99,7 +97,7 @@ function UsuariosContent() {
     setFilters(prev => ({
       ...prev,
       [key]: value,
-      page: 1 // Reset a primera página al cambiar filtros
+      page: 1 
     }));
   };
 
@@ -113,17 +111,25 @@ function UsuariosContent() {
   const handleUserSelect = (user: User) => {
     setSelectedUser(user);
     setSelectedUserId(user.id);
-    console.log('👤 Usuario seleccionado:', {
-      id: user.id,
-      nombre: `${user.nombre} ${user.apellido}`,
-      email: user.email,
-      rol: user.rol
-    });
   };
 
   const clearSelection = () => {
     setSelectedUser(null);
     setSelectedUserId(null);
+  };
+
+  const handleEditUser = (user: User) => {
+    setUserToEdit(user);
+
+    setTimeout(() => {
+      setEditDialogOpen(true);
+    }, 0);
+  };
+
+  const handleEditSuccess = () => {
+    setEditDialogOpen(false);
+    setUserToEdit(null);
+    loadUsers(); 
   };
 
   const handleDeactivateUser = async (userId: string) => {
@@ -146,7 +152,7 @@ function UsuariosContent() {
 
     try {
       await JwtUserService.reactivateUser(userId);
-      loadUsers(); // Recargar lista
+      loadUsers(); 
     } catch (error: any) {
       alert(`Error reactivando usuario: ${error.message}`);
     }
@@ -439,10 +445,26 @@ function UsuariosContent() {
                       </div>
                       
                       <div className="flex justify-end space-x-2 mt-4 pt-3 border-t">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUserSelect(user);
+                          }}
+                          title="Ver detalles"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditUser(user);
+                          }}
+                          title="Editar usuario"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         {user.estado === 'activo' ? (
@@ -577,10 +599,20 @@ function UsuariosContent() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleUserSelect(user)}
+                                title="Ver detalles"
+                              >
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditUser(user)}
+                                title="Editar usuario"
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               {user.estado === 'activo' ? (
@@ -705,6 +737,14 @@ function UsuariosContent() {
           </Card>
         )}
       </div>
+
+      {/* Diálogo de edición de usuario */}
+      <UserEditDialog
+        user={userToEdit}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }

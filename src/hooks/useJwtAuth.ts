@@ -4,6 +4,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useJwtAuthStore } from '@/lib/jwt-auth-store';
+import { UpdateUserRequest } from '@/types/auth.types';
 
 interface UseJwtAuthReturn {
   // Estado
@@ -15,6 +16,7 @@ interface UseJwtAuthReturn {
   // Métodos
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  updateUser: (userId: string, userData: UpdateUserRequest) => Promise<boolean>;
   clearError: () => void;
   
   // Utilidades
@@ -45,6 +47,7 @@ export const useJwtAuth = (options: UseJwtAuthOptions = {}): UseJwtAuthReturn =>
     error,
     login: storeLogin,
     logout: storeLogout,
+    updateUser: storeUpdateUser,
     clearError,
     hasRole,
     hasAnyRole,
@@ -134,6 +137,21 @@ export const useJwtAuth = (options: UseJwtAuthOptions = {}): UseJwtAuthReturn =>
     console.log('📍 [USE-JWT-AUTH] Logout completado con redirección');
   };
 
+  // =============== UPDATE USER WRAPPER ===============
+  const updateUser = async (userId: string, userData: UpdateUserRequest): Promise<boolean> => {
+    console.log('✏️ [USE-JWT-AUTH] Actualizando usuario:', userId);
+    
+    const success = await storeUpdateUser(userId, userData);
+    
+    if (success) {
+      console.log('✅ [USE-JWT-AUTH] Usuario actualizado exitosamente');
+    } else {
+      console.error('❌ [USE-JWT-AUTH] Error actualizando usuario');
+    }
+    
+    return success;
+  };
+
   return {
     // Estado
     user,
@@ -144,6 +162,7 @@ export const useJwtAuth = (options: UseJwtAuthOptions = {}): UseJwtAuthReturn =>
     // Métodos
     login,
     logout,
+    updateUser,
     clearError,
     
     // Utilidades

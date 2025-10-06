@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { useJwtAuth } from "@/hooks/useJwtAuth"
+import { UserProfileDialog } from "@/components/user-profile-dialog"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -12,12 +14,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Search, Settings, LogOut, User, Shield, Crown } from "lucide-react"
+import { Bell, Search, Settings, LogOut, User, Shield, Crown, UserCog } from "lucide-react"
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useJwtAuth({
     redirectTo: '/login' // Redirigir al login después del logout
   })
+  
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false)
 
   const handleLogout = async () => {
   
@@ -147,6 +151,10 @@ export function Navbar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setProfileDialogOpen(true)}>
+                  <UserCog className="mr-2 h-4 w-4" />
+                  <span>Editar Perfil</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
                   <span>Mi Perfil</span>
@@ -165,6 +173,12 @@ export function Navbar() {
           </div>
         </div>
       </div>
+      
+      {/* Dialog de Edición de Perfil */}
+      <UserProfileDialog 
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
     </header>
   )
 }

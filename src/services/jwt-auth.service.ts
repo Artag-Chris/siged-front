@@ -1,31 +1,20 @@
-// services/jwt-auth.service.ts
-// Servicio para autenticación JWT
-
 import JwtApiService from './jwt-api.service';
-import { 
-  LoginRequest, 
-  LoginResponse, 
-  User, 
+import {
+  LoginRequest,
+  LoginResponse,
+  User,
   ApiResponse,
-  RefreshTokenRequest,
-  ChangePasswordRequest 
+  ChangePasswordRequest,
+  UpdateUserRequest,
+  UserFilters,
+  UsersListResponse
 } from '@/types/auth.types';
 
 export class JwtAuthService {
-  
-  // =============== LOGIN ===============
+
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
       const endpoint = '/api/auth/login';
-      const fullUrl = `${JwtApiService.getBaseUrl()}${endpoint}`;
-      
-      console.log('🔐 [AUTH-SERVICE] Iniciando login...');
-      console.log('🌐 [AUTH-SERVICE] URL completa:', fullUrl);
-      console.log('📤 [AUTH-SERVICE] Datos enviados:', {
-        email: credentials.email,
-        contrasena: '[OCULTA POR SEGURIDAD]'
-      });
-
       const response = await JwtApiService.post<LoginResponse>(
         endpoint,
         credentials
@@ -35,14 +24,6 @@ export class JwtAuthService {
         throw new Error(response.msg || 'Error de autenticación');
       }
 
-      console.log('✅ [AUTH-SERVICE] Login exitoso:', {
-        usuario: response.data.usuario.nombre,
-        email: response.data.usuario.email,
-        rol: response.data.usuario.rol,
-        tokenLength: response.data.token.length,
-        refreshTokenLength: response.data.refreshToken.length
-      });
-      
       return response;
 
     } catch (error: any) {
@@ -51,38 +32,25 @@ export class JwtAuthService {
     }
   }
 
-  // =============== LOGOUT ===============
   static async logout(): Promise<void> {
     try {
       const endpoint = '/api/auth/logout';
-      console.log('🔓 [AUTH-SERVICE] Cerrando sesión en el servidor...');
 
-      // Verificar que tenemos token antes de hacer la petición
       const accessToken = this.getAccessToken();
       if (accessToken) {
-        console.log('📤 [AUTH-SERVICE] Enviando logout al servidor con token JWT');
-        
-        // El JwtApiService ya maneja automáticamente el header Authorization
-        // a través de los interceptores, solo necesitamos hacer la petición
+
         await JwtApiService.post(endpoint, {});
-        
-        console.log('✅ [AUTH-SERVICE] Logout del servidor exitoso');
+
       } else {
-        console.log('ℹ️ [AUTH-SERVICE] No hay token activo, solo limpieza local');
       }
 
     } catch (error: any) {
-      console.warn('⚠️ [AUTH-SERVICE] Error en logout del servidor:', error.message);
-      // Continuar con logout local aunque falle el API
-      // Esto es importante para que el usuario pueda cerrar sesión aunque el servidor falle
+
     } finally {
-      // SIEMPRE limpiar tokens locales, sin importar si el API falló
       this.clearAllStorage();
-      console.log('🧹 [AUTH-SERVICE] Logout local completado, tokens eliminados');
     }
   }
 
-  // =============== REFRESH TOKEN ===============
   static async refreshToken(): Promise<string | null> {
     try {
       const refreshToken = this.getRefreshToken();
@@ -91,8 +59,6 @@ export class JwtAuthService {
       }
 
       const endpoint = '/api/auth/refresh';
-      console.log('🔄 [AUTH-SERVICE] Renovando token...');
-
       const response = await JwtApiService.post<LoginResponse>(
         endpoint,
         { refreshToken }
@@ -100,7 +66,6 @@ export class JwtAuthService {
 
       if (response.ok && response.data?.token) {
         this.setTokens(response.data.token, response.data.refreshToken);
-        console.log('✅ [AUTH-SERVICE] Token renovado exitosamente');
         return response.data.token;
       }
 
@@ -112,23 +77,15 @@ export class JwtAuthService {
     }
   }
 
-  // =============== GET USER PROFILE ===============
   static async getProfile(): Promise<User | null> {
     try {
       const endpoint = '/api/auth/me';
-      console.log('👤 [AUTH-SERVICE] Obteniendo perfil de usuario...');
-
       const response = await JwtApiService.get<ApiResponse<User>>(endpoint);
 
       if (response.ok && response.data) {
-        console.log('✅ [AUTH-SERVICE] Perfil obtenido:', {
-          id: response.data.id,
-          email: response.data.email,
-          rol: response.data.rol
-        });
         return response.data;
       }
-      
+
       return null;
     } catch (error) {
       console.error('❌ [AUTH-SERVICE] Error obteniendo perfil:', error);
@@ -136,19 +93,15 @@ export class JwtAuthService {
     }
   }
 
-  // =============== CHANGE PASSWORD ===============
   static async changePassword(passwordData: ChangePasswordRequest): Promise<boolean> {
     try {
       const endpoint = '/api/auth/change-password';
-      console.log('🔑 [AUTH-SERVICE] Cambiando contraseña...');
-
       const response = await JwtApiService.post<ApiResponse<any>>(
         endpoint,
         passwordData
       );
 
       if (response.ok) {
-        console.log('✅ [AUTH-SERVICE] Contraseña cambiada exitosamente');
         return true;
       }
 
@@ -159,12 +112,66 @@ export class JwtAuthService {
     }
   }
 
-  // =============== TOKEN MANAGEMENT ===============
+  static async updateUser(userId: string, userData: UpdateUserRequest): Promise<ApiResponse<User>> {
+    try {
+      const endpoint = `/api/usuario/${userId}`;
+      const response = await JwtApiService.put<ApiResponse<User>>(
+        endpoint,
+        userData
+      );
+
+      if (response.ok && response.data) {       
+        const currentUser = this.getUser();
+        if (currentUser && currentUser.id === userId) {
+          this.setUser({
+            ...currentUser,
+            ...response.data
+          });
+        }
+
+        return response;
+      }
+
+      throw new Error(response.msg || 'Error actualizando usuario');
+    } catch (error: any) {
+      console.error('❌ [AUTH-SERVICE] Error actualizando usuario:', error);
+      throw this.handleApiError(error);
+    }
+  }
+
+  static async getAllUsers(filters?: UserFilters): Promise<UsersListResponse> {
+    try {
+      const endpoint = '/api/auth/usuarios';
+      const queryParams = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, String(value));
+          }
+        });
+      }
+
+      const fullEndpoint = queryParams.toString()
+        ? `${endpoint}?${queryParams.toString()}`
+        : endpoint;
+
+      const response = await JwtApiService.get<UsersListResponse>(fullEndpoint);
+
+      if (response.success) {
+        return response;
+      }
+
+      throw new Error(response.message || 'Error obteniendo usuarios');
+    } catch (error: any) {
+      console.error('❌ [AUTH-SERVICE] Error obteniendo usuarios:', error);
+      throw this.handleApiError(error);
+    }
+  }
+
   static setTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem('jwt_access_token', accessToken);
     localStorage.setItem('jwt_refresh_token', refreshToken);
-    
-    // También actualizar el token en el servicio API
+
     JwtApiService.setToken(accessToken);
   }
 
@@ -179,12 +186,11 @@ export class JwtAuthService {
   static clearTokens(): void {
     localStorage.removeItem('jwt_access_token');
     localStorage.removeItem('jwt_refresh_token');
-    
-    // También limpiar del servicio API
+
+
     JwtApiService.removeToken();
   }
 
-  // =============== USER MANAGEMENT ===============
   static setUser(user: any): void {
     localStorage.setItem('jwt_user', JSON.stringify(user));
   }
@@ -198,7 +204,6 @@ export class JwtAuthService {
     localStorage.removeItem('jwt_user');
   }
 
-  // =============== UTILITIES ===============
   static isAuthenticated(): boolean {
     const token = this.getAccessToken();
     const user = this.getUser();
@@ -218,10 +223,8 @@ export class JwtAuthService {
   static clearAllStorage(): void {
     this.clearTokens();
     this.clearUser();
-    console.log('🧹 [AUTH-SERVICE] Todo el storage JWT limpiado');
   }
 
-  // =============== ERROR HANDLING ===============
   private static handleApiError(error: any): Error {
     if (error.response?.data?.msg) {
       return new Error(error.response.data.msg);

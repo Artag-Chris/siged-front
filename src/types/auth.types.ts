@@ -63,6 +63,18 @@ export interface ChangePasswordRequest {
   contrasenaNueva: string;
 }
 
+export interface UpdateUserRequest {
+  tipo_documento?: 'CC' | 'CE' | 'TI' | 'PP';
+  documento?: string;
+  nombre?: string;
+  apellido?: string;
+  email?: string;
+  celular?: string;
+  rol?: 'super_admin' | 'admin' | 'gestor';
+  estado?: 'activo' | 'inactivo';
+  contrasena?: string; // Opcional para cambiar contraseña
+}
+
 // Para listas de usuarios con filtros
 export interface UserFilters {
   tipo_documento?: string;

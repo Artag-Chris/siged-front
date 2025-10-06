@@ -1,14 +1,13 @@
-// app/admin-only/page.tsx
-// Página que solo pueden acceder los administradores
-
 "use client"
 
 import { ProtectedRoute } from "@/components/protected-route"
 import { useJwtAuth } from "@/hooks/useJwtAuth"
+import { UserProfileDialog } from "@/components/user-profile-dialog"
+import { UsersManagementTable } from "@/components/users-management-table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Shield, Crown, Settings, Users, Database } from "lucide-react"
+import { Shield, Crown, Settings, Users, Database, UserCog } from "lucide-react"
 
 function AdminContent() {
   const { user } = useJwtAuth()
@@ -19,9 +18,21 @@ function AdminContent() {
         
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="h-8 w-8 text-red-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <Shield className="h-8 w-8 text-red-600" />
+              <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
+            </div>
+            
+            {/* Botón Editar Perfil */}
+            <UserProfileDialog 
+              trigger={
+                <Button variant="outline" size="sm">
+                  <UserCog className="h-4 w-4 mr-2" />
+                  Editar Perfil
+                </Button>
+              }
+            />
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="destructive" className="text-sm">
@@ -131,6 +142,11 @@ function AdminContent() {
             </CardContent>
           </Card>
 
+        </div>
+
+        {/* Users Management Table */}
+        <div className="mt-8">
+          <UsersManagementTable />
         </div>
 
         {/* Access Information */}
