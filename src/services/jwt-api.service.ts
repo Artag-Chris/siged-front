@@ -107,6 +107,20 @@ export class JwtApiService {
     }
   }
 
+  static async postFormData<T>(endpoint: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> {
+    try {
+      const response = await this.getInstance().post<T>(endpoint, formData, {
+        ...config,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
+    }
+  }
+
   static async delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await this.getInstance().delete<T>(endpoint, config);
