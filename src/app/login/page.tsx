@@ -108,7 +108,16 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Contraseña</Label>
+                <button
+                  type="button"
+                  onClick={() => window.location.href = '/recuperar-contrasena'}
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
