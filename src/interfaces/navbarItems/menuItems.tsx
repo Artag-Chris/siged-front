@@ -63,6 +63,23 @@ export const menuItems = [
     ],
   },
   {
+    key: "horas-extra",
+    title: "Horas Extra",
+    icon: Clock,
+    items: [
+      {
+        title: "Lista de Horas Extra",
+        href: "/dashboard/horas-extra",
+        icon: List,
+      },
+      {
+        title: "Registrar Horas Extra",
+        href: "/dashboard/horas-extra/crear",
+        icon: Plus,
+      },
+    ],
+  },
+  {
     key: "pae",
     title: "Programa PAE",
     icon: Utensils,

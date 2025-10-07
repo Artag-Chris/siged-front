@@ -29,6 +29,7 @@ export function AdminSidebar({ className }: SidebarProps) {
     if (pathname.startsWith("/dashboard/rectores")) return "rectores"
     if (pathname.startsWith("/dashboard/pae")) return "pae"
     if (pathname.startsWith("/dashboard/suplencias")) return "suplencias"
+    if (pathname.startsWith("/dashboard/horas-extra")) return "horas-extra"
     return null
   }
 
