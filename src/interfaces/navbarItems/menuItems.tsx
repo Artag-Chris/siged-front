@@ -80,6 +80,23 @@ export const menuItems = [
     ],
   },
   {
+    key: "actos-administrativos",
+    title: "Actos Administrativos",
+    icon: FileText,
+    items: [
+      {
+        title: "Lista de Actos",
+        href: "/dashboard/actos-administrativos",
+        icon: List,
+      },
+      {
+        title: "Nuevo Acto",
+        href: "/dashboard/actos-administrativos/crear",
+        icon: Plus,
+      },
+    ],
+  },
+  {
     key: "pae",
     title: "Programa PAE",
     icon: Utensils,
