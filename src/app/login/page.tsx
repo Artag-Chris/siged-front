@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [localError, setLocalError] = useState("")
 
-  // Hook JWT con redirección automática
+
   const { 
     login, 
     user, 

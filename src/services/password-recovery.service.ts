@@ -21,7 +21,6 @@ class PasswordRecoveryService {
    */
   async solicitarCodigo(documento: string): Promise<SolicitarCodigoResponse> {
     try {
-      console.log('📱 [PASSWORD-RECOVERY] Solicitando código para documento:', documento);
 
       const response = await fetch(
         `${JwtApiService.getBaseUrl()}${this.BASE_PATH}/solicitar-codigo`,
@@ -39,8 +38,6 @@ class PasswordRecoveryService {
       if (!response.ok) {
         throw new Error(data.message || 'Error al solicitar código');
       }
-
-      console.log('✅ [PASSWORD-RECOVERY] Código solicitado exitosamente');
       return data;
     } catch (error: any) {
       console.error('❌ [PASSWORD-RECOVERY] Error solicitando código:', error);
@@ -61,8 +58,6 @@ class PasswordRecoveryService {
     nuevaContrasena: string
   ): Promise<VerificarCodigoResponse> {
     try {
-      console.log('🔐 [PASSWORD-RECOVERY] Verificando código y cambiando contraseña');
-
       // Validar formato del código
       if (!/^\d{6}$/.test(codigo)) {
         throw new Error('El código debe ser de 6 dígitos');
@@ -95,7 +90,6 @@ class PasswordRecoveryService {
         throw new Error(data.message || 'Error al verificar código');
       }
 
-      console.log('✅ [PASSWORD-RECOVERY] Contraseña cambiada exitosamente');
       return data;
     } catch (error: any) {
       console.error('❌ [PASSWORD-RECOVERY] Error verificando código:', error);
@@ -110,7 +104,6 @@ class PasswordRecoveryService {
    */
   async reenviarCodigo(documento: string): Promise<ReenviarCodigoResponse> {
     try {
-      console.log('📱 [PASSWORD-RECOVERY] Reenviando código');
 
       const response = await fetch(
         `${JwtApiService.getBaseUrl()}${this.BASE_PATH}/reenviar-codigo`,
@@ -128,8 +121,6 @@ class PasswordRecoveryService {
       if (!response.ok) {
         throw new Error(data.message || 'Error al reenviar código');
       }
-
-      console.log('✅ [PASSWORD-RECOVERY] Código reenviado exitosamente');
       return data;
     } catch (error: any) {
       console.error('❌ [PASSWORD-RECOVERY] Error reenviando código:', error);

@@ -1,13 +1,9 @@
-// services/institucion.service.ts
 import JwtApiService from './jwt-api.service';
 import { InstitucionEducativa, InstitucionesResponse, InstitucionesFilters } from '@/types/institucion.types';
 
 class InstitucionService {
   private readonly BASE_PATH = '/api/instituciones';
 
-  /**
-   * Obtener todas las instituciones educativas
-   */
   async getInstituciones(filters: InstitucionesFilters = {}): Promise<InstitucionesResponse> {
     try {
       const params = new URLSearchParams();
@@ -25,7 +21,6 @@ class InstitucionService {
         throw new Error(response.message || 'Error al obtener instituciones');
       }
 
-      console.log('✅ [INSTITUCION-SERVICE] Instituciones obtenidas:', response.data.length);
       return response;
     } catch (error: any) {
       console.error('❌ [INSTITUCION-SERVICE] Error al obtener instituciones:', error);
@@ -50,7 +45,6 @@ class InstitucionService {
         throw new Error('Error al obtener institución');
       }
 
-      console.log('✅ [INSTITUCION-SERVICE] Institución obtenida:', response.data.nombre);
       return response.data;
     } catch (error: any) {
       console.error('❌ [INSTITUCION-SERVICE] Error al obtener institución:', error);

@@ -30,7 +30,7 @@ export default function RecuperarContrasenaPage() {
   const [step, setStep] = useState<RecoveryStep>('solicitar');
   const [documento, setDocumento] = useState('');
   const [celularParcial, setCelularParcial] = useState('');
-  const [validoHasta, setValidoHasta] = useState<Date | null>(null);
+  //const [validoHasta, setValidoHasta] = useState<Date | null>(null);
   const [usuarioNombre, setUsuarioNombre] = useState('');
 
   // Estado del paso 1: Solicitar código
@@ -68,7 +68,7 @@ export default function RecuperarContrasenaPage() {
 
       if (response.success && response.data) {
         setCelularParcial(response.data.celularParcial);
-        setValidoHasta(new Date(response.data.validoHasta));
+      //  setValidoHasta(new Date(response.data.validoHasta));
         setStep('verificar');
 
         // Iniciar contador de tiempo
@@ -132,7 +132,7 @@ export default function RecuperarContrasenaPage() {
 
       if (response.success && response.data) {
         setCelularParcial(response.data.celularParcial);
-        setValidoHasta(new Date(response.data.validoHasta));
+      //  setValidoHasta(new Date(response.data.validoHasta));
         setPuedeReenviar(false);
         iniciarContador(new Date(response.data.validoHasta));
 

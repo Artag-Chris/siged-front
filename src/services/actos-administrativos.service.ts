@@ -12,7 +12,6 @@ import {
   DocumentoActoAdministrativo,
   DocumentoActoAdministrativoResponse,
   DocumentosActosAdministrativosListResponse,
-  DocumentosActosAdministrativosFilters,
   UploadFilesResponse,
   CrearActoAdministrativoCompletoResult,
 } from '@/types/actos-administrativos.types';
@@ -37,7 +36,6 @@ class ActosAdministrativosService {
    */
   async crearActoAdministrativo(data: ICreateActoAdministrativo): Promise<ActoAdministrativo> {
     try {
-      console.log('📝 [ACTOS-ADMIN-SERVICE] PROMESA 1: Creando acto administrativo:', data);
       
       const response = await JwtApiService.post<ActoAdministrativoResponse>(
         this.BASE_PATH,
@@ -46,13 +44,7 @@ class ActosAdministrativosService {
 
       if (!response.success) {
         throw new Error(response.message || 'Error creando acto administrativo');
-      }
-
-      console.log('✅ [ACTOS-ADMIN-SERVICE] PROMESA 1 completada');
-      console.log(`   Acto creado: ID ${response.data.id}`);
-      console.log(`   Nombre generado: "${response.data.nombre}"`);
-      console.log(`   Consecutivo: ${response.data.consecutivo || 'N/A'}`);
-      
+      }      
       return response.data;
     } catch (error: any) {
       console.error('❌ [ACTOS-ADMIN-SERVICE] Error en PROMESA 1 (crearActoAdministrativo):', error);
@@ -64,50 +56,12 @@ class ActosAdministrativosService {
     }
   }
 
-  /**
-   * ============================================================================
-   * PROMESA 2: Subir Archivos (OBLIGATORIO)
-   * ============================================================================
-   * 
-   * Usa la API de Documentos (Document Handler API)
-   * 
-   * Endpoint: POST /api/documents/upload/actos-administrativos
-   * 
-   * FormData requerido:
-   * - acto_administrativo_id: ID del acto creado en Promesa 1
-   * - institucion_educativa_id: UUID de la institución
-   * - tipo_documento: 'acto_administrativo'
-   * - files: Array de archivos (OBLIGATORIO - mínimo 1)
-   * 
-   * Response esperado:
-   * {
-   *   success: true,
-   *   message: "Archivos subidos exitosamente",
-   *   data: {
-   *     archivos_procesados: [
-   *       {
-   *         nombre_original: "resolucion.pdf",
-   *         ruta_relativa: "actos_administrativos/2025/institucion_uuid/resolucion.pdf",
-   *         tamano: 12345,
-   *         tipo_mime: "application/pdf",
-   *         elasticsearch_id: "es_doc_id"
-   *       }
-   *     ],
-   *     total_archivos: 1,
-   *     elasticsearch_indexados: 1,
-   *     acto_administrativo_id: 1,
-   *     institucion_educativa_id: "uuid-institucion"
-   *   }
-   * }
-   */
   async subirArchivos(
     archivos: File[],
     actoAdministrativoId: number,
     institucionEducativaId: string
   ): Promise<Array<{ nombre: string; ruta: string }>> {
     try {
-      console.log(`📤 [ACTOS-ADMIN-SERVICE] PROMESA 2: Subiendo ${archivos.length} archivos a Document API`);
-      console.log(`   URL: ${DocumentApiService.getBaseUrl()}${this.UPLOAD_PATH}`);
 
       // ⚠️ Validación: Al menos 1 archivo es OBLIGATORIO
       if (!archivos || archivos.length === 0) {
@@ -123,15 +77,7 @@ class ActosAdministrativosService {
       
       // ✅ Agregar archivos con el nombre 'files' (plural) - CRÍTICO
       archivos.forEach((archivo, index) => {
-        formData.append('files', archivo);
-        console.log(`   📎 Archivo ${index + 1}: ${archivo.name} (${archivo.size} bytes, ${archivo.type})`);
-      });
-
-      console.log('📋 [ACTOS-ADMIN-SERVICE] FormData configurado:', {
-        acto_administrativo_id: actoAdministrativoId,
-        institucion_educativa_id: institucionEducativaId,
-        tipo_documento: 'acto_administrativo',
-        total_archivos: archivos.length
+        formData.append('files', archivo); 
       });
 
       // Llamar a la API de Documentos
@@ -144,14 +90,7 @@ class ActosAdministrativosService {
       if (!response.success || !response.data) {
         console.error('❌ [ACTOS-ADMIN-SERVICE] Respuesta inválida:', response);
         throw new Error(response.message || 'Error subiendo archivos: respuesta inválida');
-      }
-
-      console.log('✅ [ACTOS-ADMIN-SERVICE] PROMESA 2 completada exitosamente');
-      console.log(`   Total procesados: ${response.data.total_archivos}`);
-      console.log(`   Indexados en Elasticsearch: ${response.data.elasticsearch_indexados || 0}`);
-      console.log(`   Acto ID: ${response.data.acto_administrativo_id}`);
-      console.log(`   Institución: ${response.data.institucion_educativa_id}`);
-      
+      }      
       // Validar que exista el array de archivos procesados
       if (!response.data.archivos_procesados || !Array.isArray(response.data.archivos_procesados)) {
         console.error('❌ [ACTOS-ADMIN-SERVICE] No se encontró archivos_procesados en response:', response.data);
@@ -159,23 +98,20 @@ class ActosAdministrativosService {
       }
 
       if (response.data.archivos_procesados.length === 0) {
-        console.warn('⚠️ [ACTOS-ADMIN-SERVICE] No se procesaron archivos');
+
         throw new Error('No se procesaron archivos en el servidor');
       }
-      
-      // ✅ Transformar respuesta según formato de la API de Documentos
-      // Según documentación: usar nombre_original y ruta_relativa
+
       const archivosParaPromesa3 = response.data.archivos_procesados.map((archivo, index) => {
-        console.log(`   ✓ [${index + 1}] ${archivo.nombre_original}`);
-        console.log(`      → Ruta: ${archivo.ruta_relativa}`);
+       
         if (archivo.tamano) {
-          console.log(`      → Tamaño: ${(archivo.tamano / 1024).toFixed(2)} KB`);
+
         }
         if (archivo.tipo_mime) {
-          console.log(`      → MIME: ${archivo.tipo_mime}`);
+
         }
         if (archivo.elasticsearch_id) {
-          console.log(`      → Elasticsearch ID: ${archivo.elasticsearch_id}`);
+     
         }
         
         return {
@@ -184,7 +120,6 @@ class ActosAdministrativosService {
         };
       });
 
-      console.log('📦 [ACTOS-ADMIN-SERVICE] Datos preparados para Promesa 3:', archivosParaPromesa3.length, 'archivo(s)');
       return archivosParaPromesa3;
       
     } catch (error: any) {
@@ -218,8 +153,6 @@ class ActosAdministrativosService {
     archivos: Array<{ nombre: string; ruta: string }>
   ): Promise<DocumentoActoAdministrativo[]> {
     try {
-      console.log(`📋 [ACTOS-ADMIN-SERVICE] PROMESA 3: Registrando ${archivos.length} documentos en BD`);
-
       const documentosCreados = await Promise.all(
         archivos.map(async (archivo) => {
           const docData: ICreateDocumentoActoAdministrativo = {
@@ -237,13 +170,10 @@ class ActosAdministrativosService {
             throw new Error(`Error registrando documento: ${archivo.nombre}`);
           }
 
-          console.log(`   ✓ Documento registrado: ${archivo.nombre} (ID: ${response.data.id})`);
           return response.data;
         })
       );
 
-      console.log('✅ [ACTOS-ADMIN-SERVICE] PROMESA 3 completada');
-      console.log(`   Total documentos registrados: ${documentosCreados.length}`);
       return documentosCreados;
     } catch (error: any) {
       console.error('❌ [ACTOS-ADMIN-SERVICE] Error en PROMESA 3 (registrarDocumentos):', error);
@@ -270,9 +200,6 @@ class ActosAdministrativosService {
     archivos: File[]
   ): Promise<CrearActoAdministrativoCompletoResult> {
     try {
-      console.log('\n🚀 [ACTOS-ADMIN-SERVICE] Iniciando flujo completo de creación...');
-      console.log(`   Institución: ${dataActoAdministrativo.institucion_educativa_id}`);
-      console.log(`   Archivos: ${archivos.length}`);
 
       // ⚠️ Validación previa: archivos obligatorios
       if (!archivos || archivos.length === 0) {
@@ -280,11 +207,11 @@ class ActosAdministrativosService {
       }
 
       // PASO 1: Crear acto administrativo
-      console.log('\n📝 Paso 1/3: Creando acto administrativo...');
+
       const actoAdministrativo = await this.crearActoAdministrativo(dataActoAdministrativo);
 
       // PASO 2: Subir archivos a Document API (OBLIGATORIO)
-      console.log('\n📤 Paso 2/3: Subiendo archivos a Document API...');
+
       const rutasArchivos = await this.subirArchivos(
         archivos, 
         actoAdministrativo.id,
@@ -292,13 +219,9 @@ class ActosAdministrativosService {
       );
 
       // PASO 3: Registrar documentos en BD
-      console.log('\n📋 Paso 3/3: Registrando documentos en BD...');
+
       const documentos = await this.registrarDocumentos(actoAdministrativo.id, rutasArchivos);
 
-      console.log('\n✅ [ACTOS-ADMIN-SERVICE] Flujo completo exitoso');
-      console.log(`   - Acto Administrativo ID: ${actoAdministrativo.id}`);
-      console.log(`   - Nombre generado: "${actoAdministrativo.nombre}"`);
-      console.log(`   - Documentos: ${documentos.length}`);
 
       return {
         success: true,
@@ -333,7 +256,6 @@ class ActosAdministrativosService {
       const query = queryParams.toString();
       const url = query ? `${this.BASE_PATH}?${query}` : this.BASE_PATH;
 
-      console.log('🔍 [ACTOS-ADMIN-SERVICE] Obteniendo actos administrativos:', url);
       const response = await JwtApiService.get<ActosAdministrativosListResponse>(url);
 
       return response;
@@ -352,7 +274,7 @@ class ActosAdministrativosService {
    */
   async getActoAdministrativoById(id: number): Promise<ActoAdministrativo> {
     try {
-      console.log('🔍 [ACTOS-ADMIN-SERVICE] Obteniendo acto administrativo:', id);
+
       
       const response = await JwtApiService.get<ActoAdministrativoResponse>(
         `${this.BASE_PATH}/${id}`
@@ -381,9 +303,7 @@ class ActosAdministrativosService {
     id: number,
     data: IUpdateActoAdministrativo
   ): Promise<ActoAdministrativo> {
-    try {
-      console.log('✏️ [ACTOS-ADMIN-SERVICE] Actualizando acto administrativo:', id);
-      
+    try {     
       const response = await JwtApiService.put<ActoAdministrativoResponse>(
         `${this.BASE_PATH}/${id}`,
         data
@@ -393,7 +313,6 @@ class ActosAdministrativosService {
         throw new Error(response.message || 'Error actualizando acto administrativo');
       }
 
-      console.log('✅ [ACTOS-ADMIN-SERVICE] Acto administrativo actualizado');
       return response.data;
     } catch (error: any) {
       console.error('❌ [ACTOS-ADMIN-SERVICE] Error en updateActoAdministrativo:', error);
@@ -410,13 +329,11 @@ class ActosAdministrativosService {
    */
   async deleteActoAdministrativo(id: number): Promise<boolean> {
     try {
-      console.log('🗑️ [ACTOS-ADMIN-SERVICE] Eliminando acto administrativo:', id);
       
       const response = await JwtApiService.delete<{ success: boolean; message: string }>(
         `${this.BASE_PATH}/${id}`
       );
 
-      console.log('✅ [ACTOS-ADMIN-SERVICE] Acto administrativo eliminado');
       return response.success;
     } catch (error: any) {
       console.error('❌ [ACTOS-ADMIN-SERVICE] Error en deleteActoAdministrativo:', error);
@@ -439,7 +356,6 @@ class ActosAdministrativosService {
    */
   async getDocumentosByActoAdministrativo(actoId: number): Promise<DocumentosActosAdministrativosListResponse> {
     try {
-      console.log('📄 [ACTOS-ADMIN-SERVICE] Obteniendo documentos del acto:', actoId);
       
       const response = await JwtApiService.get<DocumentosActosAdministrativosListResponse>(
         `${this.DOCS_PATH}/acto/${actoId}`
@@ -461,7 +377,6 @@ class ActosAdministrativosService {
    */
   async descargarDocumento(documentoId: string): Promise<Blob> {
     try {
-      console.log('📥 [ACTOS-ADMIN-SERVICE] Descargando documento:', documentoId);
       
       const response = await JwtApiService.get<Blob>(
         `${this.DOCS_PATH}/${documentoId}/download`,
@@ -483,14 +398,10 @@ class ActosAdministrativosService {
    * Eliminar documento (solo super_admin)
    */
   async deleteDocumento(documentoId: string): Promise<boolean> {
-    try {
-      console.log('🗑️ [ACTOS-ADMIN-SERVICE] Eliminando documento:', documentoId);
-      
+    try {     
       const response = await JwtApiService.delete<{ success: boolean }>(
         `${this.DOCS_PATH}/${documentoId}`
       );
-
-      console.log('✅ [ACTOS-ADMIN-SERVICE] Documento eliminado');
       return response.success;
     } catch (error: any) {
       console.error('❌ [ACTOS-ADMIN-SERVICE] Error en deleteDocumento:', error);

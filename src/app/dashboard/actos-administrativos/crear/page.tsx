@@ -1,12 +1,11 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCrearActoAdministrativo } from '@/hooks/useActosAdministrativos';
 import { useInstituciones } from '@/hooks/useInstituciones';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Card,
@@ -102,8 +101,6 @@ export default function CrearActoAdministrativoPage() {
     try {
       const result = await crearActoAdministrativo(formData);
       
-      console.log('✅ Acto administrativo creado:', result.actoAdministrativo.nombre);
-
       // Esperar 2 segundos para mostrar el mensaje de éxito
       setTimeout(() => {
         router.push('/dashboard/actos-administrativos');

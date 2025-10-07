@@ -1,4 +1,3 @@
-// hooks/useInstituciones.ts
 import { useState, useEffect, useCallback } from 'react';
 import institucionService from '@/services/institucion.service';
 import { InstitucionEducativa } from '@/types/institucion.types';
@@ -8,9 +7,6 @@ interface UseInstitucionesOptions {
   search?: string;
 }
 
-/**
- * Hook para obtener todas las instituciones educativas
- */
 export const useInstituciones = (options: UseInstitucionesOptions = {}) => {
   const { autoLoad = false, search } = options;
 
@@ -41,7 +37,7 @@ export const useInstituciones = (options: UseInstitucionesOptions = {}) => {
       if (response.pagination) {
         setPagination(response.pagination);
       }
-      console.log('✅ [USE-INSTITUCIONES] Instituciones cargadas:', response.data.length);
+      
     } catch (err: any) {
       setError(err.message || 'Error al cargar instituciones');
       console.error('❌ [USE-INSTITUCIONES] Error loading instituciones:', err);
