@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useSuplencias } from '@/hooks/useSuplencias';
 import { ProtectedRoute } from '@/components/protected-route';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -44,12 +44,12 @@ function SuplenciasContent() {
     page: 1,
     limit: 10,
     search: '',
-    jornada: '',
+    jornada: undefined,
   });
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Cargar suplencias al montar y cuando cambien filtros
+
   useEffect(() => {
     loadSuplencias(filters);
   }, [filters, loadSuplencias]);
@@ -62,12 +62,14 @@ function SuplenciasContent() {
     }));
   };
 
-  const handleFilterChange = (key: keyof SuplenciaFilters, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      page: 1
-    }));
+  const handleFilterChange = (field: keyof SuplenciaFilters, value: any) => {
+    const newFilters = { 
+      ...filters, 
+      [field]: value === 'all' ? undefined : value, 
+      page: 1 
+    };
+    setFilters(newFilters);
+    loadSuplencias(newFilters);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -169,14 +171,14 @@ function SuplenciasContent() {
 
               {/* Filtro por jornada */}
               <Select
-                value={filters.jornada}
+                value={filters.jornada || 'all'}
                 onValueChange={(value) => handleFilterChange('jornada', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todas las jornadas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   <SelectItem value="ma_ana">Mañana</SelectItem>
                   <SelectItem value="tarde">Tarde</SelectItem>
                   <SelectItem value="sabatina">Sabatina</SelectItem>

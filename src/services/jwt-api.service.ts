@@ -1,5 +1,3 @@
-// services/jwt-api.service.ts
-// Servicio base para la API JWT de SIGED - Usando Axios
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
@@ -20,7 +18,7 @@ export class JwtApiService {
         },
       });
 
-      // Request interceptor para agregar token automáticamente
+
       this.instance.interceptors.request.use(
         (config) => {
           const token = localStorage.getItem('siged_access_token');
@@ -28,8 +26,6 @@ export class JwtApiService {
             config.headers.Authorization = `Bearer ${token}`;
           }
 
-          console.log(`🌐 [JWT-API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
-          console.log(`📊 [JWT-API] Headers:`, config.headers);
           
           if (config.data) {
             console.log(`📤 [JWT-API] Request Data:`, config.data);
@@ -46,7 +42,7 @@ export class JwtApiService {
       // Response interceptor para logging y manejo de errores
       this.instance.interceptors.response.use(
         (response: AxiosResponse) => {
-          console.log(`✅ [JWT-API] Response ${response.status}:`, response.data);
+         
           return response;
         },
         (error) => {

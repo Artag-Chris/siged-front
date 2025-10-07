@@ -17,7 +17,10 @@ import {
 } from 'lucide-react';
 
 function EstadisticasContent() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [
+    year,
+    // setYear
+    ] = useState(new Date().getFullYear());
   const { estadisticas, loading, reload } = useEstadisticasSuplencias({ año: year });
 
   return (

@@ -172,11 +172,31 @@ export interface EstadisticasResponse {
   data: EstadisticasSuplencia;
 }
 
+// Respuesta de la API de Documentos (Document Handler API)
+// Según PROMESA_2_SUPLENCIAS_STORAGE_API.md
 export interface UploadFilesResponse {
   success: boolean;
   message: string;
-  data: Array<{
-    nombre: string;
-    ruta: string;
-  }>;
+  data: {
+    suplencia_id: string;
+    total_archivos: number;
+    archivos_procesados: Array<{
+      nombre_original: string;
+      nombre_guardado: string;
+      ruta_relativa: string;
+      size: number;
+      mimetype: string;
+      docente_ausente: {
+        empleado_id: string;
+        ruta_relativa: string;
+      };
+      docente_reemplazo: {
+        empleado_id: string;
+        ruta_relativa: string;
+      };
+      elasticsearch_id?: string;
+    }>;
+    elasticsearch_indexados: number;
+    timestamp: string;
+  };
 }

@@ -1,4 +1,3 @@
-// app/dashboard/suplencias/crear/page.tsx
 "use client"
 
 import { useState } from 'react';
@@ -6,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSuplencias, useJornadas } from '@/hooks/useSuplencias';
 import { useEmpleados } from '@/hooks/useEmpleados';
+import { useSedes } from '@/hooks/useSedes';
 import { ProtectedRoute } from '@/components/protected-route';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +22,8 @@ import {
   X,
   Loader2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Building2
 } from 'lucide-react';
 import { ICreateSuplencia } from '@/types/suplencia.types';
 
@@ -31,20 +32,21 @@ type FlowStep = 'form' | 'uploading' | 'success' | 'error';
 function CrearSuplenciaContent() {
   const router = useRouter();
   const { crearSuplenciaCompleta, loading: suplenciaLoading } = useSuplencias();
-  const { empleados, loadEmpleados } = useEmpleados({ autoLoad: true });
+  const { empleados,  } = useEmpleados({ autoLoad: true });
   const { jornadas } = useJornadas();
+  const { sedes, loading: sedesLoading } = useSedes({ autoLoad: true, estado: 'activa' });
 
   const [flowStep, setFlowStep] = useState<FlowStep>('form');
   const [progress, setProgress] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [createdId, setCreatedId] = useState('');
+ // const [createdId, setCreatedId] = useState('');
 
   const [formData, setFormData] = useState({
     docente_ausente_id: '',
     causa_ausencia: '',
     fecha_inicio_ausencia: '',
     fecha_fin_ausencia: '',
-    sede_id: 'default-sede-id', // Por ahora un valor por defecto
+    sede_id: '', // Se seleccionará desde el dropdown
     docente_reemplazo_id: '',
     fecha_inicio_reemplazo: '',
     fecha_fin_reemplazo: '',
@@ -74,6 +76,10 @@ function CrearSuplenciaContent() {
   };
 
   const validateForm = (): boolean => {
+    if (!formData.sede_id) {
+      alert('Selecciona la sede');
+      return false;
+    }
     if (!formData.docente_ausente_id) {
       alert('Selecciona el docente ausente');
       return false;
@@ -121,7 +127,7 @@ function CrearSuplenciaContent() {
 
       setProgress('¡Proceso completado exitosamente!');
       setFlowStep('success');
-      setCreatedId(result.suplencia.id);
+    //  setCreatedId(result.suplencia.id);
 
       // Redirigir después de 2 segundos
       setTimeout(() => {
@@ -217,6 +223,54 @@ function CrearSuplenciaContent() {
         {(flowStep === 'form' || flowStep === 'error') && (
           <form onSubmit={handleSubmit}>
             
+            {/* Información de la Sede */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  Sede
+                </CardTitle>
+                <CardDescription>Selecciona la sede donde ocurre la suplencia</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <Label htmlFor="sede_id">Sede *</Label>
+                  {sedesLoading ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-md bg-gray-50">
+                      <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                      <span className="text-sm text-gray-600">Cargando sedes...</span>
+                    </div>
+                  ) : (
+                    <Select
+                      value={formData.sede_id}
+                      onValueChange={(value) => handleInputChange('sede_id', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona la sede" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sedes.map(sede => (
+                          <SelectItem key={sede.id} value={sede.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{sede.nombre}</span>
+                              <span className="text-xs text-gray-500">
+                                {sede.direccion} - {sede.zona === 'urbana' ? 'Urbana' : 'Rural'}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {!sedesLoading && sedes.length === 0 && (
+                    <p className="text-sm text-amber-600 mt-2">
+                      No hay sedes activas disponibles
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Información del Docente Ausente */}
             <Card className="mb-6">
               <CardHeader>

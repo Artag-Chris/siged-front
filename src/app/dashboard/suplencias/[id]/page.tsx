@@ -1,4 +1,3 @@
-// app/dashboard/suplencias/[id]/page.tsx
 "use client"
 
 import { useParams, useRouter } from 'next/navigation';
@@ -16,7 +15,6 @@ import {
   MapPin,
   FileText,
   Edit,
-  Trash2,
   RefreshCw,
   Download
 } from 'lucide-react';

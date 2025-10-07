@@ -1,4 +1,5 @@
 import JwtApiService from './jwt-api.service';
+import DocumentApiService from './document-api.service'; // API de Documentos (Promesa 2)
 import {
   ICreateSuplencia,
   IUpdateSuplencia,
@@ -12,12 +13,15 @@ import {
   DocumentoSuplenciaResponse,
   DocumentosSuplenciaResponse,
   EstadisticasResponse,
-  UploadFilesResponse,
 } from '@/types/suplencia.types';
 
 class SuplenciaService {
+  // API de Suplencias (Promesa 1 y 3)
   private readonly BASE_PATH = '/api/suplencias';
-  private readonly DOCS_PATH = '/documentos-suplencia';
+  private readonly DOCS_PATH = '/api/documentos-suplencia';
+  
+  // API de Documentos (Promesa 2) - DIFERENTE URL BASE
+  private readonly UPLOAD_PATH = '/api/documents/upload/suplencias';
 
   /**
    * PROMESA 1: Crear Suplencia
@@ -49,38 +53,54 @@ class SuplenciaService {
 
   /**
    * PROMESA 2: Subir Archivos
+   * Usa la API de Documentos (Document Handler API)
    */
   async subirArchivos(
     archivos: File[],
-    suplenciaId: string
+    suplenciaId: string,
+    docenteAusenteId: string,
+    docenteReemplazoId: string
   ): Promise<Array<{ nombre: string; ruta: string }>> {
     try {
-      console.log(`📤 [SUPLENCIA-SERVICE] Subiendo ${archivos.length} archivos`);
-
+   
       const formData = new FormData();
+      
+      // Campos requeridos según PROMESA_2_SUPLENCIAS_STORAGE_API.md
+      formData.append('suplencia_id', suplenciaId);
+      formData.append('docente_ausente_id', docenteAusenteId);
+      formData.append('docente_reemplazo_id', docenteReemplazoId);
+      formData.append('tipo_documento', 'suplencias');
+      
+      // Agregar archivos (importante: usar 'files' en plural)
       archivos.forEach((archivo) => {
         formData.append('files', archivo);
       });
-      formData.append('suplencia_id', suplenciaId);
 
-      // Usar el endpoint de upload específico
-      const response = await JwtApiService.postFormData<UploadFilesResponse>(
-        '/upload/suplencias',
+
+      // Llamar a la API de Documentos (Document Handler API)
+      const response = await DocumentApiService.postFormData<any>(
+        this.UPLOAD_PATH,
         formData
       );
 
       if (!response.success) {
         throw new Error(response.message || 'Error subiendo archivos');
       }
+    
+      // Transformar respuesta de la API de Documentos al formato esperado
+      const archivosParaPromesa3 = response.data.archivos_procesados.map((archivo: any) => ({
+        nombre: archivo.nombre_original,
+        ruta: archivo.ruta_relativa
+      }));
 
-      console.log('✅ [SUPLENCIA-SERVICE] Archivos subidos:', response.data.length);
-      return response.data;
+      return archivosParaPromesa3;
+      
     } catch (error: any) {
-      console.error('❌ [SUPLENCIA-SERVICE] Error en subirArchivos:', error);
+      console.error('❌ [SUPLENCIA-SERVICE] Error en PROMESA 2 (subirArchivos):', error);
       throw new Error(
         error.response?.data?.message || 
         error.message || 
-        'Error al subir archivos'
+        'Error al subir archivos a la API de Documentos'
       );
     }
   }
@@ -93,7 +113,6 @@ class SuplenciaService {
     archivos: Array<{ nombre: string; ruta: string }>
   ): Promise<DocumentoSuplencia[]> {
     try {
-      console.log(`📋 [SUPLENCIA-SERVICE] Registrando ${archivos.length} documentos`);
 
       const documentosCreados = await Promise.all(
         archivos.map(async (archivo) => {
@@ -116,7 +135,6 @@ class SuplenciaService {
         })
       );
 
-      console.log('✅ [SUPLENCIA-SERVICE] Documentos registrados:', documentosCreados.length);
       return documentosCreados;
     } catch (error: any) {
       console.error('❌ [SUPLENCIA-SERVICE] Error en registrarDocumentos:', error);
@@ -140,29 +158,27 @@ class SuplenciaService {
     documentos: DocumentoSuplencia[];
   }> {
     try {
-      console.log('\n🚀 [SUPLENCIA-SERVICE] Iniciando flujo completo de creación...');
-
+      
       // PASO 1: Crear suplencia
-      console.log('📝 Paso 1/3: Creando suplencia...');
       const suplencia = await this.crearSuplencia(dataSuplencia);
 
       let documentos: DocumentoSuplencia[] = [];
 
       // PASO 2 y 3: Solo si hay archivos
       if (archivos && archivos.length > 0) {
-        console.log('📤 Paso 2/3: Subiendo archivos...');
-        const rutasArchivos = await this.subirArchivos(archivos, suplencia.id);
+        
+        // Extraer IDs de los docentes de dataSuplencia
+        const rutasArchivos = await this.subirArchivos(
+          archivos, 
+          suplencia.id,
+          dataSuplencia.docente_ausente_id,
+          dataSuplencia.docente_reemplazo_id
+        );
 
-        console.log('📋 Paso 3/3: Registrando documentos...');
         documentos = await this.registrarDocumentos(suplencia.id, rutasArchivos);
       } else {
-        console.log('ℹ️ No hay archivos para subir');
+ 
       }
-
-      console.log('✅ [SUPLENCIA-SERVICE] Flujo completo exitoso');
-      console.log(`   - Suplencia ID: ${suplencia.id}`);
-      console.log(`   - Documentos: ${documentos.length}`);
-
       return {
         success: true,
         suplencia,
@@ -189,8 +205,6 @@ class SuplenciaService {
 
       const query = queryParams.toString();
       const url = query ? `${this.BASE_PATH}?${query}` : this.BASE_PATH;
-
-      console.log('🔍 [SUPLENCIA-SERVICE] Obteniendo suplencias:', url);
       const response = await JwtApiService.get<SuplenciasListResponse>(url);
 
       return response;
@@ -209,7 +223,6 @@ class SuplenciaService {
    */
   async getSuplenciaById(id: string): Promise<Suplencia> {
     try {
-      console.log('🔍 [SUPLENCIA-SERVICE] Obteniendo suplencia:', id);
       
       const response = await JwtApiService.get<SuplenciaResponse>(
         `${this.BASE_PATH}/${id}`
@@ -238,7 +251,6 @@ class SuplenciaService {
     data: IUpdateSuplencia
   ): Promise<Suplencia> {
     try {
-      console.log('✏️ [SUPLENCIA-SERVICE] Actualizando suplencia:', id);
       
       const response = await JwtApiService.put<SuplenciaResponse>(
         `${this.BASE_PATH}/${id}`,
@@ -248,8 +260,6 @@ class SuplenciaService {
       if (!response.success) {
         throw new Error(response.message || 'Error actualizando suplencia');
       }
-
-      console.log('✅ [SUPLENCIA-SERVICE] Suplencia actualizada');
       return response.data;
     } catch (error: any) {
       console.error('❌ [SUPLENCIA-SERVICE] Error en updateSuplencia:', error);
@@ -266,13 +276,11 @@ class SuplenciaService {
    */
   async deleteSuplencia(id: string): Promise<boolean> {
     try {
-      console.log('🗑️ [SUPLENCIA-SERVICE] Eliminando suplencia:', id);
       
       const response = await JwtApiService.delete<{ success: boolean }>(
         `${this.BASE_PATH}/${id}`
       );
 
-      console.log('✅ [SUPLENCIA-SERVICE] Suplencia eliminada');
       return response.success;
     } catch (error: any) {
       console.error('❌ [SUPLENCIA-SERVICE] Error en deleteSuplencia:', error);
@@ -289,7 +297,6 @@ class SuplenciaService {
    */
   async getJornadas(): Promise<JornadasResponse> {
     try {
-      console.log('📅 [SUPLENCIA-SERVICE] Obteniendo jornadas disponibles');
       
       const response = await JwtApiService.get<JornadasResponse>(
         `${this.BASE_PATH}/jornadas`
@@ -311,7 +318,6 @@ class SuplenciaService {
    */
   async getDocumentosBySuplencia(suplenciaId: string): Promise<DocumentosSuplenciaResponse> {
     try {
-      console.log('📄 [SUPLENCIA-SERVICE] Obteniendo documentos de suplencia:', suplenciaId);
       
       const response = await JwtApiService.get<DocumentosSuplenciaResponse>(
         `${this.DOCS_PATH}/suplencia/${suplenciaId}`
@@ -348,7 +354,6 @@ class SuplenciaService {
         ? `${this.BASE_PATH}/estadisticas?${query}` 
         : `${this.BASE_PATH}/estadisticas`;
 
-      console.log('📊 [SUPLENCIA-SERVICE] Obteniendo estadísticas:', url);
       const response = await JwtApiService.get<EstadisticasResponse>(url);
 
       return response;
