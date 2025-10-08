@@ -1,97 +1,121 @@
 "use client"
 
-import { useDocumentStore } from "@/lib/document-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserPlus, Users, Search, Eye, FileText, Activity, Clock } from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  UserPlus,
+  Users,
+  Search,
+  Eye,
+  Building2,
+  GraduationCap,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+} from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
-
-import { Institution } from "@/interfaces/Institution"
-import { useInstitutionStore } from "@/lib/instituition-store"
-import { useRectorStore } from "@/lib/principals-store"
-import { recentActivityRectores } from "@/interfaces/principals"
-
+import { useRectores } from "@/hooks/useRectores"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function RectoresPage() {
-  const { rectores } = useRectorStore()
-  const { institutions } = useInstitutionStore()
-  const { documents } = useDocumentStore()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterEstado, setFilterEstado] = useState<string>("todos")
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // Función para obtener nombre de institución
-  const getInstitutionName = (id: string): string => {
-    const institution = institutions.find((inst: Institution) => inst.id === id)
-    return institution ? institution.nombre : "Sin institución asignada"
-  }
+  const { rectores, loading, error, pagination, fetchRectores } = useRectores({
+    page: currentPage,
+    limit: 10,
+  })
 
-  // Estadísticas calculadas
+  const handleSearch = () => {
+    fetchRectores({
+      page: 1,
+      limit: 10,
+      search: searchTerm || undefined,
+      estado: filterEstado === "todos" ? undefined : (filterEstado as "activo" | "inactivo"),
+    });
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilterEstado("todos");
+    fetchRectores({ page: 1, limit: 10 });
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    fetchRectores({
+      page: newPage,
+      limit: 10,
+      search: searchTerm || undefined,
+      estado: filterEstado === "todos" ? undefined : (filterEstado as "activo" | "inactivo"),
+    });
+  };
+
   const stats = useMemo(() => {
-    const totalRectores = rectores.length
-    const activeRectores = rectores.filter((p) => p.estado === "activa").length
-    const inactiveRectores = rectores.filter((p) => p.estado === "inactiva").length
-    const totalDocuments = documents.length
-    const avgExperience =
+    const totalRectores = pagination.total;
+    const activeRectores = rectores.filter((r) => r.estado === "activo").length;
+    const inactiveRectores = rectores.filter((r) => r.estado === "inactivo").length;
+    const conInstitucion = rectores.filter((r) => r.institucion).length;
+    const avgAsignaciones =
       rectores.length > 0
-        ? Math.round(rectores.reduce((sum, p) => sum + p.experienciaAnios, 0) / rectores.length)
-        : 0
+        ? Math.round(
+            rectores.reduce((sum, r) => sum + (r._count?.asignaciones || 0), 0) /
+              rectores.length
+          )
+        : 0;
 
     return {
       total: totalRectores,
       active: activeRectores,
       inactive: inactiveRectores,
-      documents: totalDocuments,
-      avgExperience,
-    }
-  }, [rectores, documents])
-
-  // Rectores filtrados
-  const filteredRectores = useMemo(() => {
-    return rectores.filter((rector) => {
-      const matchesSearch =
-        rector.nombres.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rector.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rector.cedula.includes(searchTerm) ||
-        rector.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getInstitutionName(rector.institucionId).toLowerCase().includes(searchTerm.toLowerCase())
-
-      const matchesEstado = filterEstado === "todos" || rector.estado === filterEstado
-
-      return matchesSearch && matchesEstado
-    })
-  }, [rectores, institutions, searchTerm, filterEstado])
+      conInstitucion,
+      avgAsignaciones,
+    };
+  }, [rectores, pagination]);
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Rectores</h1>
-            <p className="text-gray-600">Administra la información de los rectores</p>
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Rectores</h1>
+            <p className="text-gray-600 mt-1">
+              Administra rectores, instituciones educativas y sedes
+            </p>
           </div>
           <Link href="/dashboard/rectores/agregar">
-            <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Agregar Rector
+            <Button size="lg">
+              <UserPlus className="h-5 w-5 mr-2" />
+              Crear Rector Completo
             </Button>
           </Link>
         </div>
 
-        {/* Stats Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Rectores</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
                 </div>
-                <Users className="h-8 w-8 text-blue-600" />
+                <Users className="h-10 w-10 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -101,12 +125,12 @@ export default function RectoresPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Activos</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
-                  <p className="text-xs text-green-600">
+                  <p className="text-3xl font-bold text-green-600 mt-2">{stats.active}</p>
+                  <p className="text-xs text-gray-500 mt-1">
                     {stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}% del total
                   </p>
                 </div>
-                <Badge className="bg-green-100 text-green-800">Activos</Badge>
+                <Badge className="bg-green-100 text-green-800 h-8">Activos</Badge>
               </div>
             </CardContent>
           </Card>
@@ -116,12 +140,12 @@ export default function RectoresPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Inactivos</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.inactive}</p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-3xl font-bold text-gray-600 mt-2">{stats.inactive}</p>
+                  <p className="text-xs text-gray-500 mt-1">
                     {stats.total > 0 ? Math.round((stats.inactive / stats.total) * 100) : 0}% del total
                   </p>
                 </div>
-                <Badge variant="secondary">Inactivos</Badge>
+                <Badge variant="secondary" className="h-8">Inactivos</Badge>
               </div>
             </CardContent>
           </Card>
@@ -130,11 +154,11 @@ export default function RectoresPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Documentos</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.documents}</p>
-                  <p className="text-xs text-blue-600">Total subidos</p>
+                  <p className="text-sm font-medium text-gray-600">Con Institución</p>
+                  <p className="text-3xl font-bold text-purple-600 mt-2">{stats.conInstitucion}</p>
+                  <p className="text-xs text-gray-500 mt-1">Asignados</p>
                 </div>
-                <FileText className="h-8 w-8 text-purple-600" />
+                <Building2 className="h-10 w-10 text-purple-600" />
               </div>
             </CardContent>
           </Card>
@@ -143,133 +167,228 @@ export default function RectoresPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Experiencia Promedio</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.avgExperience}</p>
-                  <p className="text-xs text-orange-600">años</p>
+                  <p className="text-sm font-medium text-gray-600">Asignaciones</p>
+                  <p className="text-3xl font-bold text-orange-600 mt-2">{stats.avgAsignaciones}</p>
+                  <p className="text-xs text-gray-500 mt-1">Promedio/rector</p>
                 </div>
-                <Activity className="h-8 w-8 text-orange-600" />
+                <MapPin className="h-10 w-10 text-orange-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Lista de rectores */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Lista de Rectores</CardTitle>
-                <CardDescription>
-                  Información detallada de todos los rectores registrados ({filteredRectores.length} resultados)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Filtros y búsqueda */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        placeholder="Buscar por nombre, cédula, email o institución..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Select value={filterEstado} onValueChange={setFilterEstado}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Estado" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todos">Todos</SelectItem>
-                        <SelectItem value="activa">Activos</SelectItem>
-                        <SelectItem value="inactiva">Inactivos</SelectItem>
-                      </SelectContent>
-                    </Select>
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Lista de Rectores</CardTitle>
+            <CardDescription>
+              {loading ? "Cargando rectores..." : `${pagination.total} rector${pagination.total !== 1 ? "es" : ""} registrado${pagination.total !== 1 ? "s" : ""}`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 mb-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar por nombre, documento, email..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+                      className="pl-10"
+                      disabled={loading}
+                    />
                   </div>
                 </div>
+                <div className="flex gap-2">
+                  <Select value={filterEstado} onValueChange={setFilterEstado} disabled={loading}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos los estados</SelectItem>
+                      <SelectItem value="activo">Activos</SelectItem>
+                      <SelectItem value="inactivo">Inactivos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={handleSearch} disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Buscando...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="mr-2 h-4 w-4" />
+                        Buscar
+                      </>
+                    )}
+                  </Button>
+                  <Button variant="outline" onClick={handleClearFilters} disabled={loading}>
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-                <div className="space-y-4">
-                  {filteredRectores.map((rector) => (
-                    <div key={rector.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4">
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Cargando rectores...</p>
+                </div>
+              </div>
+            ) : rectores.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron rectores</h3>
+                <p className="text-gray-600 mb-4">
+                  {searchTerm || filterEstado !== "todos" ? "Intenta ajustar los filtros de búsqueda" : "Comienza creando tu primer rector"}
+                </p>
+                <Link href="/dashboard/rectores/agregar">
+                  <Button>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Crear Primer Rector
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Rector</TableHead>
+                        <TableHead>Documento</TableHead>
+                        <TableHead>Contacto</TableHead>
+                        <TableHead>Institución</TableHead>
+                        <TableHead>Formación</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rectores.map((rector) => (
+                        <TableRow key={rector.id} className="hover:bg-gray-50">
+                          <TableCell>
                             <div>
-                              <h3 className="font-medium text-gray-900">
-                                {rector.nombres} {rector.apellidos}
-                              </h3>
-                              <p className="text-sm text-gray-600">
-                                {rector.email} • Cédula: {rector.cedula} • Tel: {rector.telefono}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {rector.experienciaAnios} años de experiencia • Institución:{" "}
-                                {getInstitutionName(rector.institucionId)}
-                              </p>
+                              <p className="font-medium text-gray-900">{rector.nombre} {rector.apellido}</p>
+                              <p className="text-sm text-gray-500">{rector.cargo}</p>
                             </div>
-                            <Badge variant={rector.estado === "activa" ? "default" : "secondary"}>
-                              {rector.estado}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm text-gray-900">{rector.tipo_documento}</p>
+                              <p className="text-sm text-gray-500">{rector.documento}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm text-gray-900">{rector.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {rector.institucion ? (
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4 text-purple-600" />
+                                <span className="text-sm text-gray-900">{rector.institucion.nombre}</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-500">Sin asignar</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {rector.informacionAcademica ? (
+                              <div className="flex items-center gap-2">
+                                <GraduationCap className="h-4 w-4 text-blue-600" />
+                                <div>
+                                  <p className="text-sm text-gray-900">{rector.informacionAcademica.nivel_educativo}</p>
+                                  <p className="text-xs text-gray-500">{rector.informacionAcademica.titulo}</p>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-500">N/A</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={rector.estado === "activo" ? "default" : "secondary"}>
+                              {rector.estado === "activo" ? "Activo" : "Inactivo"}
                             </Badge>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Link href={`/dashboard/rectores/${rector.id}`}>
-                            <Button variant="outline" size="sm">
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ver Perfil
-                            </Button>
-                          </Link>
-                          <Link href={`/dashboard/rectores/${rector.id}/editar`}>
-                            <Button variant="outline" size="sm">
-                              Editar
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {filteredRectores.length === 0 && (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">No se encontraron rectores que coincidan con los filtros</p>
-                    </div>
-                  )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Link href={`/dashboard/rectores/${rector.id}`}>
+                              <Button variant="ghost" size="sm">
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver
+                              </Button>
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Sidebar con actividad reciente */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5" />
-                  <span>Actividad Reciente</span>
-                </CardTitle>
-                <CardDescription>Últimas acciones en el sistema</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivityRectores.map((activity, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                        <p className="text-xs text-gray-500">
-                          {activity.user} • {activity.time}
-                        </p>
-                      </div>
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-sm text-gray-600">
+                      Mostrando <strong>{(currentPage - 1) * pagination.limit + 1}</strong> a{" "}
+                      <strong>{Math.min(currentPage * pagination.limit, pagination.total)}</strong> de{" "}
+                      <strong>{pagination.total}</strong> rectores
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={!pagination.hasPrevPage || loading}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-2" />
+                        Anterior
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                          .filter((page) => page === 1 || page === pagination.totalPages || (page >= currentPage - 1 && page <= currentPage + 1))
+                          .map((page, index, array) => (
+                            <>
+                              {index > 0 && array[index - 1] !== page - 1 && (
+                                <span key={`ellipsis-${page}`} className="px-2">...</span>
+                              )}
+                              <Button
+                                key={page}
+                                variant={page === currentPage ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                disabled={loading}
+                              >
+                                {page}
+                              </Button>
+                            </>
+                          ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={!pagination.hasNextPage || loading}
+                      >
+                        Siguiente
+                        <ChevronRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
-  )
+  );
 }

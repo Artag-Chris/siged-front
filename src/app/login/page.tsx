@@ -83,13 +83,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión JWT</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión SIGED</CardTitle>
           <CardDescription className="text-center">
-            Ingresa tus credenciales para acceder al dashboard
+            Ingresa tus credenciales para acceder 
             <br />
-            <span className="text-xs text-blue-600 mt-1 block">
-              Sistema de autenticación JWT real
-            </span>
+           
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -162,17 +160,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm font-medium text-blue-700 mb-2">Sistema JWT Activo:</p>
-            <div className="space-y-1 text-xs text-blue-600">
-              <p>✅ Autenticación real con API</p>
-              <p>✅ Tokens JWT con refresh automático</p>
-              <p>✅ Roles y permisos por usuario</p>
-              <p className="text-orange-600 mt-2">
-                <strong>Nota:</strong> Usa credenciales reales del sistema
-              </p>
-            </div>
-          </div>
+         
         </CardContent>
       </Card>
     </div>

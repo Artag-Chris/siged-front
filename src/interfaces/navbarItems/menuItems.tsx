@@ -8,7 +8,7 @@ export const menuItems = [
   },
   {
     key: "usuarios",
-    title: "Usuarios JWT",
+    title: "Usuarios del Sistema",
     icon: Shield,
     items: [
       {
@@ -96,23 +96,23 @@ export const menuItems = [
       },
     ],
   },
-  {
-    key: "pae",
-    title: "Programa PAE",
-    icon: Utensils,
-    items: [
-      {
-        title: "Agregar, Listar PAE",
-        href: "/dashboard/pae",
-        icon: List,
-      },
-      // {
-      //   title: "Asignar Beneficio",
-      //   href: "/dashboard/pae/agregar",
-      //   icon: Plus,
-      // },
-    ],
-  },
+  // {
+  //   key: "pae",
+  //   title: "Programa PAE",
+  //   icon: Utensils,
+  //   items: [
+  //     {
+  //       title: "Agregar, Listar PAE",
+  //       href: "/dashboard/pae",
+  //       icon: List,
+  //     },
+  //     // {
+  //     //   title: "Asignar Beneficio",
+  //     //   href: "/dashboard/pae/agregar",
+  //     //   icon: Plus,
+  //     // },
+  //   ],
+  // },
   {
     title: "Profesores",
     icon: Users,
@@ -147,70 +147,70 @@ export const menuItems = [
       },
     ],
   },
-  {
-    title: "Estudiantes",
-    icon: GraduationCap,
-    key: "estudiantes",
-    items: [
-      {
-        title: "Lista de Estudiantes",
-        href: "/dashboard/estudiantes",
-        icon: GraduationCap,
-      },
-      {
-        title: "Agregar Estudiante",
-        href: "/dashboard/estudiantes/agregar",
-        icon: UserPlus,
-      },
-    ],
-  },
-  {
-    title: "Transporte",
-    icon: Bus,
-    key: "transporte",
-    items: [
-      {
-        title: "Conductores",
-        href: "/dashboard/transporte/conductores",
-        icon: Users,
-      },
-      {
-        title: "Vehículos",
-        href: "/dashboard/transporte/vehicles",
-        icon: Car,
-      },
-      {
-        title: "Rutas",
-        href: "/dashboard/transporte/rutas",
-        icon: MapPin,
-      },
-      {
-        title: "Asignaciones",
-        href: "/dashboard/transporte/asignaciones",
-        icon: UserCheck,
-      },
-      {
-        title: "Registro Conductor",
-        href: "/transporte/conductores/registro",
-        icon: UserPlus,
-      },
-    ],
-  },
-  {
-    title: "Asignación de Cupos",
-    href: "/dashboard/asignacion-cupos",
-    icon: Calendar,
-  },
-  {
-    title: "Materias",
-    href: "/dashboard/materias",
-    icon: BookOpen,
-  },
-  {
-    title: "Horarios",
-    href: "/dashboard/horarios",
-    icon: Calendar,
-  },
+  // {
+  //   title: "Estudiantes",
+  //   icon: GraduationCap,
+  //   key: "estudiantes",
+  //   items: [
+  //     {
+  //       title: "Lista de Estudiantes",
+  //       href: "/dashboard/estudiantes",
+  //       icon: GraduationCap,
+  //     },
+  //     {
+  //       title: "Agregar Estudiante",
+  //       href: "/dashboard/estudiantes/agregar",
+  //       icon: UserPlus,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Transporte",
+  //   icon: Bus,
+  //   key: "transporte",
+  //   items: [
+  //     {
+  //       title: "Conductores",
+  //       href: "/dashboard/transporte/conductores",
+  //       icon: Users,
+  //     },
+  //     {
+  //       title: "Vehículos",
+  //       href: "/dashboard/transporte/vehicles",
+  //       icon: Car,
+  //     },
+  //     {
+  //       title: "Rutas",
+  //       href: "/dashboard/transporte/rutas",
+  //       icon: MapPin,
+  //     },
+  //     {
+  //       title: "Asignaciones",
+  //       href: "/dashboard/transporte/asignaciones",
+  //       icon: UserCheck,
+  //     },
+  //     {
+  //       title: "Registro Conductor",
+  //       href: "/transporte/conductores/registro",
+  //       icon: UserPlus,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Asignación de Cupos",
+  //   href: "/dashboard/asignacion-cupos",
+  //   icon: Calendar,
+  // },
+  // {
+  //   title: "Materias",
+  //   href: "/dashboard/materias",
+  //   icon: BookOpen,
+  // },
+  // {
+  //   title: "Horarios",
+  //   href: "/dashboard/horarios",
+  //   icon: Calendar,
+  // },
   {
     title: "Reportes",
     href: "/dashboard/reportes",
