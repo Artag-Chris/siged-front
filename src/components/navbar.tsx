@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useJwtAuth } from "@/hooks/useJwtAuth"
+import { useTokenExpirationMonitor } from "@/hooks/useTokenExpirationMonitor"
 import { UserProfileDialog } from "@/components/user-profile-dialog"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -14,7 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Search, Settings, LogOut, User, Shield, Crown, UserCog } from "lucide-react"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert"
+import { Bell, Search, Settings, LogOut, User, Shield, Crown, UserCog, Clock, AlertTriangle } from "lucide-react"
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useJwtAuth({
@@ -22,6 +28,34 @@ export function Navbar() {
   })
   
   const [profileDialogOpen, setProfileDialogOpen] = useState(false)
+  const [showExpirationWarning, setShowExpirationWarning] = useState(false)
+
+  // Callbacks para el monitor de token
+  const handleTokenExpiring = useCallback(() => {
+    console.log('⚠️ [NAVBAR] Token está por expirar - Mostrando advertencia');
+    setShowExpirationWarning(true);
+    
+    // Auto-ocultar la advertencia después de 30 segundos
+    setTimeout(() => {
+      setShowExpirationWarning(false);
+    }, 30000);
+  }, []);
+
+  const handleTokenExpired = useCallback(() => {
+    console.log('⏰ [NAVBAR] Token expirado - Usuario será deslogueado');
+    // El monitor ya maneja el logout y redirección
+  }, []);
+
+  // Activar monitor de expiración de token
+  useTokenExpirationMonitor({
+    checkInterval: 60000, // Verificar cada 1 minuto
+    redirectTo: '/login',
+    showWarning: true,
+    warningThresholdMinutes: 5, // Advertir 5 minutos antes
+    onTokenExpiring: handleTokenExpiring,
+    onTokenExpired: handleTokenExpired,
+    enabled: isAuthenticated // Solo monitorear si está autenticado
+  })
 
   const handleLogout = async () => {
   
@@ -39,9 +73,28 @@ export function Navbar() {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <>
+      {/* Alerta de token próximo a expirar */}
+      {showExpirationWarning && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <Alert variant="default" className="border-yellow-400 bg-yellow-50">
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+              <AlertTitle className="text-yellow-800 font-semibold">
+                Sesión próxima a expirar
+              </AlertTitle>
+              <AlertDescription className="text-yellow-700">
+                Tu sesión expirará en menos de 5 minutos. Por favor guarda tu trabajo.
+                Serás redirigido al login automáticamente cuando expire.
+              </AlertDescription>
+            </Alert>
+          </div>
+        </div>
+      )}
+
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
           {/* Logo y título */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -58,26 +111,16 @@ export function Navbar() {
           {/* Acciones del header */}
           <div className="flex items-center space-x-4">
             {/* Indicador JWT */}
-            <div className="hidden lg:flex items-center space-x-2 px-3 py-1 bg-green-50 border border-green-200 rounded-full">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-green-700 font-medium">JWT Activo</span>
-            </div>
+          
 
             {/* Búsqueda */}
-            <Button variant="ghost" size="sm" className="hidden md:flex">
-              <Search className="h-4 w-4" />
-            </Button>
+        
 
             {/* Notificaciones */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
-            </Button>
+           
 
             {/* Configuración */}
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
+         
 
             {/* Botón de logout directo */}
             <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-600 hover:bg-red-50">
@@ -177,6 +220,7 @@ export function Navbar() {
         open={profileDialogOpen}
         onOpenChange={setProfileDialogOpen}
       />
-    </header>
+      </header>
+    </>
   )
 }

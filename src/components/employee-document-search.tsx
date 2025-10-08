@@ -191,11 +191,21 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
     } catch (error) {
       console.error('❌ [DOWNLOAD] Error in handleDownload:', error);
       
-      // Mostrar error en la UI (descomenta si tienes sistema de notificaciones)
-      // toast.error(error instanceof Error ? error.message : 'Error al descargar documento');
-      
-      // También puedes mostrar el error en el componente
-      alert(`Error al descargar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      // Si es error de red/CORS, ofrecer descarga directa
+      if (error instanceof Error && error.message.includes('Error de red o CORS')) {
+        const downloadUrl = doc?.downloadUrl || `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://demo-facilwhatsappapi.facilcreditos.co'}/api/retrieval/download/${documentId}`;
+        
+        const shouldTryDirect = confirm(
+          `Error de descarga automática: ${error.message}\n\n¿Deseas abrir el documento en una nueva pestaña para descargarlo manualmente?`
+        );
+        
+        if (shouldTryDirect) {
+          window.open(downloadUrl, '_blank');
+        }
+      } else {
+        // Otros errores
+        alert(`Error al descargar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      }
       
     } finally {
       // Limpiar estado de carga

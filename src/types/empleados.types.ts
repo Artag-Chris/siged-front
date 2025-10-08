@@ -29,6 +29,49 @@ export interface CreateEmpleadoRequest {
 
 export interface UpdateEmpleadoRequest extends Partial<CreateEmpleadoRequest> {}
 
+// Tipos para crear profesor con sede (nueva arquitectura)
+export interface CreateProfesorConSedeRequest {
+  empleado: {
+    tipo_documento: 'CC' | 'CE' | 'PA' | 'TI' | 'RC' | 'NIT';
+    documento: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+    direccion: string;
+    cargo: 'Docente';
+  };
+  informacionAcademica: {
+    nivel_academico: 'bachiller' | 'tecnico' | 'tecnologo' | 'licenciado' | 'profesional' | 'especialista' | 'magister' | 'doctorado';
+    anos_experiencia: number;
+    institucion: string;
+    titulo: string;
+  };
+  sedeId: string;
+  fechaAsignacion: string;
+  observaciones?: string;
+}
+
+export interface CreateProfesorConSedeResponse {
+  success: boolean;
+  message: string;
+  data: {
+    empleado: Empleado;
+    informacionAcademica: {
+      id: string;
+      nivel_academico: string;
+      anos_experiencia: number;
+      institucion: string;
+      titulo: string;
+    };
+    asignacion: {
+      id: string;
+      sede_id: string;
+      fecha_asignacion: string;
+      observaciones?: string;
+    };
+  };
+}
+
 export interface ComentarioEmpleado {
   id: string;
   observacion: string;

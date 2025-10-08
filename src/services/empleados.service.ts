@@ -12,7 +12,9 @@ import {
   CreateComentarioEmpleado,
   ComentarioEmpleado,
   ApiResponse,
-  EmpleadoDocumentUpload
+  EmpleadoDocumentUpload,
+  CreateProfesorConSedeRequest,
+  CreateProfesorConSedeResponse
 } from '@/types/empleados.types';
 
 export class EmpleadosService {
@@ -200,6 +202,40 @@ export class EmpleadosService {
 
     } catch (error: any) {
       console.error('❌ [EMPLEADOS-SERVICE] Error subiendo documento:', error.message);
+      throw this.handleApiError(error);
+    }
+  }
+
+  // =============== CREAR PROFESOR CON SEDE (NUEVA ARQUITECTURA) ===============
+  static async createProfesorConSede(data: CreateProfesorConSedeRequest): Promise<CreateProfesorConSedeResponse> {
+    try {
+      const endpoint = '/api/empleado/normal/crear-con-sede';
+      console.log('👨‍🏫 [EMPLEADOS-SERVICE] Creando profesor con sede...');
+      console.log('📤 [EMPLEADOS-SERVICE] Datos:', {
+        empleado: data.empleado,
+        informacionAcademica: data.informacionAcademica,
+        sedeId: data.sedeId,
+        fechaAsignacion: data.fechaAsignacion,
+        observaciones: data.observaciones ? '[INCLUIDO]' : '[NO INCLUIDO]'
+      });
+
+      const response = await JwtApiService.post<CreateProfesorConSedeResponse>(endpoint, data);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Error creando profesor con sede');
+      }
+
+      console.log('✅ [EMPLEADOS-SERVICE] Profesor creado con sede:', {
+        empleado: response.data.empleado.id,
+        nombre: `${response.data.empleado.nombre} ${response.data.empleado.apellido}`,
+        sede: response.data.asignacion.sede_id,
+        nivel: response.data.informacionAcademica.nivel_academico
+      });
+
+      return response;
+
+    } catch (error: any) {
+      console.error('❌ [EMPLEADOS-SERVICE] Error creando profesor con sede:', error.message);
       throw this.handleApiError(error);
     }
   }

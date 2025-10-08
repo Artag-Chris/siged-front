@@ -356,7 +356,7 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
     setError(null);
   }, []);
 
-  // Función para descargar documento (implementación completa)
+  // Función para descargar documento (implementación mejorada con fallbacks)
   const downloadDocument = useCallback(async (documentId: string, providedUrl?: string): Promise<void> => {
     try {
       console.log('🔽 [DOWNLOAD] Starting download process:', { documentId, providedUrl });
@@ -372,13 +372,38 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
         console.log('🔗 [DOWNLOAD] Using constructed URL:', downloadUrl);
       }
       
-      // Hacer la petición fetch
-      console.log('📡 [DOWNLOAD] Making fetch request...');
+      // MÉTODO 1: Intentar descarga directa con window.open (mejor para CORS)
+      console.log('🚀 [DOWNLOAD] Attempting direct download with window.open...');
+      
+      try {
+        // Crear enlace temporal y hacer click
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = ''; // Permitir que el servidor determine el nombre
+        link.target = '_blank';
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('✅ [DOWNLOAD] Direct download initiated successfully');
+        return;
+        
+      } catch (directError) {
+        console.log('⚠️ [DOWNLOAD] Direct download failed, trying fetch method...', directError);
+      }
+      
+      // MÉTODO 2: Fetch con nombre de archivo mejorado
+      console.log('📡 [DOWNLOAD] Making fetch request with CORS handling...');
+      
       const response = await fetch(downloadUrl, {
         method: 'GET',
         headers: {
-          'Accept': 'application/octet-stream, application/pdf, */*'
-        }
+          'Accept': 'application/octet-stream, application/pdf, */*',
+        },
+        mode: 'cors',
+        credentials: 'omit'
       });
       
       console.log('📡 [DOWNLOAD] Response status:', response.status);
@@ -395,47 +420,101 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
         type: blob.type 
       });
       
-      // Obtener el nombre del archivo desde headers o usar uno por defecto
-      let filename = 'documento.pdf';
+      if (blob.size === 0) {
+        throw new Error('El archivo descargado está vacío');
+      }
+      
+      // 🔧 MEJORAR: Obtener el nombre del archivo de forma más robusta
+      let filename = `documento-${documentId}.pdf`; // Fallback por defecto
+      
+      // 1. Intentar obtener desde Content-Disposition header
       const contentDisposition = response.headers.get('content-disposition');
       if (contentDisposition) {
+        console.log('📋 [DOWNLOAD] Content-Disposition header:', contentDisposition);
+        
+        // Buscar filename= o filename*= 
         const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (filenameMatch && filenameMatch[1]) {
+        const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;\n]*)/);
+        
+        if (filenameStarMatch && filenameStarMatch[1]) {
+          filename = decodeURIComponent(filenameStarMatch[1]);
+          console.log('📁 [DOWNLOAD] Using filename* from header:', filename);
+        } else if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1].replace(/['"]/g, '');
+          console.log('📁 [DOWNLOAD] Using filename from header:', filename);
         }
       }
       
-      console.log('📁 [DOWNLOAD] Using filename:', filename);
+      // 2. Si no hay Content-Disposition, intentar extraer de la URL
+      if (filename.startsWith('documento-') && downloadUrl.includes('/')) {
+        try {
+          const urlParts = downloadUrl.split('/');
+          const lastPart = urlParts[urlParts.length - 1];
+          if (lastPart && lastPart.includes('.')) {
+            filename = decodeURIComponent(lastPart);
+            console.log('📁 [DOWNLOAD] Using filename from URL:', filename);
+          }
+        } catch (e) {
+          console.log('⚠️ [DOWNLOAD] Could not extract filename from URL');
+        }
+      }
+      
+      // 3. Asegurar que tenga extensión
+      if (!filename.includes('.')) {
+        // Determinar extensión por tipo MIME
+        const mimeExtensions: { [key: string]: string } = {
+          'application/pdf': '.pdf',
+          'application/msword': '.doc',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+          'application/vnd.ms-excel': '.xls',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+          'image/jpeg': '.jpg',
+          'image/png': '.png',
+          'image/gif': '.gif',
+          'text/plain': '.txt'
+        };
+        
+        const extension = mimeExtensions[blob.type] || '.pdf';
+        filename += extension;
+        console.log('📁 [DOWNLOAD] Added extension based on MIME type:', filename);
+      }
+      
+      // 4. Limpiar caracteres problemáticos del nombre
+      filename = filename.replace(/[<>:"/\\|?*]/g, '_');
+      
+      console.log('📁 [DOWNLOAD] Final filename:', filename);
       
       // Crear URL temporal y disparar descarga
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = filename;
+      a.download = filename; // Usar el nombre mejorado
       
       // Agregar al DOM, hacer click y remover
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       
-      // Limpiar URL temporal
-      window.URL.revokeObjectURL(url);
+      // Limpiar URL temporal después de un momento
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
       
-      console.log('✅ [DOWNLOAD] Download initiated successfully');
+      console.log('✅ [DOWNLOAD] Download initiated successfully with filename:', filename);
       
     } catch (error: any) {
       console.error('❌ [DOWNLOAD] Download failed:', error);
       
-      // Re-lanzar el error con más información
-      if (error.message.includes('HTTP 404')) {
+      // Re-lanzar el error con más información específica
+      if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+        throw new Error('Error de red o CORS. Intenta descargar directamente desde el navegador.');
+      } else if (error.message.includes('HTTP 404')) {
         throw new Error(`Documento no encontrado (ID: ${documentId})`);
       } else if (error.message.includes('HTTP 403')) {
         throw new Error('No tienes permisos para descargar este documento');
       } else if (error.message.includes('HTTP 500')) {
         throw new Error('Error del servidor al procesar la descarga');
-      } else if (error.message.includes('Failed to fetch')) {
-        throw new Error('Error de conexión. Verifica tu internet.');
       } else {
         throw new Error(`Error al descargar: ${error.message}`);
       }
