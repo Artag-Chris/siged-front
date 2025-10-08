@@ -3,7 +3,13 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+// Optimización de fuentes para producción
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap', // Mejora el rendimiento de carga
+  preload: true,
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
   title: "Sistema de Gestión Educativa",

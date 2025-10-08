@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -19,8 +19,8 @@ export function AdminSidebar({ className }: SidebarProps) {
   const [openSection, setOpenSection] = useState<string | null>(null)
   const pathname = usePathname()
 
-  // Determinar qué sección debería estar abierta basada en la ruta actual
-  const getActiveSectionFromPath = () => {
+  // Determinar qué sección debería estar abierta basada en la ruta actual (memoizado)
+  const getActiveSectionFromPath = useMemo(() => {
     if (pathname.startsWith("/dashboard/usuarios")) return "usuarios"
     if (pathname.startsWith("/dashboard/profesores")) return "profesores"
     if (pathname.startsWith("/dashboard/instituciones")) return "instituciones"
@@ -32,11 +32,11 @@ export function AdminSidebar({ className }: SidebarProps) {
     if (pathname.startsWith("/dashboard/horas-extra")) return "horas-extra"
     if (pathname.startsWith("/dashboard/actos-administrativos")) return "actos-administrativos"
     return null
-  }
+  }, [pathname])
 
   // Inicializar la sección abierta basada en la ruta actual
   useState(() => {
-    const activeSection = getActiveSectionFromPath()
+    const activeSection = getActiveSectionFromPath
     if (activeSection && !openSection) {
       setOpenSection(activeSection)
     }
