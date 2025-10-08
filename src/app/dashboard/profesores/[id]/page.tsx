@@ -332,9 +332,7 @@ function ProfessorDetailContent() {
                 }}
                 autoLoad={true}
                 key={`${professor.id}-${refreshDocuments}`} // Force re-render cuando cambie UUID o refresh
-              />
-
-             
+              />             
             </div>
           </TabsContent>
         </Tabs>
