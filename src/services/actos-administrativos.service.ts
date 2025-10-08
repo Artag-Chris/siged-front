@@ -103,23 +103,31 @@ class ActosAdministrativosService {
       }
 
       const archivosParaPromesa3 = response.data.archivos_procesados.map((archivo, index) => {
-       
-        if (archivo.tamano) {
-
-        }
-        if (archivo.tipo_mime) {
-
-        }
-        if (archivo.elasticsearch_id) {
-     
+        console.log(`📂 [ACTOS-ADMIN-SERVICE] Archivo ${index + 1} procesado:`, {
+          nombre_original: archivo.nombre_original,
+          ruta_relativa: archivo.ruta_relativa,
+          tiene_uploads: archivo.ruta_relativa?.startsWith('uploads/'),
+          ruta_completa: archivo.ruta_relativa
+        });
+        
+        // ⚠️ CRÍTICO: La ruta_relativa DEBE incluir el prefijo "uploads/"
+        // Si no lo incluye, el backend de retrieval no podrá encontrar el archivo
+        let rutaFinal = archivo.ruta_relativa;
+        
+        // Si la ruta no comienza con "uploads/", agregarla
+        if (rutaFinal && !rutaFinal.startsWith('uploads/')) {
+          console.warn('⚠️ [ACTOS-ADMIN-SERVICE] Ruta sin prefijo uploads/, agregándolo...');
+          rutaFinal = `uploads/${rutaFinal}`;
+          console.log('✅ [ACTOS-ADMIN-SERVICE] Ruta corregida:', rutaFinal);
         }
         
         return {
           nombre: archivo.nombre_original,
-          ruta: archivo.ruta_relativa
+          ruta: rutaFinal
         };
       });
 
+      console.log('✅ [ACTOS-ADMIN-SERVICE] Archivos preparados para PROMESA 3:', archivosParaPromesa3);
       return archivosParaPromesa3;
       
     } catch (error: any) {
@@ -373,24 +381,130 @@ class ActosAdministrativosService {
   }
 
   /**
-   * Descargar documento
+   * Descargar documento de acto administrativo por ruta relativa
+   * Usa POST con la ruta relativa del documento
    */
-  async descargarDocumento(documentoId: string): Promise<Blob> {
+  async descargarDocumento(rutaRelativa: string, nombreArchivo: string): Promise<void> {
     try {
+      console.log('📥 [ACTOS-ADMIN-SERVICE] Descargando documento:', {
+        rutaRelativa,
+        nombreArchivo,
+        tiene_ruta: !!rutaRelativa,
+        tipo: typeof rutaRelativa,
+        longitud: rutaRelativa?.length
+      });
       
-      const response = await JwtApiService.get<Blob>(
-        `${this.DOCS_PATH}/${documentoId}/download`,
-        { responseType: 'blob' as any }
-      );
+      // ⚠️ Validación crítica
+      if (!rutaRelativa || rutaRelativa.trim() === '') {
+        console.error('❌ [ACTOS-ADMIN-SERVICE] ERROR: ruta_relativa está vacía o undefined');
+        throw new Error('La ruta del documento está vacía. Verifica que el backend esté enviando el campo ruta_relativa correctamente.');
+      }
+      
+      // Obtener base URL desde variable de entorno
+      const baseUrl = process.env.NEXT_PUBLIC_DOCUMENT_API_URL || 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval';
+      const downloadUrl = `${baseUrl}/download-by-path`;
+      
+      const requestBody = { relativePath: rutaRelativa };
+      
+      console.log('🔗 [ACTOS-ADMIN-SERVICE] URL de descarga:', downloadUrl);
+      console.log('📦 [ACTOS-ADMIN-SERVICE] Body:', requestBody);
+      
+      // Hacer POST con la ruta relativa
+      // IMPORTANTE: El backend espera el campo "relativePath" (en inglés)
+      const response = await fetch(downloadUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-      return response as any;
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      // Convertir respuesta a blob
+      const blob = await response.blob();
+      console.log('📦 [ACTOS-ADMIN-SERVICE] Blob recibido:', blob.size, 'bytes');
+
+      // Crear URL temporal y descargar
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nombreArchivo;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpiar
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log('✅ [ACTOS-ADMIN-SERVICE] Documento descargado:', nombreArchivo);
     } catch (error: any) {
       console.error('❌ [ACTOS-ADMIN-SERVICE] Error en descargarDocumento:', error);
-      throw new Error(
-        error.response?.data?.message || 
-        error.message || 
-        'Error al descargar documento'
-      );
+      throw new Error('Error al descargar el documento');
+    }
+  }
+
+  /**
+   * Ver documento de acto administrativo por ruta relativa
+   * Usa POST con la ruta relativa para visualización inline (PDFs)
+   */
+  async verDocumento(rutaRelativa: string): Promise<void> {
+    try {
+      console.log('👁️ [ACTOS-ADMIN-SERVICE] Visualizando documento:', {
+        rutaRelativa,
+        tiene_ruta: !!rutaRelativa,
+        tipo: typeof rutaRelativa,
+        longitud: rutaRelativa?.length
+      });
+      
+      // ⚠️ Validación crítica
+      if (!rutaRelativa || rutaRelativa.trim() === '') {
+        console.error('❌ [ACTOS-ADMIN-SERVICE] ERROR: ruta_relativa está vacía o undefined');
+        throw new Error('La ruta del documento está vacía. Verifica que el backend esté enviando el campo ruta_relativa correctamente.');
+      }
+      
+      // Obtener base URL desde variable de entorno
+      const baseUrl = process.env.NEXT_PUBLIC_DOCUMENT_API_URL || 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval';
+      const viewUrl = `${baseUrl}/view-by-path`;
+      
+      const requestBody = { relativePath: rutaRelativa };
+      
+      console.log('🔗 [ACTOS-ADMIN-SERVICE] URL de visualización:', viewUrl);
+      console.log('📦 [ACTOS-ADMIN-SERVICE] Body:', requestBody);
+      
+      // Hacer POST con la ruta relativa
+      // IMPORTANTE: El backend espera el campo "relativePath" (en inglés)
+      const response = await fetch(viewUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      // Convertir respuesta a blob
+      const blob = await response.blob();
+      console.log('📦 [ACTOS-ADMIN-SERVICE] Blob recibido:', blob.size, 'bytes');
+
+      // Crear URL temporal y abrir en nueva pestaña
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      
+      console.log('✅ [ACTOS-ADMIN-SERVICE] Documento abierto para visualización');
+      
+      // Limpiar después de un tiempo (la pestaña ya tiene el blob)
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (error: any) {
+      console.error('❌ [ACTOS-ADMIN-SERVICE] Error en verDocumento:', error);
+      throw new Error('Error al visualizar el documento');
     }
   }
 

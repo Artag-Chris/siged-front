@@ -88,11 +88,32 @@ class SuplenciaService {
       }
     
       // Transformar respuesta de la API de Documentos al formato esperado
-      const archivosParaPromesa3 = response.data.archivos_procesados.map((archivo: any) => ({
-        nombre: archivo.nombre_original,
-        ruta: archivo.ruta_relativa
-      }));
+      const archivosParaPromesa3 = response.data.archivos_procesados.map((archivo: any, index: number) => {
+        console.log(`📂 [SUPLENCIA-SERVICE] Archivo ${index + 1} procesado:`, {
+          nombre_original: archivo.nombre_original,
+          ruta_relativa: archivo.ruta_relativa,
+          tiene_uploads: archivo.ruta_relativa?.startsWith('uploads/'),
+          ruta_completa: archivo.ruta_relativa
+        });
+        
+        // ⚠️ CRÍTICO: La ruta_relativa DEBE incluir el prefijo "uploads/"
+        // Si no lo incluye, el backend de retrieval no podrá encontrar el archivo
+        let rutaFinal = archivo.ruta_relativa;
+        
+        // Si la ruta no comienza con "uploads/", agregarla
+        if (rutaFinal && !rutaFinal.startsWith('uploads/')) {
+          console.warn('⚠️ [SUPLENCIA-SERVICE] Ruta sin prefijo uploads/, agregándolo...');
+          rutaFinal = `uploads/${rutaFinal}`;
+          console.log('✅ [SUPLENCIA-SERVICE] Ruta corregida:', rutaFinal);
+        }
+        
+        return {
+          nombre: archivo.nombre_original,
+          ruta: rutaFinal
+        };
+      });
 
+      console.log('✅ [SUPLENCIA-SERVICE] Archivos preparados para PROMESA 3:', archivosParaPromesa3);
       return archivosParaPromesa3;
       
     } catch (error: any) {

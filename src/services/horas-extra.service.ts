@@ -112,15 +112,32 @@ class HorasExtraService {
       
       // ✅ Transformar respuesta según formato de la API de Documentos
       // Response.data.archivos_procesados[] tiene: nombre_original, ruta_relativa
-      const archivosParaPromesa3 = response.data.archivos_procesados.map((archivo) => {
-        console.log(`   ✓ ${archivo.nombre_original} → ${archivo.ruta_relativa}`);
+      const archivosParaPromesa3 = response.data.archivos_procesados.map((archivo, index) => {
+        console.log(`📂 [HORAS-EXTRA-SERVICE] Archivo ${index + 1} procesado:`, {
+          nombre_original: archivo.nombre_original,
+          ruta_relativa: archivo.ruta_relativa,
+          tiene_uploads: archivo.ruta_relativa?.startsWith('uploads/'),
+          ruta_completa: archivo.ruta_relativa
+        });
+        
+        // ⚠️ CRÍTICO: La ruta_relativa DEBE incluir el prefijo "uploads/"
+        // Si no lo incluye, el backend de retrieval no podrá encontrar el archivo
+        let rutaFinal = archivo.ruta_relativa;
+        
+        // Si la ruta no comienza con "uploads/", agregarla
+        if (rutaFinal && !rutaFinal.startsWith('uploads/')) {
+          console.warn('⚠️ [HORAS-EXTRA-SERVICE] Ruta sin prefijo uploads/, agregándolo...');
+          rutaFinal = `uploads/${rutaFinal}`;
+          console.log('✅ [HORAS-EXTRA-SERVICE] Ruta corregida:', rutaFinal);
+        }
+        
         return {
           nombre: archivo.nombre_original,
-          ruta: archivo.ruta_relativa
+          ruta: rutaFinal
         };
       });
 
-      console.log('📦 [HORAS-EXTRA-SERVICE] Datos preparados para Promesa 3:', archivosParaPromesa3.length);
+      console.log('✅ [HORAS-EXTRA-SERVICE] Archivos preparados para PROMESA 3:', archivosParaPromesa3);
       return archivosParaPromesa3;
       
     } catch (error: any) {
