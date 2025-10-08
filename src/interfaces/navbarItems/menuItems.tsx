@@ -217,9 +217,21 @@ export const menuItems = [
     icon: BarChart3,
   },
   {
+    key: "documentos",
     title: "Documentos",
-    href: "/dashboard/documentos",
     icon: FileText,
+    items: [
+      {
+        title: "Buscar Documentos",
+        href: "/dashboard/documentos/buscar",
+        icon: Database,
+      },
+      {
+        title: "Panel Principal",
+        href: "/dashboard/documentos",
+        icon: FileText,
+      },
+    ],
   },
   {
     title: "Configuración",
@@ -230,4 +242,4 @@ export const menuItems = [
 
 export interface SidebarProps {
   className?: string
-}
+} 

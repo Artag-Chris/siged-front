@@ -356,62 +356,89 @@ export const useEmployeeDocuments = (): UseEmployeeDocumentsReturn => {
     setError(null);
   }, []);
 
-  // Función para descargar documento (optimizada para usar URL del API cuando esté disponible)
+  // Función para descargar documento (implementación completa)
   const downloadDocument = useCallback(async (documentId: string, providedUrl?: string): Promise<void> => {
     try {
-      // Usar la URL proporcionada del API si está disponible, sino construir la URL
-      const downloadUrl = providedUrl || `${API_BASE_URL}/api/retrieval/download/${documentId}`;
-      console.log('📥 [DOWNLOAD] Downloading document:', documentId, 'from:', downloadUrl);
-      console.log('📥 [DOWNLOAD] Using provided URL:', !!providedUrl);
+      console.log('🔽 [DOWNLOAD] Starting download process:', { documentId, providedUrl });
       
-      // Usar fetch nativo para descargas también
+      // Determinar la URL de descarga
+      let downloadUrl: string;
+      
+      if (providedUrl) {
+        downloadUrl = providedUrl;
+        console.log('🔗 [DOWNLOAD] Using provided URL:', downloadUrl);
+      } else {
+        downloadUrl = `${API_BASE_URL}/api/retrieval/download/${documentId}`;
+        console.log('🔗 [DOWNLOAD] Using constructed URL:', downloadUrl);
+      }
+      
+      // Hacer la petición fetch
+      console.log('📡 [DOWNLOAD] Making fetch request...');
       const response = await fetch(downloadUrl, {
         method: 'GET',
         headers: {
-          'Accept': 'application/pdf, application/octet-stream'
+          'Accept': 'application/octet-stream, application/pdf, */*'
         }
       });
+      
+      console.log('📡 [DOWNLOAD] Response status:', response.status);
+      console.log('📡 [DOWNLOAD] Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
+      // Obtener el blob
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      console.log('📦 [DOWNLOAD] Blob created:', { 
+        size: blob.size, 
+        type: blob.type 
+      });
       
-      // Intentar obtener el nombre del archivo desde los headers
+      // Obtener el nombre del archivo desde headers o usar uno por defecto
+      let filename = 'documento.pdf';
       const contentDisposition = response.headers.get('content-disposition');
-      let filename = `document-${documentId}`;
-      
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
         }
       }
       
+      console.log('📁 [DOWNLOAD] Using filename:', filename);
+      
+      // Crear URL temporal y disparar descarga
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
       a.download = filename;
+      
+      // Agregar al DOM, hacer click y remover
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      console.log('✅ [DOWNLOAD] Document downloaded:', documentId, filename);
+      // Limpiar URL temporal
+      window.URL.revokeObjectURL(url);
+      
+      console.log('✅ [DOWNLOAD] Download initiated successfully');
+      
     } catch (error: any) {
-      let errorMessage = 'Error downloading document';
+      console.error('❌ [DOWNLOAD] Download failed:', error);
       
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Error de conexión durante la descarga';
-      } else if (error.message.includes('HTTP')) {
-        errorMessage = error.message;
+      // Re-lanzar el error con más información
+      if (error.message.includes('HTTP 404')) {
+        throw new Error(`Documento no encontrado (ID: ${documentId})`);
+      } else if (error.message.includes('HTTP 403')) {
+        throw new Error('No tienes permisos para descargar este documento');
+      } else if (error.message.includes('HTTP 500')) {
+        throw new Error('Error del servidor al procesar la descarga');
+      } else if (error.message.includes('Failed to fetch')) {
+        throw new Error('Error de conexión. Verifica tu internet.');
       } else {
-        errorMessage = error.message || errorMessage;
+        throw new Error(`Error al descargar: ${error.message}`);
       }
-      
-      console.error('❌ [DOWNLOAD] Error:', errorMessage, error);
-      throw new Error(errorMessage);
     }
   }, []);
 

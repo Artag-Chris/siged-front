@@ -126,6 +126,18 @@ export class JwtApiService {
     }
   }
 
+  static async getBlob(endpoint: string, config?: AxiosRequestConfig): Promise<Blob> {
+    try {
+      const response = await this.getInstance().get<Blob>(endpoint, {
+        ...config,
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
+    }
+  }
+
   // Manejo centralizado de errores
   private static handleError(error: any): Error {
     if (error.response) {

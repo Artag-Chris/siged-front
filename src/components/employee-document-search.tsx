@@ -71,6 +71,9 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
     sortOrder: 'desc' as 'asc' | 'desc'
   });
 
+  // Agregar estado para tracking de descargas
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (lastEmployeeUuid && lastEmployeeUuid !== employeeUuid) {
@@ -162,11 +165,41 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
   };
 
   const handleDownload = async (documentId: string, filename: string, doc?: any) => {
+    // Validación inicial
+    if (!documentId) {
+      console.error('❌ [DOWNLOAD] DocumentId is required');
+      return;
+    }
+    
     try {
-      const downloadUrl = doc?.downloadUrl;
-      await downloadDocument(documentId, downloadUrl);
+      // Mostrar estado de carga
+      setDownloadingId(documentId);
+      
+      console.log('🔽 [DOWNLOAD] Initiating download:', {
+        documentId,
+        filename,
+        hasDownloadUrl: !!doc?.downloadUrl,
+        docTitle: doc?.title || doc?.originalName,
+        docSize: doc?.size ? formatFileSize(doc.size) : 'unknown'
+      });
+      
+      // Llamar al hook de descarga
+      await downloadDocument(documentId, doc?.downloadUrl);
+      
+      console.log('✅ [DOWNLOAD] Download completed for:', filename);
+      
     } catch (error) {
-      console.error('Error downloading document:', error);
+      console.error('❌ [DOWNLOAD] Error in handleDownload:', error);
+      
+      // Mostrar error en la UI (descomenta si tienes sistema de notificaciones)
+      // toast.error(error instanceof Error ? error.message : 'Error al descargar documento');
+      
+      // También puedes mostrar el error en el componente
+      alert(`Error al descargar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      
+    } finally {
+      // Limpiar estado de carga
+      setDownloadingId(null);
     }
   };
 
@@ -420,9 +453,14 @@ const EmployeeDocumentSearch: React.FC<EmployeeDocumentSearchProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => handleDownload(doc.id, doc.filename, doc)}
+                        disabled={downloadingId === doc.id}
                         title="Descargar documento"
                       >
-                        <Download className="h-4 w-4" />
+                        {downloadingId === doc.id ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        )}
                       </Button>
                       {onDocumentSelect && (
                         <Button
