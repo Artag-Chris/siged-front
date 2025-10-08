@@ -292,6 +292,7 @@ function HorasExtraContent() {
                             variant="ghost"
                             size="sm"
                             onClick={() => router.push(`/dashboard/horas-extra/${hora.id}`)}
+                            title="Ver detalle"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -299,6 +300,7 @@ function HorasExtraContent() {
                             variant="ghost"
                             size="sm"
                             onClick={() => router.push(`/dashboard/horas-extra/${hora.id}/editar`)}
+                            title="Editar registro"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -310,6 +312,7 @@ function HorasExtraContent() {
                               hora.id, 
                               `${hora.empleado?.nombre} ${hora.empleado?.apellido}`
                             )}
+                            title="Eliminar registro"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

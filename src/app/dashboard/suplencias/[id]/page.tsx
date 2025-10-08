@@ -1,12 +1,15 @@
 "use client"
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useSuplencia, useDocumentosSuplencia } from '@/hooks/useSuplencias';
+import { useSuplencia } from '@/hooks/useSuplencias';
 import { ProtectedRoute } from '@/components/protected-route';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import suplenciaService from '@/services/suplencia.service';
 import { 
   ArrowLeft, 
   UserX, 
@@ -16,7 +19,10 @@ import {
   FileText,
   Edit,
   RefreshCw,
-  Download
+  Download,
+  Eye,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
 function DetalleSuplenciaContent() {
@@ -25,7 +31,38 @@ function DetalleSuplenciaContent() {
   const suplenciaId = params?.id as string;
 
   const { suplencia, loading, error } = useSuplencia(suplenciaId);
-  const { documentos, loading: docsLoading } = useDocumentosSuplencia(suplenciaId);
+
+  const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  // Obtener documentos directamente de la suplencia (ya vienen incluidos del backend)
+  const documentos = suplencia?.documentos_suplencia || [];
+
+  const handleDownloadDocument = async (rutaRelativa: string, nombreArchivo: string) => {
+    try {
+      console.log('📥 [SUPLENCIA-DETAIL] Iniciando descarga:', { rutaRelativa, nombreArchivo });
+      await suplenciaService.descargarDocumento(rutaRelativa, nombreArchivo);
+      setDownloadSuccess(`Documento "${nombreArchivo}" descargado correctamente`);
+      setTimeout(() => setDownloadSuccess(null), 3000);
+    } catch (error: any) {
+      console.error('❌ [SUPLENCIA-DETAIL] Error descargando documento:', error);
+      setDownloadError(error.message || "No se pudo descargar el documento");
+      setTimeout(() => setDownloadError(null), 5000);
+    }
+  };
+
+  const handleViewDocument = async (rutaRelativa: string, nombreArchivo: string) => {
+    try {
+      console.log('👁️ [SUPLENCIA-DETAIL] Visualizando documento:', { rutaRelativa, nombreArchivo });
+      await suplenciaService.verDocumento(rutaRelativa);
+      setDownloadSuccess(`Visualizando "${nombreArchivo}" en nueva pestaña`);
+      setTimeout(() => setDownloadSuccess(null), 3000);
+    } catch (error: any) {
+      console.error('❌ [SUPLENCIA-DETAIL] Error visualizando documento:', error);
+      setDownloadError(error.message || "No se pudo visualizar el documento");
+      setTimeout(() => setDownloadError(null), 5000);
+    }
+  };
 
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('es-CO', {
@@ -258,15 +295,34 @@ function DetalleSuplenciaContent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {docsLoading && (
+            {/* Mensajes de estado de descarga */}
+            {downloadSuccess && (
+              <Alert className="mb-4 border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  {downloadSuccess}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {downloadError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {downloadError}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {loading && (
               <p className="text-gray-500">Cargando documentos...</p>
             )}
 
-            {!docsLoading && documentos.length === 0 && (
+            {!loading && documentos.length === 0 && (
               <p className="text-gray-500">No hay documentos adjuntos</p>
             )}
 
-            {!docsLoading && documentos.length > 0 && (
+            {!loading && documentos.length > 0 && (
               <div className="space-y-2">
                 {documentos.map((doc) => (
                   <div 
@@ -280,11 +336,29 @@ function DetalleSuplenciaContent() {
                         <p className="text-xs text-gray-500">
                           {new Date(doc.created_at).toLocaleDateString('es-CO')}
                         </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Ruta: {doc.ruta_relativa}
+                        </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      <Download className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleViewDocument(doc.ruta_relativa, doc.nombre)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleDownloadDocument(doc.ruta_relativa, doc.nombre)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Descargar
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

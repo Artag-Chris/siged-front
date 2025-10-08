@@ -385,25 +385,107 @@ class HorasExtraService {
   }
 
   /**
-   * Descargar documento
+   * Descargar documento de horas extra por ruta relativa
+   * Usa POST con la ruta relativa del documento
    */
-  async descargarDocumento(documentoId: string): Promise<Blob> {
+  async descargarDocumento(rutaRelativa: string, nombreArchivo: string): Promise<void> {
     try {
-      console.log('📥 [HORAS-EXTRA-SERVICE] Descargando documento:', documentoId);
+      console.log('📥 [HORAS-EXTRA-SERVICE] Descargando documento:', rutaRelativa);
       
-      const response = await JwtApiService.get<Blob>(
-        `${this.DOCS_PATH}/${documentoId}/download`,
-        { responseType: 'blob' as any }
-      );
+      // Obtener base URL desde variable de entorno
+      const baseUrl = process.env.NEXT_PUBLIC_DOCUMENT_API_URL || 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval';
+      const downloadUrl = `${baseUrl}/download-by-path`;
+      
+      const requestBody = { relativePath: rutaRelativa };
+      
+      console.log('🔗 [HORAS-EXTRA-SERVICE] URL de descarga:', downloadUrl);
+      console.log('📦 [HORAS-EXTRA-SERVICE] Body:', requestBody);
+      
+      // Hacer POST con la ruta relativa
+      // IMPORTANTE: El backend espera el campo "relativePath" (en inglés)
+      const response = await fetch(downloadUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-      return response as any;
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      // Convertir respuesta a blob
+      const blob = await response.blob();
+      console.log('📦 [HORAS-EXTRA-SERVICE] Blob recibido:', blob.size, 'bytes');
+
+      // Crear URL temporal y descargar
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nombreArchivo;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpiar
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log('✅ [HORAS-EXTRA-SERVICE] Documento descargado:', nombreArchivo);
     } catch (error: any) {
       console.error('❌ [HORAS-EXTRA-SERVICE] Error en descargarDocumento:', error);
-      throw new Error(
-        error.response?.data?.message || 
-        error.message || 
-        'Error al descargar documento'
-      );
+      throw new Error('Error al descargar el documento');
+    }
+  }
+
+  /**
+   * Ver documento de horas extra por ruta relativa
+   * Usa POST con la ruta relativa para visualización inline (PDFs)
+   */
+  async verDocumento(rutaRelativa: string): Promise<void> {
+    try {
+      console.log('👁️ [HORAS-EXTRA-SERVICE] Visualizando documento:', rutaRelativa);
+      
+      // Obtener base URL desde variable de entorno
+      const baseUrl = process.env.NEXT_PUBLIC_DOCUMENT_API_URL || 'https://demo-facilwhatsappapi.facilcreditos.co/api/retrieval';
+      const viewUrl = `${baseUrl}/view-by-path`;
+      
+      const requestBody = { relativePath: rutaRelativa };
+      
+      console.log('🔗 [HORAS-EXTRA-SERVICE] URL de visualización:', viewUrl);
+      console.log('📦 [HORAS-EXTRA-SERVICE] Body:', requestBody);
+      
+      // Hacer POST con la ruta relativa
+      // IMPORTANTE: El backend espera el campo "relativePath" (en inglés)
+      const response = await fetch(viewUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      // Convertir respuesta a blob
+      const blob = await response.blob();
+      console.log('📦 [HORAS-EXTRA-SERVICE] Blob recibido:', blob.size, 'bytes');
+
+      // Crear URL temporal y abrir en nueva pestaña
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      
+      console.log('✅ [HORAS-EXTRA-SERVICE] Documento abierto para visualización');
+      
+      // Limpiar después de un tiempo (la pestaña ya tiene el blob)
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (error: any) {
+      console.error('❌ [HORAS-EXTRA-SERVICE] Error en verDocumento:', error);
+      throw new Error('Error al visualizar el documento');
     }
   }
 }
